@@ -222,7 +222,7 @@ int main(int argc, char** argv) {
             if (val == IDENT)
                 printf("%s", yytext);
             if (val == NUMBER) {
-                switch (num_type){
+                switch (yylval.type){
                     case YYNUM_TYPE_FLOAT:
                         printf("REAL\t%f\tFLOAT", yylval.yfloat);
                         break;
@@ -248,7 +248,7 @@ int main(int argc, char** argv) {
                         printf("REAL\t%lf\tDOUBLE", yylval.y_double);
                         break;
                     case YYNUM_TYPE_UNSIGNED_LONGLONG:
-                        printf("INTEGER\t%llu\tUNSIGNED,LONGLONG", yylval.yunsigned_longlong);
+                        printf("INTEGER\t%llu\tUNSIGNED,LONGLONG", yylval.ylonglong);
                         break;
                 }
             }

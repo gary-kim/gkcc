@@ -108,7 +108,11 @@ identifier        {alpha}{alpha_num}*
 "|="  { return OREQ; }
 "&="  { return ANDEQ; }
 
-{identifier} { return IDENT; }
+{identifier} {
+    strncpy(yylval.data.string, yytext, MAX_STR_LENGTH);
+    yylval.type = YYLVAL_TYPE_STRING;
+    return IDENT;
+}
 
 [ \t]*        /* do nothing */
 \n            YY_LINE_NUMBER += 1;
@@ -122,96 +126,118 @@ identifier        {alpha}{alpha_num}*
                              return(NUMBER);
                           }
 {hex_constant}{long_ext}  {
-                             sscanf(&yytext[2],"%lx",&yylval.ylong);
+                             sscanf(&yytext[2],"%lx",&yylval.data.number.num.ylong);
                              yylval.data.number.type = YYNUM_TYPE_LONG;
                              yylval.data.number.is_unsigned = false;
                              yylval.type = YYLVAL_TYPE_NUMBER;
                              return(NUMBER);
                           }
 {hex_constant}{unsigned_ext}  {
-                             sscanf(&yytext[2],"%x",&yylval.yint);
+                             sscanf(&yytext[2],"%x",&yylval.data.number.num.yint);
                              yylval.data.number.type = YYNUM_TYPE_INT;
                              yylval.data.number.is_unsigned = true;
                              yylval.type = YYLVAL_TYPE_NUMBER;
                              return(NUMBER);
                           }
 {hex_constant}            {
-                             sscanf(&yytext[2],"%x",&yylval.yint);
+                             sscanf(&yytext[2],"%x",&yylval.data.number.num.yint);
                              yylval.data.number.type = YYNUM_TYPE_INT;
                              yylval.data.number.is_unsigned = false;
                              yylval.type = YYLVAL_TYPE_NUMBER;
                              return(NUMBER);
                           }
 {oct_constant}{ulong_ext} {
-                             sscanf(yytext,"%lo",&yylval.ylong);
+                             sscanf(yytext,"%lo",&yylval.data.number.num.ylong);
                              yylval.data.number.type = YYNUM_TYPE_INT;
                              yylval.data.number.is_unsigned = true;
                              yylval.type = YYLVAL_TYPE_NUMBER;
                              return(NUMBER);
                           }
 {oct_constant}{long_ext}  {
-                             sscanf(yytext,"%lo",&yylval.ysigned_long);
+                             sscanf(yytext,"%lo",&yylval.data.number.num.ylong);
                              yylval.data.number.type = YYNUM_TYPE_LONG;
                              yylval.data.number.is_unsigned = false;
                              yylval.type = YYLVAL_TYPE_NUMBER;
                              return(NUMBER);
                           }
 {oct_constant}{unsigned_ext}  {
-                             sscanf(yytext,"%o",&yylval.yunsigned);\
-                             num_type = YYNUM_TYPE_UNSIGNED;
+                             sscanf(yytext,"%o",&yylval.data.number.num.yint);
+                             yylval.data.number.type = YYNUM_TYPE_INT;
+                             yylval.data.number.is_unsigned = true;
+                             yylval.type = YYLVAL_TYPE_NUMBER;
                              return(NUMBER);
                           }
 {oct_constant}            {
-                             sscanf(yytext,"%o",&yylval.ysigned);
-                             num_type = YYNUM_TYPE_INT;
+                             sscanf(yytext,"%o",&yylval.data.number.num.yint);
+                             yylval.data.number.type = YYNUM_TYPE_INT;
+                             yylval.data.number.is_unsigned = false;
+                             yylval.type = YYLVAL_TYPE_NUMBER;
                              return(NUMBER);
                           }
 {int_constant}{ulong_ext} {
-                             sscanf(yytext,"%ld",&yylval.yunsigned_long);
-                             num_type = YYNUM_TYPE_UNSIGNED_LONG;
+                             sscanf(yytext,"%ld",&yylval.data.number.num.ylong);
+                             yylval.data.number.type = YYNUM_TYPE_LONG;
+                             yylval.data.number.is_unsigned = true;
+                             yylval.type = YYLVAL_TYPE_NUMBER;
                              return(NUMBER);
                           }
 
 {int_constant}{ulonglong_ext}  {
-                             sscanf(yytext,"%llu",&yylval.yunsigned_longlong);
-                             num_type = YYNUM_TYPE_UNSIGNED_LONGLONG;
+                             sscanf(yytext,"%llu",&yylval.data.number.num.ylonglong);
+                             yylval.data.number.type = YYNUM_TYPE_LONGLONG;
+                             yylval.data.number.is_unsigned = true;
+                             yylval.type = YYLVAL_TYPE_NUMBER;
                              return(NUMBER);
                           }
 
 {int_constant}{longlong_ext}  {
-                             sscanf(yytext,"%ld",&yylval.ysigned_long);
-                             num_type = YYNUM_TYPE_LONG;
+                             sscanf(yytext,"%ld",&yylval.data.number.num.ylong);
+                             yylval.data.number.type = YYNUM_TYPE_LONG;
+                             yylval.data.number.is_unsigned = false;
+                             yylval.type = YYLVAL_TYPE_NUMBER;
                              return(NUMBER);
                           }
 
 {int_constant}{long_ext}  {
-                             sscanf(yytext,"%ld",&yylval.ysigned_long);
-                             num_type = YYNUM_TYPE_LONG;
+                             sscanf(yytext,"%ld",&yylval.data.number.num.ylong);
+                             yylval.data.number.type = YYNUM_TYPE_LONG;
+                             yylval.data.number.is_unsigned = false;
+                             yylval.type = YYLVAL_TYPE_NUMBER;
                              return(NUMBER);
                           }
 {int_constant}{unsigned_ext}  {
-                             sscanf(yytext,"%d",&yylval.yunsigned);
-                             num_type = YYNUM_TYPE_UNSIGNED;
+                             sscanf(yytext,"%d",&yylval.data.number.num.yint);
+                             yylval.data.number.type = YYNUM_TYPE_INT;
+                             yylval.data.number.is_unsigned = true;
+                             yylval.type = YYLVAL_TYPE_NUMBER;
                              return(NUMBER);
                           }
 {int_constant}            {
-                             sscanf(yytext,"%d",&yylval.ysigned);
-                             num_type = YYNUM_TYPE_INT;
+                             sscanf(yytext,"%d",&yylval.data.number.num.yint);
+                             yylval.data.number.type = YYNUM_TYPE_INT;
+                             yylval.data.number.is_unsigned = false;
+                             yylval.type = YYLVAL_TYPE_NUMBER;
                              return(NUMBER);
                           }
 {float_constant}{long_ext}  {
-                             sscanf(yytext,"%Lf",&yylval.ylong_double);
-                             num_type = YYNUM_TYPE_LONG_DOUBLE;
+                             sscanf(yytext,"%Lf",&yylval.data.number.num.ylongdouble);
+                             yylval.data.number.type = YYNUM_TYPE_LONG_DOUBLE;
+                             yylval.data.number.is_unsigned = false;
+                             yylval.type = YYLVAL_TYPE_NUMBER;
                              return(NUMBER);
                           }
 {float_constant}{float_ext}  {
-                             sscanf(yytext,"%f",&yylval.yfloat);
-                             num_type = YYNUM_TYPE_FLOAT;
+                             sscanf(yytext,"%f",&yylval.data.number.num.yfloat);
+                             yylval.data.number.type = YYNUM_TYPE_FLOAT;
+                             yylval.data.number.is_unsigned = false;
+                             yylval.type = YYLVAL_TYPE_NUMBER;
                              return(NUMBER);
                           }
 {float_constant}          {
-                             sscanf(yytext,"%lf",&yylval.y_double);
-                             num_type = YYNUM_TYPE_DOUBLE;
+                             sscanf(yytext,"%lf",&yylval.data.number.num.ydouble);
+                             yylval.data.number.type = YYNUM_TYPE_DOUBLE;
+                             yylval.data.number.is_unsigned = false;
+                             yylval.type = YYLVAL_TYPE_NUMBER;
                              return(NUMBER);
                           }
 
