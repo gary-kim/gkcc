@@ -3,11 +3,14 @@
 #include "lex_extras.h"
 
 /* Below is from https://github.com/westes/flex/blob/cf66c9e5f1af02c4b6f9fb5a10f83e28143a22d4/examples/manual/numbers.lex */
-union _yylval yylval;
-
-enum _yynum_type num_type;
+struct _yylval yylval;
 
 %}
+
+%option stack
+
+%x SC_STRING
+%x SC_CHAR
 
 digit             [0-9]
 hex_digit         [0-9a-fA-F]
@@ -31,6 +34,18 @@ identifier        {alpha}{alpha_num}*
 
 %%
 #.*\n  { /* Comment or preprocessor. do nothing */ }
+
+\" { 
+    yy_push_state(SC_STRING);
+    yylval.type = YYLVAL_TYPE_STRING;
+}
+\' {
+    yy_push_state(SC_CHAR);
+}
+<SC_STRING,SC_CHAR>\" {
+    int state = yy_top_state();
+    yy_pop_state();
+}
 
 "auto" { return AUTO; }
 "break" { return BREAK;  }
@@ -100,33 +115,45 @@ identifier        {alpha}{alpha_num}*
 
   /* Below is from https://github.com/westes/flex/blob/cf66c9e5f1af02c4b6f9fb5a10f83e28143a22d4/examples/manual/numbers.lex */
 {hex_constant}{ulong_ext} {  /* we need to skip the "0x" part */
-                             sscanf(&yytext[2],"%lx",&yylval.yunsigned_long);
-                             num_type = YYNUM_TYPE_UNSIGNED_LONG;
+                             sscanf(&yytext[2],"%lx",&yylval.data.number.num.ylong);
+                             yylval.data.number.type = YYNUM_TYPE_LONG;
+                             yylval.data.number.is_unsigned = true;
+                             yylval.type = YYLVAL_TYPE_NUMBER;
                              return(NUMBER);
                           }
 {hex_constant}{long_ext}  {
-                             sscanf(&yytext[2],"%lx",&yylval.ysigned_long);
-                             num_type = YYNUM_TYPE_LONG;
+                             sscanf(&yytext[2],"%lx",&yylval.ylong);
+                             yylval.data.number.type = YYNUM_TYPE_LONG;
+                             yylval.data.number.is_unsigned = false;
+                             yylval.type = YYLVAL_TYPE_NUMBER;
                              return(NUMBER);
                           }
 {hex_constant}{unsigned_ext}  {
-                             sscanf(&yytext[2],"%x",&yylval.yunsigned);
-                             num_type = YYNUM_TYPE_UNSIGNED;
+                             sscanf(&yytext[2],"%x",&yylval.yint);
+                             yylval.data.number.type = YYNUM_TYPE_INT;
+                             yylval.data.number.is_unsigned = true;
+                             yylval.type = YYLVAL_TYPE_NUMBER;
                              return(NUMBER);
                           }
 {hex_constant}            {
-                             sscanf(&yytext[2],"%x",&yylval.ysigned);
-                             num_type = YYNUM_TYPE_INT;
+                             sscanf(&yytext[2],"%x",&yylval.yint);
+                             yylval.data.number.type = YYNUM_TYPE_INT;
+                             yylval.data.number.is_unsigned = false;
+                             yylval.type = YYLVAL_TYPE_NUMBER;
                              return(NUMBER);
                           }
 {oct_constant}{ulong_ext} {
-                             sscanf(yytext,"%lo",&yylval.yunsigned_long);
-                             num_type = YYNUM_TYPE_UNSIGNED_LONG;
+                             sscanf(yytext,"%lo",&yylval.ylong);
+                             yylval.data.number.type = YYNUM_TYPE_INT;
+                             yylval.data.number.is_unsigned = true;
+                             yylval.type = YYLVAL_TYPE_NUMBER;
                              return(NUMBER);
                           }
 {oct_constant}{long_ext}  {
                              sscanf(yytext,"%lo",&yylval.ysigned_long);
-                             num_type = YYNUM_TYPE_LONG;
+                             yylval.data.number.type = YYNUM_TYPE_LONG;
+                             yylval.data.number.is_unsigned = false;
+                             yylval.type = YYLVAL_TYPE_NUMBER;
                              return(NUMBER);
                           }
 {oct_constant}{unsigned_ext}  {

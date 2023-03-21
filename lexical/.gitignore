@@ -1,2 +1,4 @@
 /lextester
+lex.yy.c
+lex.yy.h
 
