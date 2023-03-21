@@ -205,6 +205,47 @@ char* nameof(enum tokens tok) {
     return buf;
 }
 
+void print_num() {
+    switch (yylval.data.number.type){
+        case YYNUM_TYPE_FLOAT:
+            if (yylval.data.number.is_unsigned)
+                printf("REAL\t%fu\tUNSIGNED,FLOAT", yylval.data.number.num.yfloat);
+            else
+                printf("REAL\t%f\tFLOAT", yylval.data.number.num.yfloat);
+            break;
+        case YYNUM_TYPE_LONG_DOUBLE:
+            if (yylval.data.number.is_unsigned)
+                printf("REAL\t%LFu\tUNSIGNED,LONGDOUBLE", yylval.data.number.num.ylongdouble);
+            else
+                printf("REAL\t%LF\tLONGDOUBLE", yylval.data.number.num.ylongdouble);
+            break;
+        case YYNUM_TYPE_LONG:
+            if (yylval.data.number.is_unsigned)
+                printf("INTEGER\t%ld\tUNSIGNED,LONG", yylval.data.number.num.ylong);
+            else
+                printf("INTEGER\t%ld\tLONG", yylval.data.number.num.ylong);
+            break;
+        case YYNUM_TYPE_INT:
+            if (yylval.data.number.is_unsigned)
+                printf("INTEGER\t%d\tUNSIGNED,INT", yylval.data.number.num.yint);
+            else
+                printf("INTEGER\t%d\tINT", yylval.data.number.num.yint);
+            break;
+        case YYNUM_TYPE_LONGLONG:
+            if (yylval.data.number.is_unsigned)
+                printf("INTEGER\t%lldu\tUNSIGNED,LONGLONG", yylval.data.number.num.ylonglong);
+            else
+                printf("INTEGER\t%lld\tLONGLONG", yylval.data.number.num.ylonglong);
+            break;
+        case YYNUM_TYPE_DOUBLE:
+            if (yylval.data.number.is_unsigned)
+                printf("REAL\t%lfu\tUNSIGNED,DOUBLE", yylval.data.number.num.ydouble);
+            else
+                printf("REAL\t%lf\tDOUBLE", yylval.data.number.num.ydouble);
+            break;
+    }
+}
+
 unsigned long YY_LINE_NUMBER = 1;
 
 int main(int argc, char** argv) {
@@ -214,44 +255,19 @@ int main(int argc, char** argv) {
             int val = yylex();
             if (val == 0)
                 break;
+
             printf("%s\t%lu\t%s\t",
                    filename,
                    YY_LINE_NUMBER,
                    nameof(val)
                    );
+
             if (val == IDENT)
                 printf("%s", yytext);
-            if (val == NUMBER) {
-                switch (yylval.type){
-                    case YYNUM_TYPE_FLOAT:
-                        printf("REAL\t%f\tFLOAT", yylval.yfloat);
-                        break;
-                    case YYNUM_TYPE_LONG_DOUBLE:
-                        printf("REAL\t%LF\tLONGDOUBLE", yylval.ylong_double);
-                        break;
-                    case YYNUM_TYPE_UNSIGNED_LONG:
-                        printf("INTEGER\t%lu\tUNSIGNED,LONG", yylval.yunsigned_long);
-                        break;
-                    case YYNUM_TYPE_UNSIGNED:
-                        printf("INTEGER\t%iu\tUNSIGNED,INT", yylval.yunsigned);
-                        break;
-                    case YYNUM_TYPE_LONG:
-                        printf("INTEGER\t%li\tLONG", yylval.ysigned_long);
-                        break;
-                    case YYNUM_TYPE_INT:
-                        printf("INTEGER\t%i\tINT", yylval.ysigned);
-                        break;
-                    case YYNUM_TYPE_LONGLONG:
-                        printf("INTEGER\t%lld\tLONGLONG", yylval.ylonglong);
-                        break;
-                    case YYNUM_TYPE_DOUBLE:
-                        printf("REAL\t%lf\tDOUBLE", yylval.y_double);
-                        break;
-                    case YYNUM_TYPE_UNSIGNED_LONGLONG:
-                        printf("INTEGER\t%llu\tUNSIGNED,LONGLONG", yylval.ylonglong);
-                        break;
-                }
-            }
+
+            if (val == NUMBER)
+                print_num();
+
             printf("\n");
         }
     }

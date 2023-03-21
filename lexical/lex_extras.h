@@ -1,6 +1,5 @@
 #include <stdbool.h>
 
-const int MAX_STR_LENGTH = 2048;
 #define MAX_STR_LENGTH 2048
 
 extern unsigned long YY_LINE_NUMBER;
@@ -38,7 +37,10 @@ enum _yylval_type {
 struct _yylval {
     union _data {
         struct _yynum number;
-        char string[MAX_STR_LENGTH];
+        struct _yystring {
+            char string[MAX_STR_LENGTH];
+            unsigned int length;
+        } string;
         char character;
     } data;
     enum _yylval_type type;

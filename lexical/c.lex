@@ -35,16 +35,41 @@ identifier        {alpha}{alpha_num}*
 %%
 #.*\n  { /* Comment or preprocessor. do nothing */ }
 
-\" { 
-    yy_push_state(SC_STRING);
-    yylval.type = YYLVAL_TYPE_STRING;
+
+<SC_STRING,SC_CHAR>[A-Za-z0-9] {
+    yylval.data.string.string[yylval.data.string.length++] = yytext[0];
 }
-\' {
-    yy_push_state(SC_CHAR);
-}
-<SC_STRING,SC_CHAR>\" {
-    int state = yy_top_state();
+
+<SC_STRING>\" {
     yy_pop_state();
+    return STRING;
+}
+
+<SC_CHAR>\' {
+    yy_pop_state();
+    if (yylval.data.string.length != 1) {
+        fprintf(stderr, "Error: character has incorrect length");
+        exit(1);
+    }
+
+    char character = yylval.data.string.string[0];
+    yylval.type = YYLVAL_TYPE_CHAR;
+    yylval.data.character = character;
+
+    return CHAR;
+}
+
+\" {
+yy_push_state(SC_STRING);
+yylval.type = YYLVAL_TYPE_STRING;
+yylval.data.string.length = 0;
+}
+
+\' {
+// Characters start as a string then get converted later
+yy_push_state(SC_CHAR);
+yylval.type = YYLVAL_TYPE_STRING;
+yylval.data.string.length = 0;
 }
 
 "auto" { return AUTO; }
@@ -109,12 +134,13 @@ identifier        {alpha}{alpha_num}*
 "&="  { return ANDEQ; }
 
 {identifier} {
-    strncpy(yylval.data.string, yytext, MAX_STR_LENGTH);
+    strncpy(yylval.data.string.string, yytext, MAX_STR_LENGTH);
+    yylval.data.string.length = yyleng;
     yylval.type = YYLVAL_TYPE_STRING;
     return IDENT;
 }
 
-[ \t]*        /* do nothing */
+[ \t]*        /* do nothing *g/
 \n            YY_LINE_NUMBER += 1;
 
   /* Below is from https://github.com/westes/flex/blob/cf66c9e5f1af02c4b6f9fb5a10f83e28143a22d4/examples/manual/numbers.lex */

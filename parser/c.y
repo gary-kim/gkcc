@@ -1,0 +1,11 @@
+%{
+
+%}
+
+%token NUMBER
+
+%%
+
+line:
+    '\n'
+    ;
