@@ -5,3 +5,6 @@ all: lexical
 lexical:
 	make -C lexical
 
+.PHONY: parser
+	make -C parser
+
