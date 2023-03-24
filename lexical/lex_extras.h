@@ -2,7 +2,7 @@
 
 #define MAX_STR_LENGTH 2048
 
-extern unsigned long YY_LINE_NUMBER;
+extern char YY_FILENAME[MAX_STR_LENGTH];
 
 union _yynums {
     long long      ylonglong;
@@ -38,10 +38,10 @@ struct _yylval {
     union _data {
         struct _yynum number;
         struct _yystring {
-            char string[MAX_STR_LENGTH];
+            unsigned char string[MAX_STR_LENGTH];
             unsigned int length;
         } string;
-        char character;
+        unsigned char character;
     } data;
     enum _yylval_type type;
 };
