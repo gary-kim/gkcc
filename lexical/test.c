@@ -1,11 +1,11 @@
 #include "lex.yy.h"
 #include "lex_extras.h"
-#include "ltests/tokens-manual.h"
+#include "tokens.h"
 #include <ctype.h>
 #include <stdbool.h>
 
 char buf[10];
-char *TP_TOKEOF = "TOKEOF";
+char *TP_YYEOF = "YYEOF";
 char *TP_IDENT = "IDENT";
 char *TP_CHARLIT = "CHARLIT";
 char *TP_STRING = "STRING";
@@ -69,12 +69,12 @@ char *TP_WHILE = "WHILE";
 char *TP__BOOL = "_BOOL";
 char *TP__COMPLEX = "_COMPLEX";
 char *TP__IMAGINARY = "_IMAGINARY";
-void print_escaped_char(unsigned char toprint);
+void print_escaped_char(char toprint);
 
-char *nameof(enum tokens tok) {
+char *nameof(yytoken_kind_t tok) {
   switch (tok) {
-  case TOKEOF:
-    return TP_TOKEOF;
+  case YYEOF:
+    return TP_YYEOF;
   case IDENT:
     return TP_IDENT;
   case CHARLIT:
@@ -206,13 +206,13 @@ char *nameof(enum tokens tok) {
   return buf;
 }
 
-void print_escaped_string(unsigned char *str, size_t len) {
+void print_escaped_string(char *str, size_t len) {
   for (int i = 0; i < len; i++) {
     print_escaped_char(str[i]);
   }
 }
 
-void print_escaped_char(unsigned char toprint) {
+void print_escaped_char(char toprint) {
   switch (toprint) {
   case '\'':
     printf("\\'");
@@ -256,7 +256,7 @@ void print_escaped_char(unsigned char toprint) {
     printf("\\v");
     break;
  default:
-    printf("\\%03o", toprint);
+    printf("\\%03o", (unsigned char) toprint);
   }
 }
 

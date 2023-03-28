@@ -1,4 +1,5 @@
 /lextester
-lex.yy.c
-lex.yy.h
+/lex.yy.c
+/lex.yy.h
+/tokens.h
 

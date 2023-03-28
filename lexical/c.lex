@@ -1,8 +1,7 @@
 %{
-#include "ltests/tokens-manual.h"
 #include "lex_extras.h"
+#include "tokens.h"
 
-/* Below is from https://github.com/westes/flex/blob/cf66c9e5f1af02c4b6f9fb5a10f83e28143a22d4/examples/manual/numbers.lex */
 struct _yylval yylval;
 
 char YY_FILENAME[MAX_STR_LENGTH] = "<stdin>";
@@ -157,7 +156,7 @@ identifier         {alpha}{alpha_num}*
 <SC_CHAR>\' {
     yy_pop_state();
     if (yylval.data.string.length != 1) {
-        fprintf(stderr, "%s:%d:Warning:Unsupported multibyte character literal truncated to first byte", YY_FILENAME, yylineno);
+        fprintf(stderr, "%s:%d:Warning:Unsupported multibyte character literal truncated to first byte\n", YY_FILENAME, yylineno);
     }
 
     char character = yylval.data.string.string[0];

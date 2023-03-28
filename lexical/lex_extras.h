@@ -38,13 +38,14 @@ struct _yylval {
     union _data {
         struct _yynum number;
         struct _yystring {
-            unsigned char string[MAX_STR_LENGTH];
+            char string[MAX_STR_LENGTH];
             unsigned int length;
         } string;
-        unsigned char character;
+        char character;
     } data;
     enum _yylval_type type;
 };
 
-extern struct _yylval yylval;
-
+#define YYSTYPE_IS_DECLARED
+typedef struct _yylval YYSTYPE;
+extern YYSTYPE yylval;
