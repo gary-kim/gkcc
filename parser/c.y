@@ -70,108 +70,21 @@
 
 %token _ALIGNAS
 %token _ALIGNOF
-%token _ATOMIC
 %token _GENERIC
 %token _NORETURN
 %token _STATIC_ASSERT
 %token _THREAD_LOCAL
 
+%left IF
+%left ELSE
+
 %%
 
-keyword: AUTO
-       | BREAK
-       | CASE
-       | CHAR
-       | CONST
-       | CONTINUE
-       | DEFAULT
-       | DO
-       | DOUBLE
-       | ELSE
-       | ENUM
-       | EXTERN
-       | FLOAT
-       | FOR
-       | GOTO
-       | IF
-       | INLINE
-       | INT
-       | LONG
-       | REGISTER
-       | RESTRICT
-       | RETURN
-       | SHORT
-       | SIGNED
-       | SIZEOF
-       | STATIC
-       | STRUCT
-       | SWITCH
-       | TYPEDEF
-       | UNION
-       | UNSIGNED
-       | VOID
-       | VOLATILE
-       | WHILE
-       | _ALIGNAS
-       | _ALIGNOF
-       | _ATOMIC
-       | _BOOL
-       | _COMPLEX
-       | _GENERIC
-       | _IMAGINARY
-       | _NORETURN
-       | _STATIC_ASSERT
-       | _THREAD_LOCAL
-       ;
+declaration_or_fndef: declaration
+                    | function-definition
+                    ;
 
-punctuator: '['
-          | ']'
-          | '('
-          | ')'
-          | '{'
-          | '}'
-          | '.'
-          | INDSEL
-          | PLUSPLUS
-          | MINUSMINUS
-          | '&'
-          | '*'
-          | '+' | '-'
-          | '~'
-          | '!'
-          | '/'
-          | '%'
-          | SHR
-          | SHL
-          | '<'
-          | '>'
-          | LTEQ
-          | GTEQ
-          | EQEQ
-          | NOTEQ
-          | '^'
-          | '|'
-          | LOGAND
-          | LOGOR
-          | '?'
-          | ':'
-          | ';'
-          | ELLIPSIS
-          | '='
-          | TIMESEQ
-          | DIVEQ
-          | MODEQ
-          | PLUSEQ
-          | MINUSEQ
-          | SHLEQ
-          | SHREQ
-          | ANDEQ
-          | XOREQ
-          | OREQ
-          | ','
-          ;
-
-primary-expresson: IDENT
+primary-expression: IDENT
                  | constant
                  | STRING
                  | '(' expression ')'
@@ -193,8 +106,7 @@ postfix-expression: primary-expression
                   | '(' type-name ')' '{' initializer-list ',' '}'
                   ;
 
-argument-expression-list: /* empty */
-                        | assignment-expression
+argument-expression-list: assignment-expression
                         | argument-expression-list ',' assignment-expression
                         ;
 
@@ -202,8 +114,8 @@ unary-expression: postfix-expression
                 | PLUSPLUS unary-expression
                 | MINUSMINUS unary-expression
                 | unary-operator cast-expression
-                | sizeof unary-expression
-                | sizeof '(' type-name ')'
+                | SIZEOF unary-expression
+                | SIZEOF '(' type-name ')'
                 ;
 
 unary-operator: '&'
@@ -294,24 +206,29 @@ expression: assignment-expression
 constant-expression: conditional-expression;
 
 
-declaration: delcaration-specifiers init-declarator-list ';'
-           | static_assert-delcartion
+declaration: declaration-specifiers ';'
+           | declaration-specifiers init-declarator-list ';'
+           //| static_assert-declaration // NOT IMPLEMENTED
            ;
 
-declaration-specifiers: /* empty */
-                      | storage-class-specifier declarations-specifiers
-                      | type-specifier declaration-specifiers
-                      | type-specifier declaration-specifiers
-                      | function-specifier declaration-specifiers
-                      | alignment-specifier declaration-specifiers
+declaration-specifiers: storage-class-specifier
+                      | declaration-specifiers storage-class-specifier
+                      | type-specifier
+                      | declaration-specifiers type-specifier
+                      | type-qualifier
+                      | declaration-specifiers type-qualifier
+                      | function-specifier
+                      | declaration-specifiers function-specifier
+                      | alignment-specifier
+                      | declaration-specifiers alignment-specifier
                       ;
 
-init-delcarator-list: init-declarator
+init-declarator-list: init-declarator
                     | init-declarator-list ',' init-declarator
                     ;
 
-init-declarator: declorator
-               | declorator '=' initializer
+init-declarator: declarator
+               | declarator '=' initializer
                ;
 
 storage-class-specifier: TYPEDEF
@@ -333,34 +250,33 @@ type-specifier: VOID
               | UNSIGNED
               | _BOOL
               | _COMPLEX
-              | atomic-type-specifier
               | struct-or-union-specifier
               | enum-specifier
-              | typedef-name
-              ;
+              //| typedef-name // NOT IMPLEMENTED
+              //;
 
-struct-or-union-specifier: struct-or-union identifier '{' struct-declaration-list '}'
+struct-or-union-specifier: struct-or-union IDENT '{' struct-declaration-list '}'
                          | struct-or-union '{' struct-declaration-list '}'
-                         | struct-or-union identifier
+                         | struct-or-union IDENT
                          ;
 
 struct-or-union: STRUCT
                | UNION
                ;
 
-struct-declaration-list: /* empty */
-                       | struct-declaration
+struct-declaration-list: struct-declaration
                        | struct-declaration-list struct-declaration
                        ;
 
-struct-declaration: struct-qualifier-list struct-declarator-list
-                  | static_assert_declaration
+struct-declaration: specifier-qualifier-list ';'
+                  | specifier-qualifier-list struct-declarator-list ';'
+                  // | static_assert-declaration // NOT IMPLEMENTED
                   ;
 
 specifier-qualifier-list: type-specifier
-                        | type-specifier specifier-qualifier-list
+                        | specifier-qualifier-list type-specifier
                         | type-qualifier
-                        | type-qualifier specifier-qualifier-list
+                        | specifier-qualifier-list type-qualifier
                         ;
 
 struct-declarator-list: struct-declarator
@@ -373,33 +289,33 @@ struct-declarator: declarator
                  ;
 
 enum-specifier: ENUM '{' enumerator-list '}'
-              | ENUM identifier '{' enumerator-list '}'
+              | ENUM IDENT '{' enumerator-list '}'
               | ENUM '{' enumerator-list ',' '}'
-              | ENUM identifier '{' enumerator-list ',' '}'
-              | ENUM identifier
+              | ENUM IDENT '{' enumerator-list ',' '}'
+              | ENUM IDENT
               ;
 
 enumerator-list: enumerator
                | enumerator-list ',' enumerator
                ;
 
-enumerator: enumeration-constant
-          | enumeration-constant ',' enumerator;
+//enumeration-constant: IDENT;
 
+enumerator: IDENT
+          | IDENT '=' constant-expression
+          ;
 
-atomic-type-specifier: _ATOMIC '(' type-name ')';
 
 type-qualifier: CONST
               | RESTRICT
               | VOLATILE
-              | _ATOMIC
               ;
 
 function-specifier: INLINE
                   | _NORETURN
                   ;
 
-alignment-operator: _ALIGNAS '(' type-name ')'
+alignment-specifier: _ALIGNAS '(' type-name ')'
                   | _ALIGNAS '(' constant-expression ')'
                   ;
 
@@ -407,5 +323,146 @@ declarator: direct-declarator
           | pointer direct-declarator
           ;
 
+direct-declarator: IDENT
+                 | '(' declarator ')'
+                 | direct-declarator '[' ']'
+                 | direct-declarator '[' type-qualifier-list ']'
+                 | direct-declarator '[' assignment-expression ']'
+                 | direct-declarator '[' type-qualifier-list assignment-expression']'
+                 | direct-declarator '[' STATIC assignment-expression ']'
+                 | direct-declarator '[' STATIC type-qualifier-list assignment-expression ']'
+                 | direct-declarator '[' type-qualifier-list STATIC assignment-expression ']'
+                 | direct-declarator '[' type-qualifier-list '*' ']'
+                 | direct-declarator '[' '*' ']'
+                 | direct-declarator '(' parameter-type-list ')'
+                 | direct-declarator '(' identifier-list ')'
+                 | direct-declarator '(' ')'
+                 ;
 
+pointer: '*'
+       | '*' type-qualifier-list
+       | '*' type-qualifier-list pointer
+       | '*' pointer
+       ;
+
+type-qualifier-list: type-qualifier
+                   | type-qualifier-list type-qualifier
+                   ;
+
+parameter-type-list: parameter-list
+                   | parameter-list ',' ELLIPSIS
+                   ;
+
+parameter-list: parameter-declaration
+              | parameter-list ',' parameter-declaration
+              ;
+
+parameter-declaration: declaration-specifiers declarator
+                     | declaration-specifiers
+                     //| declaration-specifiers abstract-declarator // NOT IMPLEMENTED
+                     ;
+
+identifier-list: IDENT
+               | identifier-list ',' IDENT
+               ;
+
+type-name: specifier-qualifier-list
+         // | specifier-qualifier-list abstract-declarator // NOT IMPLEMENTED
+         ;
+
+// abstract-declarator not implemented
+// direct-abstract-declarator not implemented
+// typedef-name not implemented
+
+initializer: assignment-expression
+           | '{' initializer-list '}'
+           | '{' initializer-list ',' '}'
+           ;
+
+initializer-list: initializer
+                | designation initializer
+                | initializer-list ',' initializer
+                | initializer-list ',' designation initializer
+                ;
+
+designation: designator-list '=';
+
+designator-list: designator
+               | designator-list designator
+               ;
+
+designator: '[' constant-expression ']'
+          | '.' IDENT
+          ;
+
+// static_assert-declaration: _STATIC_ASSERT '(' constant-expression ',' STRING ')' ';'; // NOT IMPLEMENTED
+
+// === BEGIN STATEMENTS ===
+
+compound-statement: '{' '}'
+                  | '{' block-item-list '}'
+                  ;
+
+
+statement: labeled-statement
+         | compound-statement
+         | expression-statement
+         | selection-statement
+         | iteration-statement
+         | jump-statement
+         ;
+
+labeled-statement: IDENT ':' statement
+                 | CASE constant-expression ':' statement
+                 | DEFAULT ':' statement
+                 ;
+
+block-item-list: block-item
+               | block-item-list block-item
+               ;
+
+block-item: declaration
+          | statement
+          ;
+
+expression-statement: ';'
+                    | expression ';'
+                    ;
+
+selection-statement: IF '(' expression ')' statement %prec IF
+                   | IF '(' expression ')' statement ELSE statement %prec ELSE
+                   | SWITCH '(' expression ')' statement
+                   ;
+
+iteration-statement: WHILE '(' expression ')' statement
+                   | DO statement WHILE '(' expression ')' ';'
+                   | FOR '(' ';' ';' ')' statement
+                   | FOR '(' expression ';' ';' ')' statement
+                   | FOR '(' ';' expression ';' ')' statement
+                   | FOR '(' expression ';' expression ';' ')' statement
+                   | FOR '(' ';' ';' expression ')' statement
+                   | FOR '(' expression ';' ';' expression ')' statement
+                   | FOR '(' expression ';' expression ';' expression ')' statement
+                   | FOR '(' declaration ';' ')'
+                   | FOR '(' declaration expression ';' ')'
+                   | FOR '(' declaration ';' expression ')'
+                   | FOR '(' declaration expression ';' expression ')'
+                   ;
+
+jump-statement: GOTO IDENT ';'
+              | CONTINUE ';'
+              | BREAK ';'
+              | RETURN ';'
+              | RETURN expression ';'
+              ;
+
+// === BEGIN EXTERNAL DEFINITIONS ===
+
+function-definition: declaration-specifiers declarator compound-statement
+                   | declaration-specifiers declarator declaration-list compound-statement
+                   ;
+
+declaration-list: declaration
+                | declaration-list declaration
+                ;
 

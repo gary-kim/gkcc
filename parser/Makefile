@@ -3,7 +3,7 @@ all: c.tab.c
 
 c.tab.h: c.tab.c
 c.tab.c: c.y
-	bison c.y --output=c.tab.c --header=c.tab.h --html=report.html
+	bison c.y --output=c.tab.c --header=c.tab.h --html=report.html --report=lookaheads -v -Wall
 
 .PHONY: clean
 clean:
