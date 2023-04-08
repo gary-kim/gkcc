@@ -33,29 +33,6 @@ int main(int argc, char** argv) {
 
   yyparse(&ast_node);
 
-  print_nodes(&ast_node, 0);
+  ast_print(&ast_node, 0);
 }
 
-void print_nodes(struct ast_node* top, int depth) {
-  char buf[1024];
-  if (top == NULL) {
-    return;
-  }
-
-  int start_of_line = 2 * depth;
-
-  for (int i = 0; i < start_of_line; ++i) {
-    buf[i] = ' ';
-  }
-
-  ast_node_string(&buf[start_of_line], top);
-
-  printf("%s\n", buf);
-
-  switch (top->type) {
-  case AST_NODE_BINOP:
-    print_nodes(top->binop.left, depth + 1);
-    print_nodes(top->binop.right, depth + 1);
-    break;
-  }
-}

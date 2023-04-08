@@ -16,25 +16,67 @@
 #ifndef AST_H
 #define AST_H
 
+#include <stdbool.h>
+
 #include "lex_extras.h"
 
-enum ast_binop_type {
-  AST_BINOP_ADD = 1,
-  AST_BINOP_SUBTRACT,
-  AST_BINOP_DIVIDE,
-  AST_BINOP_MULTIPLY,
-  AST_BINOP_MOD,
-  AST_BINOP_ASSIGN,
-};
+#define ENUM_VALUES(VALUE) VALUE,
+#define ENUM_STRINGS(STRING) #STRING,
+
+// === AST_BINOP ===
+
+#define ENUM_AST_BINOP_TYPE(GEN) \
+  GEN(AST_BINOP_ADD)             \
+  GEN(AST_BINOP_SUBTRACT)        \
+  GEN(AST_BINOP_DIVIDE)          \
+  GEN(AST_BINOP_MULTIPLY)        \
+  GEN(AST_BINOP_MOD)             \
+  GEN(AST_BINOP_ASSIGN)          \
+  GEN(AST_BINOP_SHL)             \
+  GEN(AST_BINOP_SHR)             \
+  GEN(AST_BINOP_EQUALS)          \
+  GEN(AST_BINOP_LT)              \
+  GEN(AST_BINOP_GT)              \
+  GEN(AST_BINOP_LTEQ)            \
+  GEN(AST_BINOP_GTEQ)
+
+enum ast_binop_type { ENUM_AST_BINOP_TYPE(ENUM_VALUES) };
+
+static const char* AST_BINOP_TYPE_STRING[] = {
+    ENUM_AST_BINOP_TYPE(ENUM_STRINGS)};
+
+#undef ENUM_AST_BINOP_TYPE
 
 struct ast_binop {
   enum ast_binop_type type;
-  struct ast_node *left;
-  struct ast_node *right;
+  struct ast_node* left;
+  struct ast_node* right;
 };
 
+// === AST_UNARY ===
+
+#define ENUM_AST_UNARY_TYPE(GEN) \
+  GEN(AST_UNARY_SIZEOF)          \
+  GEN(AST_UNARY_ADDRESSOF)       \
+  GEN(AST_UNARY_DEREFERENCE)     \
+  GEN(AST_UNARY_NOT)
+
+enum ast_unary_type { ENUM_AST_UNARY_TYPE(ENUM_VALUES) };
+
+static const char* AST_UNARY_TYPE_STRING[] = {
+    ENUM_AST_UNARY_TYPE(ENUM_STRINGS)};
+
+#undef ENUM_AST_UNARY_TYPE
+
+struct ast_unary {
+  enum ast_unary_type type;
+  struct ast_node* of;
+};
+
+// === AST_IDENT ===
+
 struct ast_ident {
-  char *name;
+  char* name;
 };
 
 enum ast_constant_type {
@@ -46,8 +88,12 @@ enum ast_constant_type {
   AST_CONSTANT_INT,
   AST_CONSTANT_CHAR,
 };
+
+// === AST_CONSTANT ===
+
 struct ast_constant {
   enum ast_constant_type type;
+  bool is_unsigned;
   union {
     long long ylonglong;
     long double ylongdouble;
@@ -63,17 +109,28 @@ enum ast_node_type {
   AST_NODE_BINOP = 1,
   AST_NODE_CONSTANT,
   AST_NODE_IDENT,
+  AST_NODE_UNARY,
 };
 struct ast_node {
   enum ast_node_type type;
   union {
     struct ast_binop binop;
     struct ast_constant constant;
+    struct ast_unary unary;
   };
 };
 
+void ast_print(struct ast_node* top, int depth);
 struct ast_node* ast_node_new(enum ast_node_type node_type);
 void ast_node_string(char* buf, struct ast_node* node);
 struct ast_node* yylval2ast_node(struct _yylval* yylval);
 void yynum2ast_node(struct ast_node* node, struct _yynum* yynum);
+struct ast_node* ast_node_new_binop_node(enum ast_binop_type,
+                                         struct ast_node* left,
+                                         struct ast_node* right);
+const char* ast_binop_type_string(struct ast_binop* binop);
+char* ast_constant_string(struct ast_constant*);
+struct ast_node* ast_node_new_unary_node(enum ast_unary_type type,
+                                         struct ast_node* of);
+char* ast_unary_string(struct ast_unary* node);
 #endif

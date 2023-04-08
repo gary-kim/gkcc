@@ -164,7 +164,7 @@ static void yyerror() {
 
 declaration_or_fndef: declaration
                     | function-definition
-                    | additive-expression {
+                    | expression {
                         *top_ast_node = *$1;
                       }
                     ;
@@ -203,7 +203,9 @@ unary-expression: postfix-expression
                 | PLUSPLUS unary-expression
                 | MINUSMINUS unary-expression
                 | unary-operator cast-expression
-                | SIZEOF unary-expression
+                | SIZEOF unary-expression {
+                    $$ = ast_node_new_unary_node(AST_UNARY_SIZEOF, $2);
+                  }
                 | SIZEOF '(' type-name ')'
                 ;
 
@@ -221,58 +223,58 @@ cast-expression: unary-expression
 
 multiplicative-expression: cast-expression
                          | multiplicative-expression '*' cast-expression {
-                             struct ast_node *n = ast_node_new(AST_NODE_BINOP);
-                             $$ = n;
-                             n->binop.type = AST_BINOP_MULTIPLY;
-                             n->binop.left = $1;
-                             n->binop.right = $3;
+                             $$ = ast_node_new_binop_node(AST_BINOP_MULTIPLY, $1, $3);
                            }
                          | multiplicative-expression '/' cast-expression {
-                             struct ast_node *n = ast_node_new(AST_NODE_BINOP);
-                             $$ = n;
-                             n->binop.type = AST_BINOP_MULTIPLY;
-                             n->binop.left = $1;
-                             n->binop.right = $3;
+                             $$ = ast_node_new_binop_node(AST_BINOP_DIVIDE, $1, $3);
                            }
                          | multiplicative-expression '%' cast-expression {
-                             struct ast_node *n = ast_node_new(AST_NODE_BINOP);
+                             $$ = ast_node_new_binop_node(AST_BINOP_MOD, $1, $3);
                            }
                          ;
 
 additive-expression: multiplicative-expression
                    | additive-expression '+' multiplicative-expression {
-                       struct ast_node *n = ast_node_new(AST_NODE_BINOP);
-                       $$ = n;
-                       n->binop.type = AST_BINOP_ADD;
-                       n->binop.left = $1;
-                       n->binop.right = $3;
+                       $$ = ast_node_new_binop_node(AST_BINOP_ADD, $1, $3);
                      }
                    | additive-expression '-' multiplicative-expression {
-                      struct ast_node *n = ast_node_new(AST_NODE_BINOP);
-                      $$ = n;
-                      n->binop.type = AST_BINOP_SUBTRACT;
-                      n->binop.left = $1;
-                      n->binop.right = $3;
+                       $$ = ast_node_new_binop_node(AST_BINOP_SUBTRACT, $1, $3);
                      }
                    ;
 
-shift-expression: additive-expression {
-
+// 6.5.7
+shift-expression: additive-expression
+                | shift-expression SHL additive-expression {
+                    $$ = ast_node_new_binop_node(AST_BINOP_SHL, $1, $3);
                   }
-                | shift-expression SHL additive-expression
-                | shift-expression SHR additive-expression
+                | shift-expression SHR additive-expression {
+                    $$ = ast_node_new_binop_node(AST_BINOP_SHR, $1, $3);
+                  }
                 ;
 
 relational-expression: shift-expression
-                     | relational-expression '<' shift-expression
-                     | relational-expression '>' shift-expression
-                     | relational-expression LTEQ shift-expression
-                     | relational-expression GTEQ shift-expression
+                     | relational-expression '<' shift-expression {
+                         $$ = ast_node_new_binop_node(AST_BINOP_LT, $1, $3);
+                       }
+                     | relational-expression '>' shift-expression {
+                         $$ = ast_node_new_binop_node(AST_BINOP_GT, $1, $3);
+                       }
+                     | relational-expression LTEQ shift-expression {
+                         $$ = ast_node_new_binop_node(AST_BINOP_LTEQ, $1, $3);
+                       }
+                     | relational-expression GTEQ shift-expression {
+                         $$ = ast_node_new_binop_node(AST_BINOP_GTEQ, $1, $3);
+                       }
                      ;
 
 equality-expression: relational-expression
-                   | equality-expression EQEQ relational-expression
-                   | equality-expression NOTEQ relational-expression
+                   | equality-expression EQEQ relational-expression {
+                       $$ = ast_node_new_binop_node(AST_BINOP_EQUALS, $1, $3);
+                     }
+                   | equality-expression NOTEQ relational-expression {
+                       struct ast_node *eq_node = ast_node_new_binop_node(AST_BINOP_EQUALS, $1, $3);
+                       $$ = ast_node_new_unary_node(AST_UNARY_NOT, eq_node);
+                     }
                    ;
 
 AND-expression: equality-expression

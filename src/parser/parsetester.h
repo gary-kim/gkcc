@@ -19,6 +19,4 @@
 
 #include "ast.h"
 
-void print_nodes(struct ast_node* top, int depth);
-
 #endif // PARSETESTER_H
