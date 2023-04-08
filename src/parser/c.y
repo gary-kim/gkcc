@@ -220,9 +220,23 @@ cast-expression: unary-expression
                ;
 
 multiplicative-expression: cast-expression
-                         | multiplicative-expression '*' cast-expression
-                         | multiplicative-expression '/' cast-expression
-                         | multiplicative-expression '%' cast-expression
+                         | multiplicative-expression '*' cast-expression {
+                             struct ast_node *n = ast_node_new(AST_NODE_BINOP);
+                             $$ = n;
+                             n->binop.type = AST_BINOP_MULTIPLY;
+                             n->binop.left = $1;
+                             n->binop.right = $3;
+                           }
+                         | multiplicative-expression '/' cast-expression {
+                             struct ast_node *n = ast_node_new(AST_NODE_BINOP);
+                             $$ = n;
+                             n->binop.type = AST_BINOP_MULTIPLY;
+                             n->binop.left = $1;
+                             n->binop.right = $3;
+                           }
+                         | multiplicative-expression '%' cast-expression {
+                             struct ast_node *n = ast_node_new(AST_NODE_BINOP);
+                           }
                          ;
 
 additive-expression: multiplicative-expression
