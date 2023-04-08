@@ -1,10 +1,9 @@
 %{
 #include "lex_extras.h"
-#include "tokens.h"
-
-struct _yylval yylval;
+#include "c.tab.h"
 
 char YY_FILENAME[MAX_STR_LENGTH] = "<stdin>";
+#define yylval yylval.yylval
 
 %}
 

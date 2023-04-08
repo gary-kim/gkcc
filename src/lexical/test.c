@@ -1,6 +1,6 @@
 #include "lex.yy.h"
 #include "lex_extras.h"
-#include "tokens.h"
+#include "c.tab.h"
 #include <ctype.h>
 #include <stdbool.h>
 

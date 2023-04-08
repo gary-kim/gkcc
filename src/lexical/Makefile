@@ -1,3 +1,6 @@
+INCLUDEDIRS=-I../parser -I../ast -I../lexical
+CFLAGS=--std="gnu17" -Wall
+
 .PHONY: all
 all: lextester
 
@@ -5,21 +8,17 @@ all: lextester
 test: ltests/mytest.out
 
 lextester: lex.yy.o lex.yy.h test.o
-	gcc -Wall -o lextester lex.yy.o test.o lex.yy.h lex_extras.h
+	gcc ${CFLAGS} -o lextester lex.yy.o test.o ${INCLUDEDIRS}
 
 test.o: test.c lex.yy.h lex_extras.h
-	gcc -Wall -c test.c -o test.o
+	gcc ${CFLAGS} -c test.c -o test.o ${INCLUDEDIRS}
 
 lex.yy.c: lex.yy.h
-lex.yy.h: c.lex lex_extras.h tokens.h
+lex.yy.h: c.lex lex_extras.h ../parser/c.tab.h
 	flex --header-file=lex.yy.h c.lex
 
 lex.yy.o: lex.yy.c lex.yy.h lex_extras.h
-	gcc -Wall -c lex.yy.c -o lex.yy.o
-
-tokens.h: ../parser/c.y
-	make -C "../parser" c.tab.h
-	cp ../parser/c.tab.h tokens.h
+	gcc ${CFLAGS} -c lex.yy.c -o lex.yy.o ${INCLUDEDIRS}
 
 ltests/mytest.out: ltests/mytest.err
 ltests/mytest.err: lextester

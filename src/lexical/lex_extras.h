@@ -1,3 +1,6 @@
+#ifndef LEX_EXTRAS_H
+#define LEX_EXTRAS_H
+
 #include <stdbool.h>
 
 #define MAX_STR_LENGTH 2048
@@ -28,6 +31,7 @@ struct _yynum {
     union _yynums num;
 };
 
+
 enum _yylval_type {
     YYLVAL_TYPE_NUMBER = 0,
     YYLVAL_TYPE_STRING,
@@ -46,6 +50,7 @@ struct _yylval {
     enum _yylval_type type;
 };
 
-#define YYSTYPE_IS_DECLARED
-typedef struct _yylval YYSTYPE;
-extern YYSTYPE yylval;
+// TODO: NOT THIS
+#include "ast.h"
+
+#endif
