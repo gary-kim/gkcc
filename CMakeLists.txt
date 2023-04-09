@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 project(gkcc)
 
 set (CMAKE_C_STANDARD 17)
-set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -pedantic")
+set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -pedantic -ggdb")
 set (GENERATED_DIR ${CMAKE_SOURCE_DIR}/generated)
 set (INCLUDE_DIRS
         ${GENERATED_DIR}

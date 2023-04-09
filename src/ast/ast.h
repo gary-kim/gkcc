@@ -38,7 +38,12 @@
   GEN(AST_BINOP_LT)              \
   GEN(AST_BINOP_GT)              \
   GEN(AST_BINOP_LTEQ)            \
-  GEN(AST_BINOP_GTEQ)
+  GEN(AST_BINOP_GTEQ)            \
+  GEN(AST_BINOP_BITWISE_AND)     \
+  GEN(AST_BINOP_BITWISE_XOR)     \
+  GEN(AST_BINOP_BITWISE_OR)      \
+  GEN(AST_BINOP_LOGICAL_AND)     \
+  GEN(AST_BINOP_LOGICAL_OR)
 
 enum ast_binop_type { ENUM_AST_BINOP_TYPE(ENUM_VALUES) };
 
@@ -51,6 +56,13 @@ struct ast_binop {
   enum ast_binop_type type;
   struct ast_node* left;
   struct ast_node* right;
+};
+
+// === AST_TERNARY ==
+struct ast_ternary {
+  struct ast_node* condition;
+  struct ast_node* true_expr;
+  struct ast_node* false_expr;
 };
 
 // === AST_UNARY ===
@@ -110,17 +122,20 @@ enum ast_node_type {
   AST_NODE_CONSTANT,
   AST_NODE_IDENT,
   AST_NODE_UNARY,
+  AST_NODE_TERNARY,
 };
+
 struct ast_node {
   enum ast_node_type type;
   union {
     struct ast_binop binop;
     struct ast_constant constant;
     struct ast_unary unary;
+    struct ast_ternary ternary;
   };
 };
 
-void ast_print(struct ast_node* top, int depth);
+void ast_print(struct ast_node* top, int depth, char* prefix);
 struct ast_node* ast_node_new(enum ast_node_type node_type);
 void ast_node_string(char* buf, struct ast_node* node);
 struct ast_node* yylval2ast_node(struct _yylval* yylval);
@@ -133,4 +148,7 @@ char* ast_constant_string(struct ast_constant*);
 struct ast_node* ast_node_new_unary_node(enum ast_unary_type type,
                                          struct ast_node* of);
 char* ast_unary_string(struct ast_unary* node);
+struct ast_node* ast_node_new_ternary_node(struct ast_node* condition,
+                                           struct ast_node* true_expr,
+                                           struct ast_node* false_expr);
 #endif

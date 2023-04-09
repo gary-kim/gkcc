@@ -162,8 +162,12 @@ static void yyerror() {
 
 %%
 
-declaration_or_fndef: declaration
-                    | function-definition
+declaration_or_fndef: declaration {
+                        *top_ast_node = *$1;
+                      }
+                    | function-definition {
+                        *top_ast_node = *$1;
+                      }
                     | expression {
                         *top_ast_node = *$1;
                       }
@@ -199,23 +203,21 @@ argument-expression-list: assignment-expression
                         | argument-expression-list ',' assignment-expression
                         ;
 
+// 6.5.3
 unary-expression: postfix-expression
                 | PLUSPLUS unary-expression
                 | MINUSMINUS unary-expression
-                | unary-operator cast-expression
+                | '&' cast-expression
+                | '*' cast-expression
+                | '+' cast-expression
+                | '-' cast-expression
+                | '~' cast-expression
+                | '~' cast-expression
                 | SIZEOF unary-expression {
                     $$ = ast_node_new_unary_node(AST_UNARY_SIZEOF, $2);
                   }
                 | SIZEOF '(' type-name ')'
                 ;
-
-unary-operator: '&'
-              | '*'
-              | '+'
-              | '-'
-              | '~'
-              | '!'
-              ;
 
 cast-expression: unary-expression
                | '(' type-name ')' cast-expression
@@ -278,27 +280,39 @@ equality-expression: relational-expression
                    ;
 
 AND-expression: equality-expression
-              | AND-expression '&' equality-expression
+              | AND-expression '&' equality-expression {
+                  $$ = ast_node_new_binop_node(AST_BINOP_BITWISE_AND, $1, $3);
+                }
               ;
 
 exclusive-OR-expression: AND-expression
-                       | exclusive-OR-expression '^' AND-expression
+                       | exclusive-OR-expression '^' AND-expression {
+                           $$ = ast_node_new_binop_node(AST_BINOP_BITWISE_XOR, $1, $3);
+                         }
                        ;
 
 inclusive-OR-expression: exclusive-OR-expression
-                       | inclusive-OR-expression '|' exclusive-OR-expression
+                       | inclusive-OR-expression '|' exclusive-OR-expression {
+                           $$ = ast_node_new_binop_node(AST_BINOP_BITWISE_OR, $1, $3);
+                         }
                        ;
 
 logical-AND-expression: inclusive-OR-expression
-                      | logical-AND-expression LOGAND inclusive-OR-expression
+                      | logical-AND-expression LOGAND inclusive-OR-expression {
+                          $$ = ast_node_new_binop_node(AST_BINOP_BITWISE_AND, $1, $3);
+                        }
                       ;
 
 logical-OR-expression: logical-AND-expression
-                     | logical-OR-expression LOGOR logical-AND-expression
+                     | logical-OR-expression LOGOR logical-AND-expression {
+                         $$ = ast_node_new_binop_node(AST_BINOP_LOGICAL_OR, $1, $3);
+                       }
                      ;
 
 conditional-expression: logical-OR-expression
-                      | logical-OR-expression '?' expression ':' conditional-expression
+                      | logical-OR-expression '?' expression ':' conditional-expression {
+                          $$ = ast_node_new_ternary_node($1, $3, $5);
+                        }
                       ;
 
 assignment-expression: conditional-expression

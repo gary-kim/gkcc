@@ -23,7 +23,7 @@
 
 char flbuf[1024];
 
-void ast_print(struct ast_node *top, int depth) {
+void ast_print(struct ast_node *top, int depth, char* prefix) {
   char buf[1024];
   if (top == NULL) {
     return;
@@ -35,21 +35,25 @@ void ast_print(struct ast_node *top, int depth) {
     buf[i] = ' ';
   }
 
+  for (int i = 0; prefix[i] != '\0'; i++) {
+    buf[start_of_line++] = prefix[i];
+  }
+
   ast_node_string(&buf[start_of_line], top);
 
   printf("%s\n", buf);
 
   switch (top->type) {
     case AST_NODE_BINOP:
-      ast_print(top->binop.left, depth + 1);
-      ast_print(top->binop.right, depth + 1);
+      ast_print(top->binop.left, depth + 1, "expr 1: ");
+      ast_print(top->binop.right, depth + 1, "expr 2: ");
       break;
     case AST_NODE_CONSTANT:
       break;
     case AST_NODE_IDENT:
       break;
     case AST_NODE_UNARY:
-      ast_print(top->unary.of, depth + 1);
+      ast_print(top->unary.of, depth + 1, "");
       break;
   }
 }
@@ -63,7 +67,7 @@ struct ast_node *ast_node_new(enum ast_node_type node_type) {
 void ast_node_string(char *buf, struct ast_node *node) {
   switch (node->type) {
     case AST_NODE_BINOP:
-      sprintf(buf, "BINARY OP %s", ast_binop_type_string(&node->binop));
+      sprintf(buf, "BINARY OP: %s", ast_binop_type_string(&node->binop));
       break;
     case AST_NODE_CONSTANT:
       strcpy(buf, ast_constant_string(&node->constant));
@@ -171,5 +175,15 @@ struct ast_node *ast_node_new_unary_node(enum ast_unary_type type,
   struct ast_node *node = ast_node_new(AST_NODE_UNARY);
   node->unary.of = of;
   node->unary.type = type;
+  return node;
+}
+
+struct ast_node *ast_node_new_ternary_node(struct ast_node *condition,
+                                           struct ast_node *true_expr,
+                                           struct ast_node *false_expr) {
+  struct ast_node *node = ast_node_new(AST_NODE_TERNARY);
+  node->ternary.condition = condition;
+  node->ternary.true_expr = true_expr;
+  node->ternary.false_expr = false_expr;
   return node;
 }

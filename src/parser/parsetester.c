@@ -33,6 +33,6 @@ int main(int argc, char** argv) {
 
   yyparse(&ast_node);
 
-  ast_print(&ast_node, 0);
+  ast_print(&ast_node, 0, "");
 }
 
