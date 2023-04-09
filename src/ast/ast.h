@@ -19,9 +19,7 @@
 #include <stdbool.h>
 
 #include "lex_extras.h"
-
-#define ENUM_VALUES(VALUE) VALUE,
-#define ENUM_STRINGS(STRING) #STRING,
+#include "misc.h"
 
 // === AST_BINOP ===
 
@@ -47,7 +45,7 @@
 
 enum ast_binop_type { ENUM_AST_BINOP_TYPE(ENUM_VALUES) };
 
-static const char* AST_BINOP_TYPE_STRING[] = {
+static const char * const AST_BINOP_TYPE_STRING[] = {
     ENUM_AST_BINOP_TYPE(ENUM_STRINGS)};
 
 #undef ENUM_AST_BINOP_TYPE
@@ -75,7 +73,7 @@ struct ast_ternary {
 
 enum ast_unary_type { ENUM_AST_UNARY_TYPE(ENUM_VALUES) };
 
-static const char* AST_UNARY_TYPE_STRING[] = {
+static const char * const AST_UNARY_TYPE_STRING[] = {
     ENUM_AST_UNARY_TYPE(ENUM_STRINGS)};
 
 #undef ENUM_AST_UNARY_TYPE
@@ -123,6 +121,7 @@ enum ast_node_type {
   AST_NODE_IDENT,
   AST_NODE_UNARY,
   AST_NODE_TERNARY,
+  AST_NODE_TYPE,
 };
 
 struct ast_node {
@@ -151,4 +150,5 @@ char* ast_unary_string(struct ast_unary* node);
 struct ast_node* ast_node_new_ternary_node(struct ast_node* condition,
                                            struct ast_node* true_expr,
                                            struct ast_node* false_expr);
+char *ast_ternary_string(struct ast_ternary *node);
 #endif

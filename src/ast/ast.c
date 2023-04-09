@@ -55,6 +55,11 @@ void ast_print(struct ast_node *top, int depth, char* prefix) {
     case AST_NODE_UNARY:
       ast_print(top->unary.of, depth + 1, "");
       break;
+    case AST_NODE_TERNARY:
+      ast_print(top->ternary.condition, depth + 1, "condition: ");
+      ast_print(top->ternary.true_expr, depth + 1, "true_expr: ");
+      ast_print(top->ternary.false_expr, depth + 1, "false_expr: ");
+      break;
   }
 }
 
@@ -76,6 +81,9 @@ void ast_node_string(char *buf, struct ast_node *node) {
       break;
     case AST_NODE_UNARY:
       strcpy(buf, ast_unary_string(&node->unary));
+      break;
+    case AST_NODE_TERNARY:
+      strcpy(buf, ast_ternary_string(&node->ternary));
       break;
   }
 }
@@ -113,6 +121,11 @@ char *ast_constant_string(struct ast_constant* constant) {
 
 char *ast_unary_string(struct ast_unary *node) {
   sprintf(flbuf, "UNARY OP %s", AST_UNARY_TYPE_STRING[node->type]);
+  return flbuf;
+}
+
+char *ast_ternary_string(struct ast_ternary *node) {
+  sprintf(flbuf, "TERNARY:");
   return flbuf;
 }
 

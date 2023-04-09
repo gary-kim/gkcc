@@ -9,6 +9,8 @@ set (INCLUDE_DIRS
         ${CMAKE_SOURCE_DIR}/src/lexical
         ${CMAKE_SOURCE_DIR}/src/parser
         ${CMAKE_SOURCE_DIR}/src/ast
+        ${CMAKE_SOURCE_DIR}/src/scope
+        ${CMAKE_SOURCE_DIR}/src/misc
         )
 
 add_custom_command(
@@ -36,6 +38,9 @@ add_executable(parsetester
         ${GENERATED_DIR}/lex.yy.c
         ${GENERATED_DIR}/c.tab.c
         ${CMAKE_SOURCE_DIR}/src/ast/ast.c
+        ${CMAKE_SOURCE_DIR}/src/scope/scope.c
+        ${CMAKE_SOURCE_DIR}/src/misc/misc.c
+        ${CMAKE_SOURCE_DIR}/src/ast/types.c
         )
 
 target_include_directories(parsetester PRIVATE ${INCLUDE_DIRS})

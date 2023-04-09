@@ -1,15 +1,17 @@
 %{
 #include "lex_extras.h"
 #include "ast.h"
+#include "scope.h"
+
 #include <stdio.h>
 
 static void yyerror() {
   fprintf(stderr, "ERROR\n");
 }
-
 %}
 
 %parse-param { struct ast_node* top_ast_node }
+%parse-param { struct gkcc_symbol_table_set *current_symbol_table }
 
 %union {
   struct _yylval yylval;
@@ -176,7 +178,9 @@ declaration_or_fndef: declaration {
 primary-expression: IDENT
                  | constant
                  | STRING
-                 | '(' expression ')'
+                 | '(' expression ')' {
+                     $$ = $expression;
+                   }
                  ;
 
 constant: NUMBER {
@@ -457,7 +461,9 @@ declarator: direct-declarator
           ;
 
 direct-declarator: IDENT
-                 | '(' declarator ')'
+                 | '(' declarator ')' {
+                     $$ = $declarator;
+                   }
                  | direct-declarator '[' ']'
                  | direct-declarator '[' type-qualifier-list ']'
                  | direct-declarator '[' assignment-expression ']'
