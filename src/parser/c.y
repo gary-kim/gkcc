@@ -209,14 +209,34 @@ argument-expression-list: assignment-expression
 
 // 6.5.3
 unary-expression: postfix-expression
-                | PLUSPLUS unary-expression
-                | MINUSMINUS unary-expression
-                | '&' cast-expression
-                | '*' cast-expression
-                | '+' cast-expression
-                | '-' cast-expression
-                | '~' cast-expression
-                | '~' cast-expression
+                | PLUSPLUS unary-expression {
+                    // Equivalent
+                    struct ast_node *constant_1 = ast_node_new_constant_int_node(1);
+                    $$ = ast_node_new_binop_node(AST_BINOP_ASSIGN_ADD, $2, constant_1);
+                  }
+                | MINUSMINUS unary-expression {
+                    // Equivalent
+                    struct ast_node *constant_1 = ast_node_new_constant_int_node(1);
+                    $$ = ast_node_new_binop_node(AST_BINOP_ASSIGN_SUBTRACT, $2, constant_1);
+                  }
+                | '&' cast-expression {
+                    $$ = ast_node_new_unary_node(AST_UNARY_ADDRESSOF, $2);
+                  }
+                | '*' cast-expression {
+                    $$ = ast_node_new_unary_node(AST_UNARY_DEREFERENCE, $2);
+                  }
+                | '+' cast-expression {
+                    $$ = $2;
+                  }
+                | '-' cast-expression {
+                    $$ = ast_node_new_unary_node(AST_UNARY_NEGATIVE, $2);
+                  }
+                | '~' cast-expression {
+                    $$ = ast_node_new_unary_node(AST_UNARY_BITWISE_NOT, $2);
+                  }
+                | '!' cast-expression {
+                    $$ = ast_node_new_unary_node(AST_UNARY_LOGICAL_NOT, $2);
+                  }
                 | SIZEOF unary-expression {
                     $$ = ast_node_new_unary_node(AST_UNARY_SIZEOF, $2);
                   }
@@ -320,20 +340,47 @@ conditional-expression: logical-OR-expression
                       ;
 
 assignment-expression: conditional-expression
-                     | unary-expression assignment-operator assignment-expression
+                     | unary-expression assignment-operator assignment-expression {
+                         struct ast_node *n = $2;
+                         n->binop.left = $1;
+                         n->binop.right = $3;
+                         $$ = n;
+                       }
                      ;
 
-assignment-operator: '='
-                   | TIMESEQ
-                   | DIVEQ
-                   | MODEQ
-                   | PLUSEQ
-                   | MINUSEQ
-                   | SHLEQ
-                   | SHREQ
-                   | ANDEQ
-                   | XOREQ
-                   | OREQ
+assignment-operator: '=' {
+                       $$ = ast_node_new_binop_node(AST_BINOP_ASSIGN, NULL, NULL);
+                     }
+                   | TIMESEQ {
+                       $$ = ast_node_new_binop_node(AST_BINOP_ASSIGN_MULTIPLY, NULL, NULL);
+                     }
+                   | DIVEQ {
+                       $$ = ast_node_new_binop_node(AST_BINOP_ASSIGN_DIVIDE, NULL, NULL);
+                     }
+                   | MODEQ {
+                       $$ = ast_node_new_binop_node(AST_BINOP_ASSIGN_MOD, NULL, NULL);
+                     }
+                   | PLUSEQ {
+                        $$ = ast_node_new_binop_node(AST_BINOP_ASSIGN_ADD, NULL, NULL);
+                      }
+                   | MINUSEQ {
+                         $$ = ast_node_new_binop_node(AST_BINOP_ASSIGN_SUBTRACT, NULL, NULL);
+                       }
+                   | SHLEQ {
+                       $$ = ast_node_new_binop_node(AST_BINOP_ASSIGN_BITWISE_SHL, NULL, NULL);
+                     }
+                   | SHREQ {
+                       $$ = ast_node_new_binop_node(AST_BINOP_ASSIGN_BITWISE_SHR, NULL, NULL);
+                     }
+                   | ANDEQ {
+                       $$ = ast_node_new_binop_node(AST_BINOP_ASSIGN_BITWISE_AND, NULL, NULL);
+                     }
+                   | XOREQ {
+                       $$ = ast_node_new_binop_node(AST_BINOP_ASSIGN_BITWISE_XOR, NULL, NULL);
+                     }
+                   | OREQ {
+                      $$ = ast_node_new_binop_node(AST_BINOP_ASSIGN_BITWISE_OR, NULL, NULL);
+                    }
                    ;
 
 expression: assignment-expression
@@ -443,9 +490,15 @@ enumerator: IDENT
           ;
 
 
-type-qualifier: CONST
-              | RESTRICT
-              | VOLATILE
+type-qualifier: CONST {
+                  $$ = ast_node_new_gkcc_type_qualifier_node(GKCC_QUALIFIER_CONST, NULL);
+                }
+              | RESTRICT {
+                  $$ = ast_node_new_gkcc_type_qualifier_node(GKCC_QUALIFIER_RESTRICT, NULL);
+                }
+              | VOLATILE {
+                  $$ = ast_node_new_gkcc_type_qualifier_node(GKCC_QUALIFIER_VOLATILE, NULL);
+                }
               ;
 
 function-specifier: INLINE

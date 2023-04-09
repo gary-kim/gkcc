@@ -59,7 +59,7 @@ enum gkcc_error gkcc_symbol_table_add_symbol(struct gkcc_symbol_table *table,
   for(;last_symbol->next != NULL; last_symbol = last_symbol->next);
   last_symbol->next = symbol;
 
-  return GKCC_ERROR_SUCCESS
+  return GKCC_ERROR_SUCCESS;
 }
 
 enum gkcc_error gkcc_symbol_table_set_enter(struct gkcc_symbol_table_set* table_set, char *name, enum gkcc_namespace namespace, enum gkcc_storage_class storage_class) {

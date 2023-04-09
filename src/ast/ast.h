@@ -20,32 +20,45 @@
 
 #include "lex_extras.h"
 #include "misc.h"
+#include "types.h"
 
-// === AST_BINOP ===
+// ========================
+// === struct ast_binop ===
+// ========================
 
-#define ENUM_AST_BINOP_TYPE(GEN) \
-  GEN(AST_BINOP_ADD)             \
-  GEN(AST_BINOP_SUBTRACT)        \
-  GEN(AST_BINOP_DIVIDE)          \
-  GEN(AST_BINOP_MULTIPLY)        \
-  GEN(AST_BINOP_MOD)             \
-  GEN(AST_BINOP_ASSIGN)          \
-  GEN(AST_BINOP_SHL)             \
-  GEN(AST_BINOP_SHR)             \
-  GEN(AST_BINOP_EQUALS)          \
-  GEN(AST_BINOP_LT)              \
-  GEN(AST_BINOP_GT)              \
-  GEN(AST_BINOP_LTEQ)            \
-  GEN(AST_BINOP_GTEQ)            \
-  GEN(AST_BINOP_BITWISE_AND)     \
-  GEN(AST_BINOP_BITWISE_XOR)     \
-  GEN(AST_BINOP_BITWISE_OR)      \
-  GEN(AST_BINOP_LOGICAL_AND)     \
+#define ENUM_AST_BINOP_TYPE(GEN)    \
+  GEN(AST_BINOP_ADD)                \
+  GEN(AST_BINOP_SUBTRACT)           \
+  GEN(AST_BINOP_DIVIDE)             \
+  GEN(AST_BINOP_MULTIPLY)           \
+  GEN(AST_BINOP_MOD)                \
+  GEN(AST_BINOP_ASSIGN)             \
+  GEN(AST_BINOP_ASSIGN_MULTIPLY)    \
+  GEN(AST_BINOP_ASSIGN_DIVIDE)      \
+  GEN(AST_BINOP_ASSIGN_MOD)         \
+  GEN(AST_BINOP_ASSIGN_ADD)         \
+  GEN(AST_BINOP_ASSIGN_SUBTRACT)    \
+  GEN(AST_BINOP_ASSIGN_BITWISE_SHL) \
+  GEN(AST_BINOP_ASSIGN_BITWISE_SHR) \
+  GEN(AST_BINOP_ASSIGN_BITWISE_AND) \
+  GEN(AST_BINOP_ASSIGN_BITWISE_XOR) \
+  GEN(AST_BINOP_ASSIGN_BITWISE_OR)  \
+  GEN(AST_BINOP_SHL)                \
+  GEN(AST_BINOP_SHR)                \
+  GEN(AST_BINOP_EQUALS)             \
+  GEN(AST_BINOP_LT)                 \
+  GEN(AST_BINOP_GT)                 \
+  GEN(AST_BINOP_LTEQ)               \
+  GEN(AST_BINOP_GTEQ)               \
+  GEN(AST_BINOP_BITWISE_AND)        \
+  GEN(AST_BINOP_BITWISE_XOR)        \
+  GEN(AST_BINOP_BITWISE_OR)         \
+  GEN(AST_BINOP_LOGICAL_AND)        \
   GEN(AST_BINOP_LOGICAL_OR)
 
 enum ast_binop_type { ENUM_AST_BINOP_TYPE(ENUM_VALUES) };
 
-static const char * const AST_BINOP_TYPE_STRING[] = {
+static const char* const AST_BINOP_TYPE_STRING[] = {
     ENUM_AST_BINOP_TYPE(ENUM_STRINGS)};
 
 #undef ENUM_AST_BINOP_TYPE
@@ -63,17 +76,22 @@ struct ast_ternary {
   struct ast_node* false_expr;
 };
 
-// === AST_UNARY ===
+// ========================
+// === struct ast_unary ===
+// ========================
 
 #define ENUM_AST_UNARY_TYPE(GEN) \
   GEN(AST_UNARY_SIZEOF)          \
   GEN(AST_UNARY_ADDRESSOF)       \
   GEN(AST_UNARY_DEREFERENCE)     \
-  GEN(AST_UNARY_NOT)
+  GEN(AST_UNARY_NOT)             \
+  GEN(AST_UNARY_NEGATIVE)        \
+  GEN(AST_UNARY_BITWISE_NOT)     \
+  GEN(AST_UNARY_LOGICAL_NOT)
 
 enum ast_unary_type { ENUM_AST_UNARY_TYPE(ENUM_VALUES) };
 
-static const char * const AST_UNARY_TYPE_STRING[] = {
+static const char* const AST_UNARY_TYPE_STRING[] = {
     ENUM_AST_UNARY_TYPE(ENUM_STRINGS)};
 
 #undef ENUM_AST_UNARY_TYPE
@@ -83,11 +101,26 @@ struct ast_unary {
   struct ast_node* of;
 };
 
-// === AST_IDENT ===
+// ========================
+// === struct ast_ident ===
+// ========================
 
 struct ast_ident {
   char* name;
 };
+
+// ============================
+// === struct ast_gkcc_type ===
+// ============================
+
+struct ast_gkcc_type {
+  struct gkcc_type* gkcc_type;
+  struct ast_node* child;
+};
+
+// ===========================
+// === struct ast_constant ===
+// ===========================
 
 enum ast_constant_type {
   AST_CONSTANT_LONGLONG = 1,
@@ -97,9 +130,8 @@ enum ast_constant_type {
   AST_CONSTANT_LONG,
   AST_CONSTANT_INT,
   AST_CONSTANT_CHAR,
+  AST_CONSTANT_STRING,
 };
-
-// === AST_CONSTANT ===
 
 struct ast_constant {
   enum ast_constant_type type;
@@ -112,6 +144,10 @@ struct ast_constant {
     long ylong;
     int yint;
     char ychar;
+    struct ystring {
+      char* raw;
+      unsigned int length;
+    } ystring;
   };
 };
 
@@ -121,7 +157,7 @@ enum ast_node_type {
   AST_NODE_IDENT,
   AST_NODE_UNARY,
   AST_NODE_TERNARY,
-  AST_NODE_TYPE,
+  AST_NODE_GKCC_TYPE,
 };
 
 struct ast_node {
@@ -131,13 +167,17 @@ struct ast_node {
     struct ast_constant constant;
     struct ast_unary unary;
     struct ast_ternary ternary;
+    struct ast_gkcc_type gkcc_type;
   };
 };
+
+// =================
+// === Functions ===
+// =================
 
 void ast_print(struct ast_node* top, int depth, char* prefix);
 struct ast_node* ast_node_new(enum ast_node_type node_type);
 void ast_node_string(char* buf, struct ast_node* node);
-struct ast_node* yylval2ast_node(struct _yylval* yylval);
 void yynum2ast_node(struct ast_node* node, struct _yynum* yynum);
 struct ast_node* ast_node_new_binop_node(enum ast_binop_type,
                                          struct ast_node* left,
@@ -150,5 +190,9 @@ char* ast_unary_string(struct ast_unary* node);
 struct ast_node* ast_node_new_ternary_node(struct ast_node* condition,
                                            struct ast_node* true_expr,
                                            struct ast_node* false_expr);
-char *ast_ternary_string(struct ast_ternary *node);
+char* ast_ternary_string(struct ast_ternary* node);
+struct ast_node* ast_node_new_gkcc_type_qualifier_node(
+    enum gkcc_qualifier_type qualifier_type, struct ast_node* child);
+struct ast_node* ast_node_new_constant_int_node(int val);
+struct ast_node* yylval2ast_node(struct _yylval* yylval);
 #endif

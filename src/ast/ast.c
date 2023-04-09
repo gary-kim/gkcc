@@ -23,7 +23,7 @@
 
 char flbuf[1024];
 
-void ast_print(struct ast_node *top, int depth, char* prefix) {
+void ast_print(struct ast_node *top, int depth, char *prefix) {
   char buf[1024];
   if (top == NULL) {
     return;
@@ -92,10 +92,10 @@ const char *ast_binop_type_string(struct ast_binop *binop) {
   return AST_BINOP_TYPE_STRING[binop->type];
 }
 
-char *ast_constant_string(struct ast_constant* constant) {
+char *ast_constant_string(struct ast_constant *constant) {
   switch (constant->type) {
     case AST_CONSTANT_LONGLONG:
-        sprintf(flbuf, "CONSTANT: (type=LONG LONG) %lld", constant->ylonglong);
+      sprintf(flbuf, "CONSTANT: (type=LONG LONG) %lld", constant->ylonglong);
       break;
     case AST_CONSTANT_LONG_DOUBLE:
       sprintf(flbuf, "CONSTANT: (type=LONG DOUBLE) %Lf", constant->ylongdouble);
@@ -129,17 +129,11 @@ char *ast_ternary_string(struct ast_ternary *node) {
   return flbuf;
 }
 
-struct ast_node *yylval2ast_node(struct _yylval *yylval) {
-  struct ast_node *node = ast_node_new(0);
-  switch (yylval->type) {
-    case YYLVAL_TYPE_NUMBER:
-      yynum2ast_node(node, &yylval->data.number);
-      break;
-    case YYLVAL_TYPE_CHAR:
-      node->type = AST_NODE_CONSTANT;
-      node->constant.type = AST_CONSTANT_CHAR;
-      node->constant.ychar = yylval->data.character;
-  }
+struct ast_node *ast_node_new_constant_int_node(int val) {
+  struct ast_node *node = ast_node_new(AST_NODE_CONSTANT);
+  node->constant.type = AST_CONSTANT_INT;
+  node->constant.yint = val;
+  return node;
 }
 
 void yynum2ast_node(struct ast_node *node, struct _yynum *yynum) {
@@ -198,5 +192,37 @@ struct ast_node *ast_node_new_ternary_node(struct ast_node *condition,
   node->ternary.condition = condition;
   node->ternary.true_expr = true_expr;
   node->ternary.false_expr = false_expr;
+  return node;
+}
+
+struct ast_node *ast_node_new_gkcc_type_qualifier_node(
+    enum gkcc_qualifier_type qualifier_type, struct ast_node *child) {
+  struct ast_node *node = ast_node_new(AST_NODE_GKCC_TYPE);
+  node->gkcc_type.child = child;
+  node->gkcc_type.gkcc_type->type = GKCC_TYPE_QUALIFIER;
+  node->gkcc_type.gkcc_type->qualifier.type = qualifier_type;
+}
+
+struct ast_node *yylval2ast_node(struct _yylval *yylval) {
+  struct ast_node *node = ast_node_new(NULL);
+  switch (yylval->type) {
+    case YYLVAL_TYPE_NUMBER:
+      yynum2ast_node(node, &yylval->data.number);
+      break;
+    case YYLVAL_TYPE_CHAR:
+      node->type = AST_NODE_CONSTANT;
+      node->constant.type = AST_CONSTANT_CHAR;
+      node->constant.ychar = yylval->data.character;
+      break;
+    case YYLVAL_TYPE_STRING:
+      node->type = AST_NODE_CONSTANT;
+      node->constant.type = AST_CONSTANT_STRING;
+
+      node->constant.ystring.length = yylval->data.string.length;
+      node->constant.ystring.raw = malloc(node->constant.ystring.length);
+      memcpy(node->constant.ystring.raw, yylval->data.string.string,
+             node->constant.ystring.length);
+      break;
+  }
   return node;
 }
