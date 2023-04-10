@@ -1,7 +1,7 @@
 #include "lex.yy.h"
 #include "lex_extras.h"
 #include "c.tab.h"
-#include <ctype.h>
+#include "misc.h"
 #include <stdbool.h>
 
 YYSTYPE yylval;
@@ -74,7 +74,6 @@ char *TP_WHILE = "WHILE";
 char *TP__BOOL = "_BOOL";
 char *TP__COMPLEX = "_COMPLEX";
 char *TP__IMAGINARY = "_IMAGINARY";
-void print_escaped_char(char toprint);
 
 char *nameof(yytoken_kind_t tok) {
   switch (tok) {
@@ -209,60 +208,6 @@ char *nameof(yytoken_kind_t tok) {
   }
   sprintf(buf, "%c", tok);
   return buf;
-}
-
-void print_escaped_string(char *str, size_t len) {
-  for (int i = 0; i < len; i++) {
-    print_escaped_char(str[i]);
-  }
-}
-
-void print_escaped_char(char toprint) {
-  switch (toprint) {
-  case '\'':
-    printf("\\'");
-    return;
-  case '"':
-    printf("\\\"");
-    return;
-  case '\\':
-    printf("\\\\");
-    return;
-  }
-
-  if (isprint(toprint)) {
-    printf("%c", toprint);
-    return;
-  }
-
-  switch (toprint) {
-  case '\0':
-    printf("\\0");
-    break;
-  case '\a':
-    printf("\\a");
-    break;
-  case '\b':
-    printf("\\b");
-    break;
-  case '\f':
-    printf("\\f");
-    break;
-  case '\n':
-    printf("\\n");
-    break;
-  case '\r':
-    printf("\\r");
-    break;
-  case '\t':
-    printf("\\t");
-    break;
-  case '\v':
-    printf("\\v");
-    break;
- default:
-    printf("\\%03o", (unsigned char) toprint);
-  }
 }
 
 void print_num() {

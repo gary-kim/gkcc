@@ -16,6 +16,9 @@
 #ifndef GKCC_MISC_H
 #define GKCC_MISC_H
 
+#include <ctype.h>
+#include <stddef.h>
+
 #define ENUM_VALUES(VALUE) VALUE,
 #define ENUM_STRINGS(STRING) #STRING,
 
@@ -30,9 +33,13 @@ enum gkcc_error { ENUM_GKCC_ERROR(ENUM_VALUES) };
 
 static const char* const GKCC_ERROR_STRING[] = {ENUM_GKCC_ERROR(ENUM_STRINGS)};
 
-const char* gkcc_report_error(enum gkcc_error error, char* reporter);
-void gkcc_assert(int to_assert, char* message);
+void gkcc_report_error(enum gkcc_error error, char* reporter);
+void gkcc_assert(int to_assert, enum gkcc_error err, char* message);
 void setup_segfault_stack_trace();
 inline void gkcc_error_fatal(enum gkcc_error err, char* message);
+void print_escaped_char(char toprint);
+void print_escaped_string(char *str, size_t len);
+int sprint_escaped_char(char* buf, char toprint);
+void sprint_escaped_string(char* buf, char* str, size_t len);
 
 #endif  // GKCC_MISC_H

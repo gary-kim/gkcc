@@ -42,6 +42,8 @@ add_custom_command(
 add_executable(lextester
         ${CMAKE_SOURCE_DIR}/src/lexical/test.c
         ${GENERATED_DIR}/lex.yy.c
+        ${CMAKE_SOURCE_DIR}/src/misc/misc.c
+        ${CMAKE_SOURCE_DIR}/3rdparty/dmezh/backtrace.c
         )
 
 target_include_directories(lextester PRIVATE ${INCLUDE_DIRS})

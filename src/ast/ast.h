@@ -69,7 +69,10 @@ struct ast_binop {
   struct ast_node* right;
 };
 
-// === AST_TERNARY ==
+// =========================
+// === struct ast_ternary ==
+// =========================
+
 struct ast_ternary {
   struct ast_node* condition;
   struct ast_node* true_expr;
@@ -107,6 +110,7 @@ struct ast_unary {
 
 struct ast_ident {
   char* name;
+  int length;
 };
 
 // ============================
@@ -116,6 +120,34 @@ struct ast_ident {
 struct ast_gkcc_type {
   struct gkcc_type* gkcc_type;
   struct ast_node* child;
+};
+
+// ==============================
+// === struct ast_declaration ===
+// ==============================
+
+struct ast_declaration {
+  struct ast_node* specifiers;
+  struct ast_node* init_declarator;
+  struct ast_node* assignment;
+};
+
+// =======================
+// === struct ast_list ===
+// =======================
+
+struct ast_list {
+  struct ast_node *node;
+  struct ast_node *next;
+  struct ast_node *end;
+};
+
+// ============================
+// === struct ast_top_level ===
+// ============================
+
+struct ast_top_level {
+  struct ast_node* list;
 };
 
 // ===========================
@@ -151,14 +183,24 @@ struct ast_constant {
   };
 };
 
+#define ENUM_AST_NODE_TYPE(GEN) \
+  GEN(AST_NODE_UNKNOWN)         \
+  GEN(AST_NODE_BINOP)           \
+  GEN(AST_NODE_CONSTANT)        \
+  GEN(AST_NODE_IDENT)           \
+  GEN(AST_NODE_UNARY)           \
+  GEN(AST_NODE_TERNARY)         \
+  GEN(AST_NODE_GKCC_TYPE)       \
+  GEN(AST_NODE_DECLARATION)     \
+  GEN(AST_NODE_LIST)            \
+  GEN(AST_NODE_TOP_LEVEL)
+
 enum ast_node_type {
-  AST_NODE_UNKNOWN,
-  AST_NODE_BINOP,
-  AST_NODE_CONSTANT,
-  AST_NODE_IDENT,
-  AST_NODE_UNARY,
-  AST_NODE_TERNARY,
-  AST_NODE_GKCC_TYPE,
+  ENUM_AST_NODE_TYPE(ENUM_VALUES)
+};
+
+static const char * const AST_NODE_TYPE_STRING[] = {
+    ENUM_AST_NODE_TYPE(ENUM_STRINGS)
 };
 
 struct ast_node {
@@ -170,6 +212,9 @@ struct ast_node {
     struct ast_ternary ternary;
     struct ast_gkcc_type gkcc_type;
     struct ast_ident ident;
+    struct ast_declaration declaration;
+    struct ast_list list;
+    struct ast_top_level top_level;
   };
 };
 
@@ -203,4 +248,13 @@ struct ast_node* ast_node_new_gkcc_type_specifier_node(
     enum gkcc_type_specifier_type type, struct ast_node* child);
 struct ast_node *yylval2ast_node_ident(struct _yylval *yylval);
 char* ast_gkcc_type_string(struct ast_gkcc_type *gkcc_type);
+struct ast_node *ast_node_new_declaration_node(
+    struct ast_node* declaration_specifiers,
+    struct ast_node* init_declarator_list
+);
+struct ast_node *ast_node_new_list_node(
+    struct ast_node *node
+);
+struct ast_node *ast_node_append(struct ast_node *parent,
+                                 struct ast_node *child);
 #endif

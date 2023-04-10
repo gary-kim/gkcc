@@ -162,20 +162,23 @@ static void yyerror() {
 %nterm <ast_node> jump-statement
 %nterm <ast_node> function-definition
 %nterm <ast_node> declaration-list
+%nterm <ast_node> top_list
 
 %%
 
+top_list: declaration_or_fndef {
+            $$ = ast_node_new_list_node($1);
+            *top_ast_node = *$$;
+          }
+        | top_list declaration_or_fndef {
+            $$ = ast_node_append($1, $2);
+            *top_ast_node = *$$;
+          }
+        ;
 
-
-declaration_or_fndef: declaration {
-                        *top_ast_node = *$1;
-                      }
-                    | function-definition {
-                        *top_ast_node = *$1;
-                      }
-//                    | expression {
-//                       *top_ast_node = *$1;
-//                      }
+declaration_or_fndef: declaration
+                    | function-definition
+                    | expression
                     ;
 
 identifier: IDENT {
@@ -212,8 +215,12 @@ postfix-expression: primary-expression
                   | '(' type-name ')' '{' initializer-list ',' '}'
                   ;
 
-argument-expression-list: assignment-expression
-                        | argument-expression-list ',' assignment-expression
+argument-expression-list: assignment-expression {
+                            $$ = ast_node_new_list_node($1);
+                          }
+                        | argument-expression-list ',' assignment-expression {
+                            $$ = ast_node_append($1, $3);
+                         }
                         ;
 
 // 6.5.3
@@ -392,46 +399,70 @@ assignment-operator: '=' {
                     }
                    ;
 
-expression: assignment-expression
-          | expression ',' assignment-expression
+expression: assignment-expression {
+              $$ = ast_node_new_list_node($1);
+            }
+          | expression ',' assignment-expression {
+              $$ = ast_node_append($1, $3);
+            }
           ;
 
 constant-expression: conditional-expression;
 
 
-declaration: declaration-specifiers ';'
-           | declaration-specifiers init-declarator-list ';'
+declaration: declaration-specifiers ';' {
+               $$ = ast_node_new_declaration_node($1, NULL);
+             }
+           | declaration-specifiers init-declarator-list ';' {
+               $$ = ast_node_new_declaration_node($1, $2);
+           }
            //| static_assert-declaration // NOT IMPLEMENTED
            ;
 
-declaration-specifiers: storage-class-specifier
+declaration-specifiers: storage-class-specifier {
+                          $$ = ast_node_new_list_node($1);
+                        }
                       | declaration-specifiers storage-class-specifier {
                           $$ = ast_node_append($1, $2);
                         }
-                      | type-specifier
+                      | type-specifier {
+                          $$ = ast_node_new_list_node($1);
+                        }
                       | declaration-specifiers type-specifier {
                           $$ = ast_node_append($1, $2);
                         }
-                      | type-qualifier
+                      | type-qualifier {
+                          $$ = ast_node_new_list_node($1);
+                        }
                       | declaration-specifiers type-qualifier {
                           $$ = ast_node_append($1, $2);
                         }
-                      | function-specifier
+                      | function-specifier {
+                          $$ = ast_node_new_list_node($1);
+                        }
                       | declaration-specifiers function-specifier {
                           $$ = ast_node_append($1, $2);
                         }
-                      | alignment-specifier
+                      | alignment-specifier {
+                          $$ = ast_node_new_list_node($1);
+                        }
                       | declaration-specifiers alignment-specifier {
                           $$ = ast_node_append($1, $2);
                         }
                       ;
 
-init-declarator-list: init-declarator
-                    | init-declarator-list ',' init-declarator
+init-declarator-list: init-declarator {
+                        $$ = ast_node_new_list_node($1);
+                      }
+                    | init-declarator-list ',' init-declarator {
+                        $$ = ast_node_append($1, $3);
+                      }
                     ;
 
 init-declarator: declarator
-               | declarator '=' initializer
+               | declarator '=' initializer {
+                   $$ = ast_node_new_binop_node(AST_BINOP_ASSIGN, $1, $3);
+                 }
                ;
 
 storage-class-specifier: TYPEDEF {
@@ -467,11 +498,21 @@ type-specifier: VOID {
               | INT {
                   $$ = ast_node_new_gkcc_type_specifier_node(GKCC_TYPE_SPECIFIER_INT, NULL);
                 }
-              | LONG
-              | FLOAT
-              | DOUBLE
-              | SIGNED
-              | UNSIGNED
+              | LONG {
+                  $$ = ast_node_new_gkcc_type_specifier_node(GKCC_TYPE_SPECIFIER_LONG, NULL);
+                }
+              | FLOAT {
+                  $$ = ast_node_new_gkcc_type_specifier_node(GKCC_TYPE_SPECIFIER_FLOAT, NULL);
+                }
+              | DOUBLE {
+                  $$ = ast_node_new_gkcc_type_specifier_node(GKCC_TYPE_SPECIFIER_DOUBLE, NULL);
+                }
+              | SIGNED {
+                  $$ = ast_node_new_gkcc_type_specifier_node(GKCC_TYPE_SPECIFIER_SIGNED, NULL);
+                }
+              | UNSIGNED {
+                  $$ = ast_node_new_gkcc_type_specifier_node(GKCC_TYPE_SPECIFIER_UNSIGNED, NULL);
+                }
               | _BOOL
               | _COMPLEX
               | struct-or-union-specifier
@@ -488,8 +529,12 @@ struct-or-union: STRUCT
                | UNION
                ;
 
-struct-declaration-list: struct-declaration
-                       | struct-declaration-list struct-declaration
+struct-declaration-list: struct-declaration {
+                           $$ = ast_node_new_list_node($1);
+                         }
+                       | struct-declaration-list struct-declaration {
+                           $$ = ast_node_append($1, $2);
+                         }
                        ;
 
 struct-declaration: specifier-qualifier-list ';'
@@ -497,14 +542,26 @@ struct-declaration: specifier-qualifier-list ';'
                   // | static_assert-declaration // NOT IMPLEMENTED
                   ;
 
-specifier-qualifier-list: type-specifier
-                        | specifier-qualifier-list type-specifier
-                        | type-qualifier
-                        | specifier-qualifier-list type-qualifier
+specifier-qualifier-list: type-specifier {
+                            $$ = ast_node_new_list_node($1);
+                          }
+                        | specifier-qualifier-list type-specifier {
+                            $$ = ast_node_append($1, $2);
+                          }
+                        | type-qualifier {
+                            $$ = ast_node_new_list_node($1);
+                          }
+                        | specifier-qualifier-list type-qualifier {
+                            $$ = ast_node_append($1, $2);
+                          }
                         ;
 
-struct-declarator-list: struct-declarator
-                      | struct-declarator-list ',' struct-declarator
+struct-declarator-list: struct-declarator {
+                          $$ = ast_node_new_list_node($1);
+                        }
+                      | struct-declarator-list ',' struct-declarator {
+                          $$ = ast_node_append($1, $3);
+                        }
                       ;
 
 struct-declarator: declarator
@@ -519,14 +576,20 @@ enum-specifier: ENUM '{' enumerator-list '}'
               | ENUM IDENT
               ;
 
-enumerator-list: enumerator
-               | enumerator-list ',' enumerator
+enumerator-list: enumerator {
+                   $$ = ast_node_new_list_node($1);
+                 }
+               | enumerator-list ',' enumerator {
+                   $$ = ast_node_append($1, $3);
+                 }
                ;
 
 //enumeration-constant: IDENT;
 
-enumerator: IDENT
-          | IDENT '=' constant-expression
+enumerator: identifier
+          | identifier '=' constant-expression {
+              $$ = ast_node_new_binop_node(AST_BINOP_ASSIGN, $1, $3);
+            }
           ;
 
 
@@ -550,10 +613,12 @@ alignment-specifier: _ALIGNAS '(' type-name ')'
                   ;
 
 declarator: direct-declarator
-          | pointer direct-declarator
+          | pointer direct-declarator {
+              $$ = ast_node_new_unary_node(AST_UNARY_DEREFERENCE, $2);
+            }
           ;
 
-direct-declarator: IDENT
+direct-declarator: identifier
                  | '(' declarator ')' {
                      $$ = $declarator;
                    }
@@ -572,21 +637,33 @@ direct-declarator: IDENT
                  ;
 
 pointer: '*'
-       | '*' type-qualifier-list
+       | '*' type-qualifier-list {
+           $$ = ast_node_new_unary_node(AST_UNARY_DEREFERENCE, $2);
+         }
        | '*' type-qualifier-list pointer
        | '*' pointer
        ;
 
-type-qualifier-list: type-qualifier
-                   | type-qualifier-list type-qualifier
+type-qualifier-list: type-qualifier {
+                       $$ = ast_node_new_list_node($1);
+                     }
+                   | type-qualifier-list type-qualifier {
+                       $$ = ast_node_append($1, $2);
+                     }
                    ;
 
-parameter-type-list: parameter-list
+parameter-type-list: parameter-list {
+                       $$ = ast_node_new_list_node($1);
+                     }
                    | parameter-list ',' ELLIPSIS
                    ;
 
-parameter-list: parameter-declaration
-              | parameter-list ',' parameter-declaration
+parameter-list: parameter-declaration {
+                  $$ = ast_node_new_list_node($1);
+                }
+              | parameter-list ',' parameter-declaration {
+                  $$ = ast_node_append($1, $3);
+                }
               ;
 
 parameter-declaration: declaration-specifiers declarator
@@ -594,8 +671,12 @@ parameter-declaration: declaration-specifiers declarator
                      //| declaration-specifiers abstract-declarator // NOT IMPLEMENTED
                      ;
 
-identifier-list: IDENT
-               | identifier-list ',' IDENT
+identifier-list: identifier {
+                   $$ = ast_node_new_list_node($1);
+                 }
+               | identifier-list ',' identifier {
+                   $$ = ast_node_append($1, $3);
+                 }
                ;
 
 type-name: specifier-qualifier-list
@@ -619,8 +700,12 @@ initializer-list: initializer
 
 designation: designator-list '=';
 
-designator-list: designator
-               | designator-list designator
+designator-list: designator {
+                   $$ = ast_node_new_list_node($1);
+                 }
+               | designator-list designator {
+                   $$ = ast_node_append($1, $2);
+                 }
                ;
 
 designator: '[' constant-expression ']'

@@ -62,7 +62,7 @@ identifier         {alpha}{alpha_num}*
     /* empty */
 }
 
-<SC_STRING,SC_CHAR>[A-Za-z0-9\*\/\+\-\,\^\.\;\:\(\)\[\]\{\}\=\&\~\!\%\<\>\|\?] {
+<SC_STRING,SC_CHAR>[A-Za-z0-9\*\/\+\-\,\^\.\;\:\(\)\[\]\{\}\=\&\~\!\%\<\>\|\?\ ] {
     yylval.data.string.string[yylval.data.string.length++] = yytext[0];
 }
 

@@ -16,9 +16,11 @@
 #include "types.h"
 
 #include <malloc.h>
+#include <memory.h>
 
 struct gkcc_type* gkcc_type_new(enum gkcc_type_type type) {
   struct gkcc_type* gkcc_type = malloc(sizeof(struct gkcc_type));
+  memset(gkcc_type, 0, sizeof(struct gkcc_type));
   gkcc_type->type = type;
   return gkcc_type;
 }
