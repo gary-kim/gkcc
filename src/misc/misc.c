@@ -16,6 +16,15 @@
 #include "misc.h"
 #include "stdio.h"
 
+#include "dmezh/backtrace.h"
+
 const char* gkcc_report_error(enum gkcc_error error, char* reporter) {
   fprintf(stderr, "ERROR (%s): %s\n", reporter, GKCC_ERROR_STRING[error]);
+}
+
+void gkcc_assert(int to_assert, char* message) {
+  if (to_assert)
+    return;
+
+  die(message);
 }

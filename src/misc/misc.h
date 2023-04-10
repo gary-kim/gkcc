@@ -30,5 +30,6 @@ enum gkcc_error { ENUM_GKCC_ERROR(ENUM_VALUES) };
 static const char* const GKCC_ERROR_STRING[] = {ENUM_GKCC_ERROR(ENUM_STRINGS)};
 
 const char* gkcc_report_error(enum gkcc_error error, char* reporter);
+void gkcc_assert(int to_assert, char* message);
 
 #endif  // GKCC_MISC_H

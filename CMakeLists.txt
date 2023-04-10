@@ -11,6 +11,7 @@ set (INCLUDE_DIRS
         ${CMAKE_SOURCE_DIR}/src/ast
         ${CMAKE_SOURCE_DIR}/src/scope
         ${CMAKE_SOURCE_DIR}/src/misc
+        ${CMAKE_SOURCE_DIR}/3rdparty
         )
 
 add_custom_command(
@@ -41,6 +42,7 @@ add_executable(parsetester
         ${CMAKE_SOURCE_DIR}/src/scope/scope.c
         ${CMAKE_SOURCE_DIR}/src/misc/misc.c
         ${CMAKE_SOURCE_DIR}/src/ast/types.c
+        ${CMAKE_SOURCE_DIR}/3rdparty/dmezh/backtrace.c
         )
 
 target_include_directories(parsetester PRIVATE ${INCLUDE_DIRS})

@@ -177,7 +177,9 @@ declaration_or_fndef: declaration {
 
 primary-expression: IDENT
                  | constant
-                 | STRING
+                 | STRING {
+                     $$ = yylval2ast_node(&$STRING);
+                   }
                  | '(' expression ')' {
                      $$ = $expression;
                    }
@@ -396,15 +398,25 @@ declaration: declaration-specifiers ';'
            ;
 
 declaration-specifiers: storage-class-specifier
-                      | declaration-specifiers storage-class-specifier
+                      | declaration-specifiers storage-class-specifier {
+                          $$ = ast_node_append($1, $2);
+                        }
                       | type-specifier
-                      | declaration-specifiers type-specifier
+                      | declaration-specifiers type-specifier {
+                          $$ = ast_node_append($1, $2);
+                        }
                       | type-qualifier
-                      | declaration-specifiers type-qualifier
+                      | declaration-specifiers type-qualifier {
+                          $$ = ast_node_append($1, $2);
+                        }
                       | function-specifier
-                      | declaration-specifiers function-specifier
+                      | declaration-specifiers function-specifier {
+                          $$ = ast_node_append($1, $2);
+                        }
                       | alignment-specifier
-                      | declaration-specifiers alignment-specifier
+                      | declaration-specifiers alignment-specifier {
+                          $$ = ast_node_append($1, $2);
+                        }
                       ;
 
 init-declarator-list: init-declarator
@@ -415,18 +427,39 @@ init-declarator: declarator
                | declarator '=' initializer
                ;
 
-storage-class-specifier: TYPEDEF
-                       | EXTERN
-                       | STATIC
-                       | _THREAD_LOCAL
-                       | AUTO
-                       | REGISTER
+storage-class-specifier: TYPEDEF {
+                            $$ = ast_node_new_gkcc_storage_class_specifier_node(GKCC_STORAGE_CLASS_SPECIFIER_TYPEDEF, NULL);
+                         }
+                       | EXTERN {
+                           $$ = ast_node_new_gkcc_storage_class_specifier_node(GKCC_STORAGE_CLASS_SPECIFIER_EXTERN, NULL);
+                         }
+                       | STATIC {
+                           $$ = ast_node_new_gkcc_storage_class_specifier_node(GKCC_STORAGE_CLASS_SPECIFIER_EXTERN, NULL);
+                         }
+                       | _THREAD_LOCAL {
+                           $$ = ast_node_new_gkcc_storage_class_specifier_node(GKCC_STORAGE_CLASS_SPECIFIER_THREAD_LOCAL, NULL);
+                         }
+                       | AUTO {
+                           $$ = ast_node_new_gkcc_storage_class_specifier_node(GKCC_STORAGE_CLASS_SPECIFIER_AUTO, NULL);
+                         }
+                       | REGISTER {
+                           $$ = ast_node_new_gkcc_storage_class_specifier_node(GKCC_STORAGE_CLASS_SPECIFIER_REGISTER, NULL);
+                         }
                        ;
 
-type-specifier: VOID
-              | CHAR
-              | SHORT
-              | INT
+// TODO: Fill these in. The enum types already exist for them
+type-specifier: VOID {
+                  $$ = ast_node_new_gkcc_type_specifier_node(GKCC_TYPE_SPECIFIER_VOID, NULL);
+                }
+              | CHAR {
+                  $$ = ast_node_new_gkcc_type_specifier_node(GKCC_TYPE_SPECIFIER_CHAR, NULL);
+                }
+              | SHORT {
+                  $$ = ast_node_new_gkcc_type_specifier_node(GKCC_TYPE_SPECIFIER_SHORT, NULL);
+                }
+              | INT {
+                  $$ = ast_node_new_gkcc_type_specifier_node(GKCC_TYPE_SPECIFIER_SHORT, NULL);
+                }
               | LONG
               | FLOAT
               | DOUBLE

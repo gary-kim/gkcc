@@ -20,6 +20,7 @@
 #include <string.h>
 
 #include "lex_extras.h"
+#include "misc.h"
 
 char flbuf[1024];
 
@@ -167,6 +168,16 @@ void yynum2ast_node(struct ast_node *node, struct _yynum *yynum) {
   }
 }
 
+struct ast_node *ast_node_append(struct ast_node *child,
+                                              struct ast_node *parent) {
+  switch (parent->type) {
+    case AST_NODE_GKCC_TYPE:
+      parent->gkcc_type.child = child;
+      break;
+  }
+  return parent;
+}
+
 struct ast_node *ast_node_new_binop_node(enum ast_binop_type type,
                                          struct ast_node *left,
                                          struct ast_node *right) {
@@ -203,8 +214,26 @@ struct ast_node *ast_node_new_gkcc_type_qualifier_node(
   node->gkcc_type.gkcc_type->qualifier.type = qualifier_type;
 }
 
+struct ast_node *ast_node_new_gkcc_storage_class_specifier_node(
+    enum gkcc_storage_class_specifier_type type, struct ast_node *child) {
+  struct ast_node *node = ast_node_new(AST_NODE_GKCC_TYPE);
+  node->gkcc_type.child = child;
+  node->gkcc_type.gkcc_type->type = GKCC_TYPE_STORAGE_CLASS_SPECIFIER;
+  node->gkcc_type.gkcc_type->storage_class_specifier.type = type;
+  return node;
+}
+
+struct ast_node *ast_node_new_gkcc_type_specifier_node(
+    enum gkcc_type_specifier_type type, struct ast_node *child) {
+  struct ast_node *node = ast_node_new(AST_NODE_GKCC_TYPE);
+  node->gkcc_type.child = child;
+  node->gkcc_type.gkcc_type->type = GKCC_TYPE_TYPE_SPECIFIER;
+  node->gkcc_type.gkcc_type->type_specifier.type = type;
+  return node;
+}
+
 struct ast_node *yylval2ast_node(struct _yylval *yylval) {
-  struct ast_node *node = ast_node_new(NULL);
+  struct ast_node *node = ast_node_new(AST_NODE_UNKNOWN);
   switch (yylval->type) {
     case YYLVAL_TYPE_NUMBER:
       yynum2ast_node(node, &yylval->data.number);

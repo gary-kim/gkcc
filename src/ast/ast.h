@@ -152,7 +152,8 @@ struct ast_constant {
 };
 
 enum ast_node_type {
-  AST_NODE_BINOP = 1,
+  AST_NODE_UNKNOWN,
+  AST_NODE_BINOP,
   AST_NODE_CONSTANT,
   AST_NODE_IDENT,
   AST_NODE_UNARY,
@@ -195,4 +196,9 @@ struct ast_node* ast_node_new_gkcc_type_qualifier_node(
     enum gkcc_qualifier_type qualifier_type, struct ast_node* child);
 struct ast_node* ast_node_new_constant_int_node(int val);
 struct ast_node* yylval2ast_node(struct _yylval* yylval);
+struct ast_node* ast_node_new_gkcc_storage_class_specifier_node(
+    enum gkcc_storage_class_specifier_type type, struct ast_node* child);
+struct ast_node *ast_node_new_gkcc_type_specifier_node(
+    enum gkcc_type_specifier_type type, struct ast_node *child
+);
 #endif
