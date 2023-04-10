@@ -255,42 +255,42 @@ yylval.data.string.length = 0;
     /* Handle all hexadecimal integer combinations */
 
 {hex_constant}{ulonglong_ext} {
-    sscanf(&yytext[2], "%llx", &yylval.data.number.num.ylonglong);
+    sscanf(&yytext[2], "%llx", (long long unsigned int *) &yylval.data.number.num.ylonglong);
     yylval.data.number.type = YYNUM_TYPE_LONGLONG;
     yylval.data.number.is_unsigned = true;
     return NUMBER;
 }
 
 {hex_constant}{longlong_ext} {
-    sscanf(&yytext[2], "%llx", &yylval.data.number.num.ylonglong);
+    sscanf(&yytext[2], "%llx", (long long unsigned int *) &yylval.data.number.num.ylonglong);
     yylval.data.number.type = YYNUM_TYPE_LONGLONG;
     yylval.data.number.is_unsigned = false;
     return NUMBER;
 }
 
 {hex_constant}{ulong_ext} {  /* we need to skip the "0x" part */
-    sscanf(&yytext[2],"%lx",&yylval.data.number.num.ylong);
+    sscanf(&yytext[2],"%lx", (unsigned long int *) &yylval.data.number.num.ylong);
     yylval.data.number.type = YYNUM_TYPE_LONG;
     yylval.data.number.is_unsigned = true;
     yylval.type = YYLVAL_TYPE_NUMBER;
     return NUMBER;
 }
 {hex_constant}{long_ext}  {
-    sscanf(&yytext[2],"%lx",&yylval.data.number.num.ylong);
+    sscanf(&yytext[2],"%lx", (unsigned long int *) &yylval.data.number.num.ylong);
     yylval.data.number.type = YYNUM_TYPE_LONG;
     yylval.data.number.is_unsigned = false;
     yylval.type = YYLVAL_TYPE_NUMBER;
     return NUMBER;
 }
 {hex_constant}{unsigned_ext}  {
-    sscanf(&yytext[2],"%x",&yylval.data.number.num.yint);
+    sscanf(&yytext[2],"%x", (unsigned int *) &yylval.data.number.num.yint);
     yylval.data.number.type = YYNUM_TYPE_INT;
     yylval.data.number.is_unsigned = true;
     yylval.type = YYLVAL_TYPE_NUMBER;
     return NUMBER;
 }
 {hex_constant}            {
-    sscanf(&yytext[2],"%x",&yylval.data.number.num.yint);
+    sscanf(&yytext[2],"%x", (unsigned int *) &yylval.data.number.num.yint);
     yylval.data.number.type = YYNUM_TYPE_INT;
     yylval.data.number.is_unsigned = false;
     yylval.type = YYLVAL_TYPE_NUMBER;
@@ -299,40 +299,40 @@ yylval.data.string.length = 0;
 
   /* Handle all octal integer constants */
 {oct_constant}{ulonglong_ext} {
-    sscanf(yytext, "%llo", &yylval.data.number.num.ylonglong);
+    sscanf(yytext, "%llo", (unsigned long long int *) &yylval.data.number.num.ylonglong);
     yylval.data.number.type = YYNUM_TYPE_LONGLONG;
     yylval.data.number.is_unsigned = true;
     return NUMBER;
 }
 {oct_constant}{longlong_ext} {
-    sscanf(yytext, "%llo", &yylval.data.number.num.ylonglong);
+    sscanf(yytext, "%llo", (unsigned long long int *) &yylval.data.number.num.ylonglong);
     yylval.data.number.type = YYNUM_TYPE_LONGLONG;
     yylval.data.number.is_unsigned = false;
     return NUMBER;
 }
 {oct_constant}{ulong_ext} {
-    sscanf(yytext,"%lo",&yylval.data.number.num.ylong);
+    sscanf(yytext,"%lo", (unsigned long int *) &yylval.data.number.num.ylong);
     yylval.data.number.type = YYNUM_TYPE_LONG;
     yylval.data.number.is_unsigned = true;
     yylval.type = YYLVAL_TYPE_NUMBER;
     return NUMBER;
 }
 {oct_constant}{long_ext}  {
-    sscanf(yytext,"%lo",&yylval.data.number.num.ylong);
+    sscanf(yytext,"%lo", (unsigned long int *) &yylval.data.number.num.ylong);
     yylval.data.number.type = YYNUM_TYPE_LONG;
     yylval.data.number.is_unsigned = false;
     yylval.type = YYLVAL_TYPE_NUMBER;
     return NUMBER;
 }
 {oct_constant}{unsigned_ext}  {
-    sscanf(yytext,"%o",&yylval.data.number.num.yint);
+    sscanf(yytext,"%o", (unsigned int *) &yylval.data.number.num.yint);
     yylval.data.number.type = YYNUM_TYPE_INT;
     yylval.data.number.is_unsigned = true;
     yylval.type = YYLVAL_TYPE_NUMBER;
     return NUMBER;
 }
 {oct_constant}            {
-    sscanf(yytext,"%o",&yylval.data.number.num.yint);
+    sscanf(yytext,"%o", (unsigned int *) &yylval.data.number.num.yint);
     yylval.data.number.type = YYNUM_TYPE_INT;
     yylval.data.number.is_unsigned = false;
     yylval.type = YYLVAL_TYPE_NUMBER;
@@ -341,7 +341,7 @@ yylval.data.string.length = 0;
 
     /* Handle all decimal integer constants */
 {int_constant}{ulonglong_ext}  {
-    sscanf(yytext,"%llu",&yylval.data.number.num.ylonglong);
+    sscanf(yytext,"%llu", (unsigned long long int *) &yylval.data.number.num.ylonglong);
     yylval.data.number.type = YYNUM_TYPE_LONGLONG;
     yylval.data.number.is_unsigned = true;
     yylval.type = YYLVAL_TYPE_NUMBER;
@@ -349,35 +349,35 @@ yylval.data.string.length = 0;
 }
 
 {int_constant}{longlong_ext}  {
-    sscanf(yytext,"%ld",&yylval.data.number.num.ylong);
+    sscanf(yytext,"%ld", (long int *) &yylval.data.number.num.ylong);
     yylval.data.number.type = YYNUM_TYPE_LONG;
     yylval.data.number.is_unsigned = false;
     yylval.type = YYLVAL_TYPE_NUMBER;
     return NUMBER;
 }
 {int_constant}{ulong_ext} {
-    sscanf(yytext,"%ld",&yylval.data.number.num.ylong);
+    sscanf(yytext,"%ld", (long int *) &yylval.data.number.num.ylong);
     yylval.data.number.type = YYNUM_TYPE_LONG;
     yylval.data.number.is_unsigned = true;
     yylval.type = YYLVAL_TYPE_NUMBER;
     return NUMBER;
 }
 {int_constant}{long_ext}  {
-    sscanf(yytext,"%ld",&yylval.data.number.num.ylong);
+    sscanf(yytext,"%ld", (long int *) &yylval.data.number.num.ylong);
     yylval.data.number.type = YYNUM_TYPE_LONG;
     yylval.data.number.is_unsigned = false;
     yylval.type = YYLVAL_TYPE_NUMBER;
     return NUMBER;
 }
 {int_constant}{unsigned_ext}  {
-    sscanf(yytext,"%d",&yylval.data.number.num.yint);
+    sscanf(yytext,"%d", (int *) &yylval.data.number.num.yint);
     yylval.data.number.type = YYNUM_TYPE_INT;
     yylval.data.number.is_unsigned = true;
     yylval.type = YYLVAL_TYPE_NUMBER;
     return NUMBER;
 }
 {int_constant}            {
-    sscanf(yytext,"%d",&yylval.data.number.num.yint);
+    sscanf(yytext,"%d", (int *) &yylval.data.number.num.yint);
     yylval.data.number.type = YYNUM_TYPE_INT;
     yylval.data.number.is_unsigned = false;
     yylval.type = YYLVAL_TYPE_NUMBER;
@@ -386,21 +386,21 @@ yylval.data.string.length = 0;
 
     /* Handle decimal float constants */
 {float_constant}{long_ext}  {
-    sscanf(yytext,"%Lf",&yylval.data.number.num.ylongdouble);
+    sscanf(yytext,"%Lf", &yylval.data.number.num.ylongdouble);
     yylval.data.number.type = YYNUM_TYPE_LONG_DOUBLE;
     yylval.data.number.is_unsigned = false;
     yylval.type = YYLVAL_TYPE_NUMBER;
     return NUMBER;
 }
 {float_constant}{float_ext}  {
-    sscanf(yytext,"%f",&yylval.data.number.num.yfloat);
+    sscanf(yytext,"%f", &yylval.data.number.num.yfloat);
     yylval.data.number.type = YYNUM_TYPE_FLOAT;
     yylval.data.number.is_unsigned = false;
     yylval.type = YYLVAL_TYPE_NUMBER;
     return NUMBER;
 }
 {float_constant}          {
-    sscanf(yytext,"%lf",&yylval.data.number.num.ydouble);
+    sscanf(yytext,"%lf", &yylval.data.number.num.ydouble);
     yylval.data.number.type = YYNUM_TYPE_DOUBLE;
     yylval.data.number.is_unsigned = false;
     yylval.type = YYLVAL_TYPE_NUMBER;
@@ -409,21 +409,21 @@ yylval.data.string.length = 0;
 
     /* Handle hexadecimal float constants */
 {hex_float_constant}{long_ext}  {
-    sscanf(yytext,"%Lfx",&yylval.data.number.num.ylongdouble);
+    sscanf(yytext,"%Lfx", (long double *) &yylval.data.number.num.ylongdouble);
     yylval.data.number.type = YYNUM_TYPE_LONG_DOUBLE;
     yylval.data.number.is_unsigned = false;
     yylval.type = YYLVAL_TYPE_NUMBER;
     return NUMBER;
 }
 {hex_float_constant}{float_ext}  {
-    sscanf(yytext,"%fx",&yylval.data.number.num.yfloat);
+    sscanf(yytext,"%fx", (float *) &yylval.data.number.num.yfloat);
     yylval.data.number.type = YYNUM_TYPE_FLOAT;
     yylval.data.number.is_unsigned = false;
     yylval.type = YYLVAL_TYPE_NUMBER;
     return NUMBER;
 }
 {hex_float_constant}          {
-    sscanf(yytext,"%lfx",&yylval.data.number.num.ydouble);
+    sscanf(yytext,"%lfx", (double *) &yylval.data.number.num.ydouble);
     yylval.data.number.type = YYNUM_TYPE_DOUBLE;
     yylval.data.number.is_unsigned = false;
     yylval.type = YYLVAL_TYPE_NUMBER;

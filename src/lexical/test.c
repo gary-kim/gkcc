@@ -4,6 +4,11 @@
 #include <ctype.h>
 #include <stdbool.h>
 
+YYSTYPE yylval;
+
+// Stopgap until proper replacement
+#define yylval yylval.yylval
+
 char buf[10];
 char *TP_YYEOF = "YYEOF";
 char *TP_IDENT = "IDENT";

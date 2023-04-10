@@ -56,6 +56,7 @@ enum gkcc_error gkcc_symbol_table_add_symbol(struct gkcc_symbol_table *table,
     return GKCC_ERROR_SUCCESS;
   }
 
+  // TODO: Check for if the name already exists in the scope
   for(;last_symbol->next != NULL; last_symbol = last_symbol->next);
   last_symbol->next = symbol;
 

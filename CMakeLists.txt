@@ -34,6 +34,13 @@ add_custom_command(
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/lexical
 )
 
+add_executable(lextester
+        ${CMAKE_SOURCE_DIR}/src/lexical/test.c
+        ${GENERATED_DIR}/lex.yy.c
+        )
+
+target_include_directories(lextester PRIVATE ${INCLUDE_DIRS})
+
 add_executable(parsetester
         ${CMAKE_SOURCE_DIR}/src/parser/parsetester.c
         ${GENERATED_DIR}/lex.yy.c
