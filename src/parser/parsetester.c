@@ -23,6 +23,8 @@
 #include "scope.h"
 
 int main(int argc, char** argv) {
+  setup_segfault_stack_trace();
+
   if (argc <= 1) {
     printf("Nothing to do. EXITING\n");
     return 0;

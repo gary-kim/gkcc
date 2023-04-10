@@ -1,8 +1,13 @@
 cmake_minimum_required(VERSION 3.20)
 project(gkcc)
 
+set(GKCC_UNDEFINED_BEHAVIOR_SANITIZER 1)
+
 set (CMAKE_C_STANDARD 17)
-set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -pedantic -ggdb")
+set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -pedantic -ggdb -fno-omit-frame-pointer -static-libubsan")
+if(DEFINED GKCC_UNDEFINED_BEHAVIOR_SANITIZER)
+       set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=undefined -fsanitize=address")
+endif()
 set (GENERATED_DIR ${CMAKE_SOURCE_DIR}/generated)
 set (INCLUDE_DIRS
         ${GENERATED_DIR}
@@ -40,6 +45,9 @@ add_executable(lextester
         )
 
 target_include_directories(lextester PRIVATE ${INCLUDE_DIRS})
+if(DEFINED GKCC_UNDEFINED_BEHAVIOR_SANITIZER)
+        target_compile_definitions(lextester PRIVATE GKCC_UNDEFINED_BEHAVIOR_SANITIZER=1)
+endif()
 
 add_executable(parsetester
         ${CMAKE_SOURCE_DIR}/src/parser/parsetester.c
@@ -53,3 +61,6 @@ add_executable(parsetester
         )
 
 target_include_directories(parsetester PRIVATE ${INCLUDE_DIRS})
+if(DEFINED GKCC_UNDEFINED_BEHAVIOR_SANITIZER)
+        target_compile_definitions(parsetester PRIVATE GKCC_UNDEFINED_BEHAVIOR_SANITIZER=1)
+endif()

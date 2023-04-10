@@ -169,6 +169,7 @@ struct ast_node {
     struct ast_unary unary;
     struct ast_ternary ternary;
     struct ast_gkcc_type gkcc_type;
+    struct ast_ident ident;
   };
 };
 
@@ -198,7 +199,8 @@ struct ast_node* ast_node_new_constant_int_node(int val);
 struct ast_node* yylval2ast_node(struct _yylval* yylval);
 struct ast_node* ast_node_new_gkcc_storage_class_specifier_node(
     enum gkcc_storage_class_specifier_type type, struct ast_node* child);
-struct ast_node *ast_node_new_gkcc_type_specifier_node(
-    enum gkcc_type_specifier_type type, struct ast_node *child
-);
+struct ast_node* ast_node_new_gkcc_type_specifier_node(
+    enum gkcc_type_specifier_type type, struct ast_node* child);
+struct ast_node *yylval2ast_node_ident(struct _yylval *yylval);
+char* ast_gkcc_type_string(struct ast_gkcc_type *gkcc_type);
 #endif

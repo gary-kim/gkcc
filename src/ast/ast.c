@@ -61,6 +61,10 @@ void ast_print(struct ast_node *top, int depth, char *prefix) {
       ast_print(top->ternary.true_expr, depth + 1, "true_expr: ");
       ast_print(top->ternary.false_expr, depth + 1, "false_expr: ");
       break;
+    case AST_NODE_GKCC_TYPE:
+      // TODO: This should be removed once declarations are done
+      ast_print(top->gkcc_type.child, depth + 1, "");
+      break;
   }
 }
 
@@ -86,11 +90,44 @@ void ast_node_string(char *buf, struct ast_node *node) {
     case AST_NODE_TERNARY:
       strcpy(buf, ast_ternary_string(&node->ternary));
       break;
+    case AST_NODE_UNKNOWN:
+      break;
+    case AST_NODE_GKCC_TYPE:
+      strcpy(buf, ast_gkcc_type_string(&node->gkcc_type));
+      break;
   }
 }
 
 const char *ast_binop_type_string(struct ast_binop *binop) {
   return AST_BINOP_TYPE_STRING[binop->type];
+}
+
+char *ast_gkcc_type_string(struct ast_gkcc_type *gkcc_type) {
+  const char *type_type = GKCC_TYPE_TYPE_STRING[gkcc_type->gkcc_type->type];
+  switch (gkcc_type->gkcc_type->type) {
+    case GKCC_TYPE_SCALAR:
+      break;
+    case GKCC_TYPE_FUNCTION:
+      break;
+    case GKCC_TYPE_PTR:
+      break;
+    case GKCC_TYPE_ARRAY:
+      break;
+    case GKCC_TYPE_STRUCT:
+      break;
+    case GKCC_TYPE_UNION:
+      break;
+    case GKCC_TYPE_QUALIFIER:
+      break;
+    case GKCC_TYPE_STORAGE_CLASS_SPECIFIER:
+      break;
+    case GKCC_TYPE_TYPE_SPECIFIER:
+      sprintf(flbuf, "GKCC_TYPE (type=%s): %s", type_type,
+              GKCC_TYPE_SPECIFIER_TYPE_STRING[gkcc_type->gkcc_type
+                                                  ->type_specifier.type]);
+      break;
+  }
+  return flbuf;
 }
 
 char *ast_constant_string(struct ast_constant *constant) {
@@ -169,7 +206,7 @@ void yynum2ast_node(struct ast_node *node, struct _yynum *yynum) {
 }
 
 struct ast_node *ast_node_append(struct ast_node *child,
-                                              struct ast_node *parent) {
+                                 struct ast_node *parent) {
   switch (parent->type) {
     case AST_NODE_GKCC_TYPE:
       parent->gkcc_type.child = child;
@@ -210,7 +247,7 @@ struct ast_node *ast_node_new_gkcc_type_qualifier_node(
     enum gkcc_qualifier_type qualifier_type, struct ast_node *child) {
   struct ast_node *node = ast_node_new(AST_NODE_GKCC_TYPE);
   node->gkcc_type.child = child;
-  node->gkcc_type.gkcc_type->type = GKCC_TYPE_QUALIFIER;
+  node->gkcc_type.gkcc_type = gkcc_type_new(GKCC_TYPE_QUALIFIER);
   node->gkcc_type.gkcc_type->qualifier.type = qualifier_type;
 }
 
@@ -227,8 +264,22 @@ struct ast_node *ast_node_new_gkcc_type_specifier_node(
     enum gkcc_type_specifier_type type, struct ast_node *child) {
   struct ast_node *node = ast_node_new(AST_NODE_GKCC_TYPE);
   node->gkcc_type.child = child;
+  node->gkcc_type.gkcc_type = gkcc_type_new(GKCC_TYPE_TYPE_SPECIFIER);
   node->gkcc_type.gkcc_type->type = GKCC_TYPE_TYPE_SPECIFIER;
   node->gkcc_type.gkcc_type->type_specifier.type = type;
+  return node;
+}
+
+struct ast_node *yylval2ast_node_ident(struct _yylval *yylval) {
+  struct ast_node *node = ast_node_new(AST_NODE_IDENT);
+  gkcc_assert(yylval->type == YYLVAL_TYPE_STRING,
+              "yylval2ast_node_ident() was given a non-string yylval");
+
+  node->constant.ystring.length = yylval->data.string.length;
+  node->constant.ystring.raw = malloc(node->constant.ystring.length);
+  memcpy(node->constant.ystring.raw, yylval->data.string.string,
+         node->constant.ystring.length);
+
   return node;
 }
 

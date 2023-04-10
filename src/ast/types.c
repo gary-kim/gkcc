@@ -13,8 +13,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-//
-// Created by gary.kim on 4/9/23.
-//
-
 #include "types.h"
+
+#include <malloc.h>
+
+struct gkcc_type* gkcc_type_new(enum gkcc_type_type type) {
+  struct gkcc_type* gkcc_type = malloc(sizeof(struct gkcc_type));
+  gkcc_type->type = type;
+  return gkcc_type;
+}

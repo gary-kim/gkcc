@@ -14,7 +14,15 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "misc.h"
-#include "stdio.h"
+#include <stdio.h>
+#include <sys/signal.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+#ifdef __SANITIZE_ADDRESS__
+#include <sanitizer/asan_interface.h>
+#endif
 
 #include "dmezh/backtrace.h"
 
@@ -22,9 +30,34 @@ const char* gkcc_report_error(enum gkcc_error error, char* reporter) {
   fprintf(stderr, "ERROR (%s): %s\n", reporter, GKCC_ERROR_STRING[error]);
 }
 
-void gkcc_assert(int to_assert, char* message) {
+inline void gkcc_assert(int to_assert, char* message) {
   if (to_assert)
     return;
 
   die(message);
+}
+
+void gkcc_error_fatal(enum gkcc_error err, char* message) {
+  char error_message[4096];
+  sprintf(error_message, "(%s) %s", GKCC_ERROR_STRING[err], message);
+  die(error_message);
+}
+
+void segfault_handler() {
+  die("Caught segfault");
+}
+
+// Disable ASAN leak checker
+#ifdef __SANITIZE_ADDRESS__
+const char *__asan_default_options() {
+  return "detect_leaks=0";
+}
+#endif
+
+void setup_segfault_stack_trace() {
+  struct sigaction sa;
+  sa.sa_handler = segfault_handler;
+  sigemptyset(&sa.sa_mask);
+  sa.sa_flags = 0;
+  sigaction(SIGSEGV, &sa, NULL);
 }

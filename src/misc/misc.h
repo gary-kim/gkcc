@@ -19,11 +19,12 @@
 #define ENUM_VALUES(VALUE) VALUE,
 #define ENUM_STRINGS(STRING) #STRING,
 
-#define ENUM_GKCC_ERROR(GEN) \
-  GEN(GKCC_ERROR_SUCCESS)                           \
-  GEN(GKCC_ERROR_UNKNOWN)           \
-  GEN(GKCC_ERROR_INVALID_ARGUMENTS) \
-  GEN(GKCC_ERROR_SYMBOL_ALREADY_EXISTS)
+#define ENUM_GKCC_ERROR(GEN)            \
+  GEN(GKCC_ERROR_SUCCESS)               \
+  GEN(GKCC_ERROR_UNKNOWN)               \
+  GEN(GKCC_ERROR_INVALID_ARGUMENTS)     \
+  GEN(GKCC_ERROR_SYMBOL_ALREADY_EXISTS) \
+  GEN(GKCC_ERROR_YYERROR)
 
 enum gkcc_error { ENUM_GKCC_ERROR(ENUM_VALUES) };
 
@@ -31,5 +32,7 @@ static const char* const GKCC_ERROR_STRING[] = {ENUM_GKCC_ERROR(ENUM_STRINGS)};
 
 const char* gkcc_report_error(enum gkcc_error error, char* reporter);
 void gkcc_assert(int to_assert, char* message);
+void setup_segfault_stack_trace();
+inline void gkcc_error_fatal(enum gkcc_error err, char* message);
 
 #endif  // GKCC_MISC_H

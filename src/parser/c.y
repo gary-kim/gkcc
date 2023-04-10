@@ -6,7 +6,7 @@
 #include <stdio.h>
 
 static void yyerror() {
-  fprintf(stderr, "ERROR\n");
+  gkcc_error_fatal(GKCC_ERROR_YYERROR, "Got yyerror");
 }
 %}
 
@@ -96,6 +96,7 @@ static void yyerror() {
 
 %nterm <ast_node> declaration_or_fndef
 %nterm <ast_node> primary-expression
+%nterm <ast_node> identifier
 %nterm <ast_node> constant
 %nterm <ast_node> postfix-expression
 %nterm <ast_node> argument-expression-list
@@ -164,16 +165,22 @@ static void yyerror() {
 
 %%
 
+
+
 declaration_or_fndef: declaration {
                         *top_ast_node = *$1;
                       }
                     | function-definition {
                         *top_ast_node = *$1;
                       }
-                    | expression {
-                        *top_ast_node = *$1;
-                      }
+//                    | expression {
+//                       *top_ast_node = *$1;
+//                      }
                     ;
+
+identifier: IDENT {
+  $$ = yylval2ast_node_ident(&$1);
+};
 
 primary-expression: IDENT
                  | constant
@@ -458,7 +465,7 @@ type-specifier: VOID {
                   $$ = ast_node_new_gkcc_type_specifier_node(GKCC_TYPE_SPECIFIER_SHORT, NULL);
                 }
               | INT {
-                  $$ = ast_node_new_gkcc_type_specifier_node(GKCC_TYPE_SPECIFIER_SHORT, NULL);
+                  $$ = ast_node_new_gkcc_type_specifier_node(GKCC_TYPE_SPECIFIER_INT, NULL);
                 }
               | LONG
               | FLOAT

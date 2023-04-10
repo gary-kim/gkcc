@@ -154,4 +154,10 @@ struct gkcc_type {
   };
 };
 
+// =============================
+// === Function Declarations ===
+// =============================
+
+struct gkcc_type* gkcc_type_new(enum gkcc_type_type type);
+
 #endif  // GKCC_TYPES_H
