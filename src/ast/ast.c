@@ -24,7 +24,7 @@
 
 char flbuf[1024];
 
-void ast_print(struct ast_node *top, int depth, char *prefix) {
+void ast_print(struct ast_node *top, int depth, const char *prefix) {
   char buf[1024];
   if (top == NULL) {
     return;
@@ -53,7 +53,6 @@ void ast_print(struct ast_node *top, int depth, char *prefix) {
       ast_print(top->binop.right, depth + 1, "expr 2: ");
       break;
     case AST_NODE_CONSTANT:
-      break;
     case AST_NODE_IDENT:
       break;
     case AST_NODE_UNARY:
@@ -179,7 +178,8 @@ char *ast_constant_string(struct ast_constant *constant) {
       sprintf(flbuf, "CONSTANT: (type=CHAR) '%s'", local_buf);
       break;
     case AST_CONSTANT_STRING:
-      sprint_escaped_string(local_buf, constant->ystring.raw, constant->ystring.length);
+      sprint_escaped_string(local_buf, constant->ystring.raw,
+                            constant->ystring.length);
       sprintf(flbuf, "CONSTANT: (type=STRING) \"%s\"", local_buf);
       break;
   }
@@ -236,8 +236,7 @@ void yynum2ast_node(struct ast_node *node, struct _yynum *yynum) {
 
 struct ast_node *ast_node_append(struct ast_node *parent,
                                  struct ast_node *child) {
-  gkcc_assert(child != NULL, GKCC_ERROR_INVALID_ARGUMENTS,
-              "");
+  gkcc_assert(child != NULL, GKCC_ERROR_INVALID_ARGUMENTS, "");
 
   // if parent == NULL, the user probably wanted to create a new list node
   // from scratch. Do it for them.
@@ -250,9 +249,9 @@ struct ast_node *ast_node_append(struct ast_node *parent,
   struct ast_node *last_node = parent->list.end;
   struct ast_node *list_child = NULL;
 
-  if(child->type == AST_NODE_LIST) {
+  if (child->type == AST_NODE_LIST) {
     // Flatten the list
-    for(struct ast_node *n = child; n != NULL; n = n->list.next) {
+    for (struct ast_node *n = child; n != NULL; n = n->list.next) {
       list_child = ast_node_new_list_node(n->list.node);
       last_node->list.next = list_child;
       last_node = list_child;
@@ -335,7 +334,8 @@ struct ast_node *ast_node_new_declaration_node(
     struct ast_node *referenced_node = n->list.node;
 
     node->declaration.specifiers = declaration_specifiers;
-    if (referenced_node->type == AST_NODE_BINOP && referenced_node->binop.type == AST_BINOP_ASSIGN) {
+    if (referenced_node->type == AST_NODE_BINOP &&
+        referenced_node->binop.type == AST_BINOP_ASSIGN) {
       // The init-declarator has an assigned value
       node->declaration.init_declarator = referenced_node->binop.left;
       node->declaration.assignment = referenced_node->binop.right;
@@ -350,7 +350,7 @@ struct ast_node *ast_node_new_declaration_node(
 }
 
 struct ast_node *ast_node_new_list_node(struct ast_node *node) {
-  if (node->type == AST_NODE_LIST) // We should never need a list of list
+  if (node->type == AST_NODE_LIST)  // We should never need a list of list
     return node;
 
   struct ast_node *new_node = ast_node_new(AST_NODE_LIST);

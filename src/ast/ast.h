@@ -222,7 +222,7 @@ struct ast_node {
 // === Functions ===
 // =================
 
-void ast_print(struct ast_node* top, int depth, char* prefix);
+void ast_print(struct ast_node* top, int depth, const char* prefix);
 struct ast_node* ast_node_new(enum ast_node_type node_type);
 void ast_node_string(char* buf, struct ast_node* node);
 void yynum2ast_node(struct ast_node* node, struct _yynum* yynum);
