@@ -1,3 +1,18 @@
+// Copyright (C) 2023 Gary Kim <gary@garykim.dev>
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 %{
 #include "lex_extras.h"
 #include "ast.h"
@@ -178,14 +193,14 @@ top_list: declaration_or_fndef {
 
 declaration_or_fndef: declaration
                     | function-definition
-                    | expression
+                    | expression-statement
                     ;
 
 identifier: IDENT {
   $$ = yylval2ast_node_ident(&$1);
 };
 
-primary-expression: IDENT
+primary-expression: identifier
                  | constant
                  | STRING {
                      $$ = yylval2ast_node(&$STRING);
@@ -204,13 +219,25 @@ constant: NUMBER {
         ;
 
 postfix-expression: primary-expression
-                  | postfix-expression '[' expression ']'
+                  | postfix-expression '[' expression ']' {
+                      struct ast_node *new_pos = ast_node_new_binop_node(AST_BINOP_ADD, $1, $expression);
+                      $$ = ast_node_new_unary_node(AST_UNARY_DEREFERENCE, new_pos);
+                    }
                   | postfix-expression '(' ')'
                   | postfix-expression '(' argument-expression-list ')'
-                  | postfix-expression '.' IDENT
-                  | postfix-expression INDSEL  IDENT
-                  | postfix-expression PLUSPLUS
-                  | postfix-expression MINUSMINUS
+                  | postfix-expression '.' identifier {
+                      $$ = ast_node_new_binop_node(AST_BINOP_MEMBER_ACCESS, $1, $3);
+                    }
+                  | postfix-expression INDSEL identifier {
+                      struct ast_node *deref = ast_node_new_unary_node(AST_UNARY_DEREFERENCE, $1);
+                      $$ = ast_node_new_binop_node(AST_BINOP_MEMBER_ACCESS, deref, $3);
+                    }
+                  | postfix-expression PLUSPLUS {
+                      $$ = ast_node_new_unary_node(AST_UNARY_POSTINC, $1);
+                    }
+                  | postfix-expression MINUSMINUS {
+                      $$ = ast_node_new_unary_node(AST_UNARY_POSTDEC, $1);
+                    }
                   | '(' type-name ')' '{' initializer-list '}'
                   | '(' type-name ')' '{' initializer-list ',' '}'
                   ;
@@ -339,7 +366,7 @@ inclusive-OR-expression: exclusive-OR-expression
 
 logical-AND-expression: inclusive-OR-expression
                       | logical-AND-expression LOGAND inclusive-OR-expression {
-                          $$ = ast_node_new_binop_node(AST_BINOP_BITWISE_AND, $1, $3);
+                          $$ = ast_node_new_binop_node(AST_BINOP_LOGICAL_AND, $1, $3);
                         }
                       ;
 
@@ -520,9 +547,9 @@ type-specifier: VOID {
               //| typedef-name // NOT IMPLEMENTED
               //;
 
-struct-or-union-specifier: struct-or-union IDENT '{' struct-declaration-list '}'
+struct-or-union-specifier: struct-or-union identifier '{' struct-declaration-list '}'
                          | struct-or-union '{' struct-declaration-list '}'
-                         | struct-or-union IDENT
+                         | struct-or-union identifier
                          ;
 
 struct-or-union: STRUCT
@@ -570,10 +597,10 @@ struct-declarator: declarator
                  ;
 
 enum-specifier: ENUM '{' enumerator-list '}'
-              | ENUM IDENT '{' enumerator-list '}'
+              | ENUM identifier '{' enumerator-list '}'
               | ENUM '{' enumerator-list ',' '}'
-              | ENUM IDENT '{' enumerator-list ',' '}'
-              | ENUM IDENT
+              | ENUM identifier '{' enumerator-list ',' '}'
+              | ENUM identifier
               ;
 
 enumerator-list: enumerator {

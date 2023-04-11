@@ -78,7 +78,7 @@ void ast_print(struct ast_node *top, int depth, const char *prefix) {
       ast_print(top->list.next, depth, NULL);
       break;
     case AST_NODE_TOP_LEVEL:
-      ast_print(top->top_level.list, depth + 1, NULL);
+      ast_print(top->top_level.list, depth, NULL);
       break;
   }
 }

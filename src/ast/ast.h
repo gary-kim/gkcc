@@ -54,7 +54,8 @@
   GEN(AST_BINOP_BITWISE_XOR)        \
   GEN(AST_BINOP_BITWISE_OR)         \
   GEN(AST_BINOP_LOGICAL_AND)        \
-  GEN(AST_BINOP_LOGICAL_OR)
+  GEN(AST_BINOP_LOGICAL_OR)         \
+  GEN(AST_BINOP_MEMBER_ACCESS)
 
 enum ast_binop_type { ENUM_AST_BINOP_TYPE(ENUM_VALUES) };
 
@@ -90,7 +91,10 @@ struct ast_ternary {
   GEN(AST_UNARY_NOT)             \
   GEN(AST_UNARY_NEGATIVE)        \
   GEN(AST_UNARY_BITWISE_NOT)     \
-  GEN(AST_UNARY_LOGICAL_NOT)
+  GEN(AST_UNARY_LOGICAL_NOT)     \
+  GEN(AST_UNARY_POSTINC)         \
+  GEN(AST_UNARY_POSTDEC)
+
 
 enum ast_unary_type { ENUM_AST_UNARY_TYPE(ENUM_VALUES) };
 
@@ -150,6 +154,16 @@ struct ast_top_level {
   struct ast_node* list;
 };
 
+// ================================
+// === struct ast_function_call ===
+// ================================
+
+struct ast_function_call {
+  struct ast_node *returns;
+  struct ast_node *name;
+  struct ast_node *parameters;
+};
+
 // ===========================
 // === struct ast_constant ===
 // ===========================
@@ -182,6 +196,10 @@ struct ast_constant {
     } ystring;
   };
 };
+
+// =======================
+// === struct ast_node ===
+// =======================
 
 #define ENUM_AST_NODE_TYPE(GEN) \
   GEN(AST_NODE_UNKNOWN)         \
