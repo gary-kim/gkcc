@@ -55,7 +55,8 @@
   GEN(AST_BINOP_BITWISE_OR)         \
   GEN(AST_BINOP_LOGICAL_AND)        \
   GEN(AST_BINOP_LOGICAL_OR)         \
-  GEN(AST_BINOP_MEMBER_ACCESS)
+  GEN(AST_BINOP_MEMBER_ACCESS)      \
+  GEN(AST_BINOP_CAST)
 
 enum ast_binop_type { ENUM_AST_BINOP_TYPE(ENUM_VALUES) };
 
@@ -94,7 +95,6 @@ struct ast_ternary {
   GEN(AST_UNARY_LOGICAL_NOT)     \
   GEN(AST_UNARY_POSTINC)         \
   GEN(AST_UNARY_POSTDEC)
-
 
 enum ast_unary_type { ENUM_AST_UNARY_TYPE(ENUM_VALUES) };
 
@@ -141,9 +141,9 @@ struct ast_declaration {
 // =======================
 
 struct ast_list {
-  struct ast_node *node;
-  struct ast_node *next;
-  struct ast_node *end;
+  struct ast_node* node;
+  struct ast_node* next;
+  struct ast_node* end;
 };
 
 // ============================
@@ -159,9 +159,19 @@ struct ast_top_level {
 // ================================
 
 struct ast_function_call {
-  struct ast_node *returns;
-  struct ast_node *name;
-  struct ast_node *parameters;
+  struct ast_node* name;
+  struct ast_node* parameters;
+};
+
+// ======================================
+// === struct ast_function_definition ===
+// ======================================
+
+struct ast_function_definition {
+  struct ast_node* name;
+  struct ast_node* parameters;
+  struct ast_node* returns;
+  struct ast_node* statements;
 };
 
 // ===========================
@@ -211,15 +221,14 @@ struct ast_constant {
   GEN(AST_NODE_GKCC_TYPE)       \
   GEN(AST_NODE_DECLARATION)     \
   GEN(AST_NODE_LIST)            \
-  GEN(AST_NODE_TOP_LEVEL)
+  GEN(AST_NODE_TOP_LEVEL)       \
+  GEN(AST_NODE_FUNCTION_CALL)   \
+  GEN(AST_NODE_FUNCTION_DEFINITION)
 
-enum ast_node_type {
-  ENUM_AST_NODE_TYPE(ENUM_VALUES)
-};
+enum ast_node_type { ENUM_AST_NODE_TYPE(ENUM_VALUES) };
 
-static const char * const AST_NODE_TYPE_STRING[] = {
-    ENUM_AST_NODE_TYPE(ENUM_STRINGS)
-};
+static const char* const AST_NODE_TYPE_STRING[] = {
+    ENUM_AST_NODE_TYPE(ENUM_STRINGS)};
 
 struct ast_node {
   enum ast_node_type type;
@@ -233,6 +242,8 @@ struct ast_node {
     struct ast_declaration declaration;
     struct ast_list list;
     struct ast_top_level top_level;
+    struct ast_function_call function_call;
+    struct ast_function_definition function_definition;
   };
 };
 
@@ -264,15 +275,19 @@ struct ast_node* ast_node_new_gkcc_storage_class_specifier_node(
     enum gkcc_storage_class_specifier_type type, struct ast_node* child);
 struct ast_node* ast_node_new_gkcc_type_specifier_node(
     enum gkcc_type_specifier_type type, struct ast_node* child);
-struct ast_node *yylval2ast_node_ident(struct _yylval *yylval);
-char* ast_gkcc_type_string(struct ast_gkcc_type *gkcc_type);
-struct ast_node *ast_node_new_declaration_node(
+struct ast_node* yylval2ast_node_ident(struct _yylval* yylval);
+char* ast_gkcc_type_string(struct ast_gkcc_type* gkcc_type);
+struct ast_node* ast_node_new_declaration_node(
     struct ast_node* declaration_specifiers,
-    struct ast_node* init_declarator_list
-);
-struct ast_node *ast_node_new_list_node(
-    struct ast_node *node
-);
-struct ast_node *ast_node_append(struct ast_node *parent,
-                                 struct ast_node *child);
+    struct ast_node* init_declarator_list);
+struct ast_node* ast_node_new_list_node(struct ast_node* node);
+struct ast_node* ast_node_append(struct ast_node* parent,
+                                 struct ast_node* child);
+struct ast_node* ast_node_new_function_call_node(struct ast_node* function_name,
+                                                 struct ast_node* parameters);
+struct ast_node* ast_node_new_function_definition_node(
+    struct ast_node* returns, struct ast_node* function_name,
+    struct ast_node* parameters, struct ast_node* statements);
+struct ast_node* ast_node_apply_designator_to_all(struct ast_node* designators,
+                                                  struct ast_node* initializer);
 #endif

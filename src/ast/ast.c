@@ -80,6 +80,16 @@ void ast_print(struct ast_node *top, int depth, const char *prefix) {
     case AST_NODE_TOP_LEVEL:
       ast_print(top->top_level.list, depth, NULL);
       break;
+    case AST_NODE_FUNCTION_CALL:
+      ast_print(top->function_call.name, depth + 1, "function_name: ");
+      ast_print(top->function_call.parameters, depth + 1, "parameters: ");
+      break;
+    case AST_NODE_FUNCTION_DEFINITION:
+      ast_print(top->function_definition.returns, depth + 1, "returns: ");
+      ast_print(top->function_definition.name, depth + 1, "name: ");
+      ast_print(top->function_definition.parameters, depth + 1, "parameters: ");
+      ast_print(top->function_definition.statements, depth + 1, "statements: ");
+      break;
   }
 }
 
@@ -321,6 +331,17 @@ struct ast_node *ast_node_new_gkcc_type_specifier_node(
   return node;
 }
 
+struct ast_node *ast_node_new_function_definition_node(
+    struct ast_node *returns, struct ast_node *function_name,
+    struct ast_node *parameters, struct ast_node *statements) {
+  struct ast_node *node = ast_node_new(AST_NODE_FUNCTION_DEFINITION);
+  node->function_definition.returns = returns;
+  node->function_definition.name = function_name;
+  node->function_definition.parameters = parameters;
+  node->function_definition.statements = statements;
+  return node;
+}
+
 struct ast_node *ast_node_new_declaration_node(
     struct ast_node *declaration_specifiers,
     struct ast_node *init_declarator_list) {
@@ -360,13 +381,32 @@ struct ast_node *ast_node_new_list_node(struct ast_node *node) {
   return new_node;
 }
 
+struct ast_node *ast_node_new_function_call_node(struct ast_node *function_name,
+                                                 struct ast_node *parameters) {
+  struct ast_node *new_node = ast_node_new(AST_NODE_FUNCTION_CALL);
+  new_node->function_call.name = function_name;
+  new_node->function_call.parameters = parameters;
+  return new_node;
+}
+
+struct ast_node *ast_node_apply_designator_to_all(
+    struct ast_node *designators, struct ast_node *initializer) {
+  struct ast_node *tr_node = NULL;
+  for (struct ast_node *n = designators; n != NULL; n = n->list.next) {
+    struct ast_node *to_add =
+        ast_node_new_binop_node(AST_BINOP_ASSIGN, n->list.node, initializer);
+    tr_node = ast_node_append(tr_node, to_add);
+  }
+  return tr_node;
+}
+
 struct ast_node *yylval2ast_node_ident(struct _yylval *yylval) {
   struct ast_node *node = ast_node_new(AST_NODE_IDENT);
   gkcc_assert(yylval->type == YYLVAL_TYPE_STRING, GKCC_ERROR_INVALID_ARGUMENTS,
               "yylval2ast_node_ident() was given a non-string yylval");
 
   node->ident.length = yylval->data.string.length;
-  node->ident.name = malloc(node->constant.ystring.length);
+  node->ident.name = malloc(node->ident.length);
   memcpy(node->ident.name, yylval->data.string.string, node->ident.length);
 
   return node;

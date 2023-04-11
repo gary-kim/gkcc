@@ -110,73 +110,73 @@ static void yyerror() {
 %left ELSE
 
 %nterm <ast_node> declaration_or_fndef
-%nterm <ast_node> primary-expression
+%nterm <ast_node> primary_expression
 %nterm <ast_node> identifier
 %nterm <ast_node> constant
-%nterm <ast_node> postfix-expression
-%nterm <ast_node> argument-expression-list
-%nterm <ast_node> unary-expression
-%nterm <ast_node> unary-operator
-%nterm <ast_node> cast-expression
-%nterm <ast_node> multiplicative-expression
-%nterm <ast_node> additive-expression
-%nterm <ast_node> shift-expression
-%nterm <ast_node> relational-expression
-%nterm <ast_node> equality-expression
-%nterm <ast_node> AND-expression
-%nterm <ast_node> exclusive-OR-expression
-%nterm <ast_node> inclusive-OR-expression
-%nterm <ast_node> logical-AND-expression
-%nterm <ast_node> logical-OR-expression
-%nterm <ast_node> conditional-expression
-%nterm <ast_node> assignment-expression
-%nterm <ast_node> assignment-operator
+%nterm <ast_node> postfix_expression
+%nterm <ast_node> argument_expression_list
+%nterm <ast_node> unary_expression
+%nterm <ast_node> unary_operator
+%nterm <ast_node> cast_expression
+%nterm <ast_node> multiplicative_expression
+%nterm <ast_node> additive_expression
+%nterm <ast_node> shift_expression
+%nterm <ast_node> relational_expression
+%nterm <ast_node> equality_expression
+%nterm <ast_node> AND_expression
+%nterm <ast_node> exclusive_OR_expression
+%nterm <ast_node> inclusive_OR_expression
+%nterm <ast_node> logical_AND_expression
+%nterm <ast_node> logical_OR_expression
+%nterm <ast_node> conditional_expression
+%nterm <ast_node> assignment_expression
+%nterm <ast_node> assignment_operator
 %nterm <ast_node> expression
-%nterm <ast_node> constant-expression
+%nterm <ast_node> constant_expression
 %nterm <ast_node> declaration
-%nterm <ast_node> declaration-specifiers
-%nterm <ast_node> init-declarator-list
-%nterm <ast_node> init-declarator
-%nterm <ast_node> storage-class-specifier
-%nterm <ast_node> type-specifier
-%nterm <ast_node> struct-or-union-specifier
-%nterm <ast_node> struct-or-union
-%nterm <ast_node> struct-declaration-list
-%nterm <ast_node> struct-declaration
-%nterm <ast_node> specifier-qualifier-list
-%nterm <ast_node> struct-declarator-list
-%nterm <ast_node> struct-declarator
-%nterm <ast_node> enum-specifier
-%nterm <ast_node> enumerator-list
+%nterm <ast_node> declaration_specifiers
+%nterm <ast_node> init_declarator_list
+%nterm <ast_node> init_declarator
+%nterm <ast_node> storage_class_specifier
+%nterm <ast_node> type_specifier
+%nterm <ast_node> struct_or_union_specifier
+%nterm <ast_node> struct_or_union
+%nterm <ast_node> struct_declaration_list
+%nterm <ast_node> struct_declaration
+%nterm <ast_node> specifier_qualifier_list
+%nterm <ast_node> struct_declarator_list
+%nterm <ast_node> struct_declarator
+%nterm <ast_node> enum_specifier
+%nterm <ast_node> enumerator_list
 %nterm <ast_node> enumerator
-%nterm <ast_node> type-qualifier
-%nterm <ast_node> function-specifier
-%nterm <ast_node> alignment-specifier
+%nterm <ast_node> type_qualifier
+%nterm <ast_node> function_specifier
+%nterm <ast_node> alignment_specifier
 %nterm <ast_node> declarator
-%nterm <ast_node> direct-declarator
+%nterm <ast_node> direct_declarator
 %nterm <ast_node> pointer
-%nterm <ast_node> type-qualifier-list
-%nterm <ast_node> parameter-type-list
-%nterm <ast_node> parameter-list
-%nterm <ast_node> parameter-declaration
-%nterm <ast_node> identifier-list
-%nterm <ast_node> type-name
+%nterm <ast_node> type_qualifier_list
+%nterm <ast_node> parameter_type_list
+%nterm <ast_node> parameter_list
+%nterm <ast_node> parameter_declaration
+%nterm <ast_node> identifier_list
+%nterm <ast_node> type_name
 %nterm <ast_node> initializer
-%nterm <ast_node> initializer-list
+%nterm <ast_node> initializer_list
 %nterm <ast_node> designation
-%nterm <ast_node> designator-list
+%nterm <ast_node> designator_list
 %nterm <ast_node> designator
-%nterm <ast_node> compound-statement
+%nterm <ast_node> compound_statement
 %nterm <ast_node> statement
-%nterm <ast_node> labeled-statement
-%nterm <ast_node> block-item-list
-%nterm <ast_node> block-item
-%nterm <ast_node> expression-statement
-%nterm <ast_node> selection-statement
-%nterm <ast_node> iteration-statement
-%nterm <ast_node> jump-statement
-%nterm <ast_node> function-definition
-%nterm <ast_node> declaration-list
+%nterm <ast_node> labeled_statement
+%nterm <ast_node> block_item_list
+%nterm <ast_node> block_item
+%nterm <ast_node> expression_statement
+%nterm <ast_node> selection_statement
+%nterm <ast_node> iteration_statement
+%nterm <ast_node> jump_statement
+%nterm <ast_node> function_definition
+%nterm <ast_node> declaration_list
 %nterm <ast_node> top_list
 
 %%
@@ -192,15 +192,15 @@ top_list: declaration_or_fndef {
         ;
 
 declaration_or_fndef: declaration
-                    | function-definition
-                    | expression-statement
+                    | function_definition
+                    //| expression_statement
                     ;
 
 identifier: IDENT {
   $$ = yylval2ast_node_ident(&$1);
 };
 
-primary-expression: identifier
+primary_expression: identifier
                  | constant
                  | STRING {
                      $$ = yylval2ast_node(&$STRING);
@@ -218,172 +218,178 @@ constant: NUMBER {
           }
         ;
 
-postfix-expression: primary-expression
-                  | postfix-expression '[' expression ']' {
+postfix_expression: primary_expression
+                  | postfix_expression '[' expression ']' {
                       struct ast_node *new_pos = ast_node_new_binop_node(AST_BINOP_ADD, $1, $expression);
                       $$ = ast_node_new_unary_node(AST_UNARY_DEREFERENCE, new_pos);
                     }
-                  | postfix-expression '(' ')'
-                  | postfix-expression '(' argument-expression-list ')'
-                  | postfix-expression '.' identifier {
-                      $$ = ast_node_new_binop_node(AST_BINOP_MEMBER_ACCESS, $1, $3);
+                  | postfix_expression '(' ')' {
+                      $$ = ast_node_new_function_call_node($1, NULL);
                     }
-                  | postfix-expression INDSEL identifier {
+                  | postfix_expression '(' argument_expression_list ')' {
+                      $$ = ast_node_new_function_call_node($1, $argument_expression_list);
+                    }
+                  | postfix_expression '.' identifier {
+                      $$ = ast_node_new_binop_node(AST_BINOP_MEMBER_ACCESS, $1, $identifier);
+                    }
+                  | postfix_expression INDSEL identifier {
                       struct ast_node *deref = ast_node_new_unary_node(AST_UNARY_DEREFERENCE, $1);
                       $$ = ast_node_new_binop_node(AST_BINOP_MEMBER_ACCESS, deref, $3);
                     }
-                  | postfix-expression PLUSPLUS {
+                  | postfix_expression PLUSPLUS {
                       $$ = ast_node_new_unary_node(AST_UNARY_POSTINC, $1);
                     }
-                  | postfix-expression MINUSMINUS {
+                  | postfix_expression MINUSMINUS {
                       $$ = ast_node_new_unary_node(AST_UNARY_POSTDEC, $1);
                     }
-                  | '(' type-name ')' '{' initializer-list '}'
-                  | '(' type-name ')' '{' initializer-list ',' '}'
+                  | '(' type_name ')' '{' initializer_list '}'
+                  | '(' type_name ')' '{' initializer_list ',' '}'
                   ;
 
-argument-expression-list: assignment-expression {
+argument_expression_list: assignment_expression {
                             $$ = ast_node_new_list_node($1);
                           }
-                        | argument-expression-list ',' assignment-expression {
+                        | argument_expression_list ',' assignment_expression {
                             $$ = ast_node_append($1, $3);
                          }
                         ;
 
 // 6.5.3
-unary-expression: postfix-expression
-                | PLUSPLUS unary-expression {
+unary_expression: postfix_expression
+                | PLUSPLUS unary_expression {
                     // Equivalent
                     struct ast_node *constant_1 = ast_node_new_constant_int_node(1);
                     $$ = ast_node_new_binop_node(AST_BINOP_ASSIGN_ADD, $2, constant_1);
                   }
-                | MINUSMINUS unary-expression {
+                | MINUSMINUS unary_expression {
                     // Equivalent
                     struct ast_node *constant_1 = ast_node_new_constant_int_node(1);
                     $$ = ast_node_new_binop_node(AST_BINOP_ASSIGN_SUBTRACT, $2, constant_1);
                   }
-                | '&' cast-expression {
+                | '&' cast_expression {
                     $$ = ast_node_new_unary_node(AST_UNARY_ADDRESSOF, $2);
                   }
-                | '*' cast-expression {
+                | '*' cast_expression {
                     $$ = ast_node_new_unary_node(AST_UNARY_DEREFERENCE, $2);
                   }
-                | '+' cast-expression {
+                | '+' cast_expression {
                     $$ = $2;
                   }
-                | '-' cast-expression {
+                | '-' cast_expression {
                     $$ = ast_node_new_unary_node(AST_UNARY_NEGATIVE, $2);
                   }
-                | '~' cast-expression {
+                | '~' cast_expression {
                     $$ = ast_node_new_unary_node(AST_UNARY_BITWISE_NOT, $2);
                   }
-                | '!' cast-expression {
+                | '!' cast_expression {
                     $$ = ast_node_new_unary_node(AST_UNARY_LOGICAL_NOT, $2);
                   }
-                | SIZEOF unary-expression {
+                | SIZEOF unary_expression {
                     $$ = ast_node_new_unary_node(AST_UNARY_SIZEOF, $2);
                   }
-                | SIZEOF '(' type-name ')'
+                | SIZEOF '(' type_name ')'
                 ;
 
-cast-expression: unary-expression
-               | '(' type-name ')' cast-expression
+cast_expression: unary_expression
+               | '(' type_name ')' cast_expression {
+                   $$ = ast_node_new_binop_node(AST_BINOP_CAST, $2, $4);
+                 }
                ;
 
-multiplicative-expression: cast-expression
-                         | multiplicative-expression '*' cast-expression {
+multiplicative_expression: cast_expression
+                         | multiplicative_expression '*' cast_expression {
                              $$ = ast_node_new_binop_node(AST_BINOP_MULTIPLY, $1, $3);
                            }
-                         | multiplicative-expression '/' cast-expression {
+                         | multiplicative_expression '/' cast_expression {
                              $$ = ast_node_new_binop_node(AST_BINOP_DIVIDE, $1, $3);
                            }
-                         | multiplicative-expression '%' cast-expression {
+                         | multiplicative_expression '%' cast_expression {
                              $$ = ast_node_new_binop_node(AST_BINOP_MOD, $1, $3);
                            }
                          ;
 
-additive-expression: multiplicative-expression
-                   | additive-expression '+' multiplicative-expression {
+additive_expression: multiplicative_expression
+                   | additive_expression '+' multiplicative_expression {
                        $$ = ast_node_new_binop_node(AST_BINOP_ADD, $1, $3);
                      }
-                   | additive-expression '-' multiplicative-expression {
+                   | additive_expression '-' multiplicative_expression {
                        $$ = ast_node_new_binop_node(AST_BINOP_SUBTRACT, $1, $3);
                      }
                    ;
 
 // 6.5.7
-shift-expression: additive-expression
-                | shift-expression SHL additive-expression {
+shift_expression: additive_expression
+                | shift_expression SHL additive_expression {
                     $$ = ast_node_new_binop_node(AST_BINOP_SHL, $1, $3);
                   }
-                | shift-expression SHR additive-expression {
+                | shift_expression SHR additive_expression {
                     $$ = ast_node_new_binop_node(AST_BINOP_SHR, $1, $3);
                   }
                 ;
 
-relational-expression: shift-expression
-                     | relational-expression '<' shift-expression {
+relational_expression: shift_expression
+                     | relational_expression '<' shift_expression {
                          $$ = ast_node_new_binop_node(AST_BINOP_LT, $1, $3);
                        }
-                     | relational-expression '>' shift-expression {
+                     | relational_expression '>' shift_expression {
                          $$ = ast_node_new_binop_node(AST_BINOP_GT, $1, $3);
                        }
-                     | relational-expression LTEQ shift-expression {
+                     | relational_expression LTEQ shift_expression {
                          $$ = ast_node_new_binop_node(AST_BINOP_LTEQ, $1, $3);
                        }
-                     | relational-expression GTEQ shift-expression {
+                     | relational_expression GTEQ shift_expression {
                          $$ = ast_node_new_binop_node(AST_BINOP_GTEQ, $1, $3);
                        }
                      ;
 
-equality-expression: relational-expression
-                   | equality-expression EQEQ relational-expression {
+equality_expression: relational_expression
+                   | equality_expression EQEQ relational_expression {
                        $$ = ast_node_new_binop_node(AST_BINOP_EQUALS, $1, $3);
                      }
-                   | equality-expression NOTEQ relational-expression {
+                   | equality_expression NOTEQ relational_expression {
                        struct ast_node *eq_node = ast_node_new_binop_node(AST_BINOP_EQUALS, $1, $3);
                        $$ = ast_node_new_unary_node(AST_UNARY_NOT, eq_node);
                      }
                    ;
 
-AND-expression: equality-expression
-              | AND-expression '&' equality-expression {
+AND_expression: equality_expression
+              | AND_expression '&' equality_expression {
                   $$ = ast_node_new_binop_node(AST_BINOP_BITWISE_AND, $1, $3);
                 }
               ;
 
-exclusive-OR-expression: AND-expression
-                       | exclusive-OR-expression '^' AND-expression {
+exclusive_OR_expression: AND_expression
+                       | exclusive_OR_expression '^' AND_expression {
                            $$ = ast_node_new_binop_node(AST_BINOP_BITWISE_XOR, $1, $3);
                          }
                        ;
 
-inclusive-OR-expression: exclusive-OR-expression
-                       | inclusive-OR-expression '|' exclusive-OR-expression {
+inclusive_OR_expression: exclusive_OR_expression
+                       | inclusive_OR_expression '|' exclusive_OR_expression {
                            $$ = ast_node_new_binop_node(AST_BINOP_BITWISE_OR, $1, $3);
                          }
                        ;
 
-logical-AND-expression: inclusive-OR-expression
-                      | logical-AND-expression LOGAND inclusive-OR-expression {
+logical_AND_expression: inclusive_OR_expression
+                      | logical_AND_expression LOGAND inclusive_OR_expression {
                           $$ = ast_node_new_binop_node(AST_BINOP_LOGICAL_AND, $1, $3);
                         }
                       ;
 
-logical-OR-expression: logical-AND-expression
-                     | logical-OR-expression LOGOR logical-AND-expression {
+logical_OR_expression: logical_AND_expression
+                     | logical_OR_expression LOGOR logical_AND_expression {
                          $$ = ast_node_new_binop_node(AST_BINOP_LOGICAL_OR, $1, $3);
                        }
                      ;
 
-conditional-expression: logical-OR-expression
-                      | logical-OR-expression '?' expression ':' conditional-expression {
+conditional_expression: logical_OR_expression
+                      | logical_OR_expression '?' expression ':' conditional_expression {
                           $$ = ast_node_new_ternary_node($1, $3, $5);
                         }
                       ;
 
-assignment-expression: conditional-expression
-                     | unary-expression assignment-operator assignment-expression {
+assignment_expression: conditional_expression
+                     | unary_expression assignment_operator assignment_expression {
                          struct ast_node *n = $2;
                          n->binop.left = $1;
                          n->binop.right = $3;
@@ -391,7 +397,7 @@ assignment-expression: conditional-expression
                        }
                      ;
 
-assignment-operator: '=' {
+assignment_operator: '=' {
                        $$ = ast_node_new_binop_node(AST_BINOP_ASSIGN, NULL, NULL);
                      }
                    | TIMESEQ {
@@ -426,73 +432,73 @@ assignment-operator: '=' {
                     }
                    ;
 
-expression: assignment-expression {
+expression: assignment_expression {
               $$ = ast_node_new_list_node($1);
             }
-          | expression ',' assignment-expression {
+          | expression ',' assignment_expression {
               $$ = ast_node_append($1, $3);
             }
           ;
 
-constant-expression: conditional-expression;
+constant_expression: conditional_expression;
 
 
-declaration: declaration-specifiers ';' {
+declaration: declaration_specifiers ';' {
                $$ = ast_node_new_declaration_node($1, NULL);
              }
-           | declaration-specifiers init-declarator-list ';' {
+           | declaration_specifiers init_declarator_list ';' {
                $$ = ast_node_new_declaration_node($1, $2);
            }
-           //| static_assert-declaration // NOT IMPLEMENTED
+           //| static_assert_declaration // NOT IMPLEMENTED
            ;
 
-declaration-specifiers: storage-class-specifier {
+declaration_specifiers: storage_class_specifier {
                           $$ = ast_node_new_list_node($1);
                         }
-                      | declaration-specifiers storage-class-specifier {
+                      | declaration_specifiers storage_class_specifier {
                           $$ = ast_node_append($1, $2);
                         }
-                      | type-specifier {
+                      | type_specifier {
                           $$ = ast_node_new_list_node($1);
                         }
-                      | declaration-specifiers type-specifier {
+                      | declaration_specifiers type_specifier {
                           $$ = ast_node_append($1, $2);
                         }
-                      | type-qualifier {
+                      | type_qualifier {
                           $$ = ast_node_new_list_node($1);
                         }
-                      | declaration-specifiers type-qualifier {
+                      | declaration_specifiers type_qualifier {
                           $$ = ast_node_append($1, $2);
                         }
-                      | function-specifier {
+                      | function_specifier {
                           $$ = ast_node_new_list_node($1);
                         }
-                      | declaration-specifiers function-specifier {
+                      | declaration_specifiers function_specifier {
                           $$ = ast_node_append($1, $2);
                         }
-                      | alignment-specifier {
+                      | alignment_specifier {
                           $$ = ast_node_new_list_node($1);
                         }
-                      | declaration-specifiers alignment-specifier {
+                      | declaration_specifiers alignment_specifier {
                           $$ = ast_node_append($1, $2);
                         }
                       ;
 
-init-declarator-list: init-declarator {
+init_declarator_list: init_declarator {
                         $$ = ast_node_new_list_node($1);
                       }
-                    | init-declarator-list ',' init-declarator {
+                    | init_declarator_list ',' init_declarator {
                         $$ = ast_node_append($1, $3);
                       }
                     ;
 
-init-declarator: declarator
+init_declarator: declarator
                | declarator '=' initializer {
                    $$ = ast_node_new_binop_node(AST_BINOP_ASSIGN, $1, $3);
                  }
                ;
 
-storage-class-specifier: TYPEDEF {
+storage_class_specifier: TYPEDEF {
                             $$ = ast_node_new_gkcc_storage_class_specifier_node(GKCC_STORAGE_CLASS_SPECIFIER_TYPEDEF, NULL);
                          }
                        | EXTERN {
@@ -513,7 +519,7 @@ storage-class-specifier: TYPEDEF {
                        ;
 
 // TODO: Fill these in. The enum types already exist for them
-type-specifier: VOID {
+type_specifier: VOID {
                   $$ = ast_node_new_gkcc_type_specifier_node(GKCC_TYPE_SPECIFIER_VOID, NULL);
                 }
               | CHAR {
@@ -542,85 +548,85 @@ type-specifier: VOID {
                 }
               | _BOOL
               | _COMPLEX
-              | struct-or-union-specifier
-              | enum-specifier
-              //| typedef-name // NOT IMPLEMENTED
+              | struct_or_union_specifier
+              | enum_specifier
+              //| typedef_name // NOT IMPLEMENTED
               //;
 
-struct-or-union-specifier: struct-or-union identifier '{' struct-declaration-list '}'
-                         | struct-or-union '{' struct-declaration-list '}'
-                         | struct-or-union identifier
+struct_or_union_specifier: struct_or_union identifier '{' struct_declaration_list '}'
+                         | struct_or_union '{' struct_declaration_list '}'
+                         | struct_or_union identifier
                          ;
 
-struct-or-union: STRUCT
+struct_or_union: STRUCT
                | UNION
                ;
 
-struct-declaration-list: struct-declaration {
+struct_declaration_list: struct_declaration {
                            $$ = ast_node_new_list_node($1);
                          }
-                       | struct-declaration-list struct-declaration {
+                       | struct_declaration_list struct_declaration {
                            $$ = ast_node_append($1, $2);
                          }
                        ;
 
-struct-declaration: specifier-qualifier-list ';'
-                  | specifier-qualifier-list struct-declarator-list ';'
-                  // | static_assert-declaration // NOT IMPLEMENTED
+struct_declaration: specifier_qualifier_list ';'
+                  | specifier_qualifier_list struct_declarator_list ';'
+                  // | static_assert_declaration // NOT IMPLEMENTED
                   ;
 
-specifier-qualifier-list: type-specifier {
+specifier_qualifier_list: type_specifier {
                             $$ = ast_node_new_list_node($1);
                           }
-                        | specifier-qualifier-list type-specifier {
+                        | specifier_qualifier_list type_specifier {
                             $$ = ast_node_append($1, $2);
                           }
-                        | type-qualifier {
+                        | type_qualifier {
                             $$ = ast_node_new_list_node($1);
                           }
-                        | specifier-qualifier-list type-qualifier {
+                        | specifier_qualifier_list type_qualifier {
                             $$ = ast_node_append($1, $2);
                           }
                         ;
 
-struct-declarator-list: struct-declarator {
+struct_declarator_list: struct_declarator {
                           $$ = ast_node_new_list_node($1);
                         }
-                      | struct-declarator-list ',' struct-declarator {
+                      | struct_declarator_list ',' struct_declarator {
                           $$ = ast_node_append($1, $3);
                         }
                       ;
 
-struct-declarator: declarator
-                 | declarator ':' constant-expression
-                 | ':' constant-expression
+struct_declarator: declarator
+                 | declarator ':' constant_expression
+                 | ':' constant_expression
                  ;
 
-enum-specifier: ENUM '{' enumerator-list '}'
-              | ENUM identifier '{' enumerator-list '}'
-              | ENUM '{' enumerator-list ',' '}'
-              | ENUM identifier '{' enumerator-list ',' '}'
+enum_specifier: ENUM '{' enumerator_list '}'
+              | ENUM identifier '{' enumerator_list '}'
+              | ENUM '{' enumerator_list ',' '}'
+              | ENUM identifier '{' enumerator_list ',' '}'
               | ENUM identifier
               ;
 
-enumerator-list: enumerator {
+enumerator_list: enumerator {
                    $$ = ast_node_new_list_node($1);
                  }
-               | enumerator-list ',' enumerator {
+               | enumerator_list ',' enumerator {
                    $$ = ast_node_append($1, $3);
                  }
                ;
 
-//enumeration-constant: IDENT;
+//enumeration_constant: IDENT;
 
 enumerator: identifier
-          | identifier '=' constant-expression {
+          | identifier '=' constant_expression {
               $$ = ast_node_new_binop_node(AST_BINOP_ASSIGN, $1, $3);
             }
           ;
 
 
-type-qualifier: CONST {
+type_qualifier: CONST {
                   $$ = ast_node_new_gkcc_type_qualifier_node(GKCC_QUALIFIER_CONST, NULL);
                 }
               | RESTRICT {
@@ -631,154 +637,179 @@ type-qualifier: CONST {
                 }
               ;
 
-function-specifier: INLINE
+function_specifier: INLINE
                   | _NORETURN
                   ;
 
-alignment-specifier: _ALIGNAS '(' type-name ')'
-                  | _ALIGNAS '(' constant-expression ')'
+alignment_specifier: _ALIGNAS '(' type_name ')'
+                  | _ALIGNAS '(' constant_expression ')'
                   ;
 
-declarator: direct-declarator
-          | pointer direct-declarator {
+declarator: direct_declarator
+          | pointer direct_declarator {
               $$ = ast_node_new_unary_node(AST_UNARY_DEREFERENCE, $2);
             }
           ;
 
-direct-declarator: identifier
+direct_declarator: identifier
                  | '(' declarator ')' {
                      $$ = $declarator;
                    }
-                 | direct-declarator '[' ']'
-                 | direct-declarator '[' type-qualifier-list ']'
-                 | direct-declarator '[' assignment-expression ']'
-                 | direct-declarator '[' type-qualifier-list assignment-expression']'
-                 | direct-declarator '[' STATIC assignment-expression ']'
-                 | direct-declarator '[' STATIC type-qualifier-list assignment-expression ']'
-                 | direct-declarator '[' type-qualifier-list STATIC assignment-expression ']'
-                 | direct-declarator '[' type-qualifier-list '*' ']'
-                 | direct-declarator '[' '*' ']'
-                 | direct-declarator '(' parameter-type-list ')'
-                 | direct-declarator '(' identifier-list ')'
-                 | direct-declarator '(' ')'
+                 | direct_declarator '[' ']'
+                 | direct_declarator '[' type_qualifier_list ']'
+                 | direct_declarator '[' assignment_expression ']'
+                 | direct_declarator '[' type_qualifier_list assignment_expression']'
+                 | direct_declarator '[' STATIC assignment_expression ']'
+                 | direct_declarator '[' STATIC type_qualifier_list assignment_expression ']'
+                 | direct_declarator '[' type_qualifier_list STATIC assignment_expression ']'
+                 | direct_declarator '[' type_qualifier_list '*' ']'
+                 | direct_declarator '[' '*' ']'
+                 | direct_declarator '(' parameter_type_list ')'
+                 | direct_declarator '(' identifier_list ')'
+                 | direct_declarator '(' ')'
                  ;
 
 pointer: '*'
-       | '*' type-qualifier-list {
+       | '*' type_qualifier_list {
            $$ = ast_node_new_unary_node(AST_UNARY_DEREFERENCE, $2);
          }
-       | '*' type-qualifier-list pointer
-       | '*' pointer
+       | '*' type_qualifier_list pointer
+       | '*' pointer {
+           $$ = ast_node_new_unary_node(AST_UNARY_DEREFERENCE, $2);
+         }
        ;
 
-type-qualifier-list: type-qualifier {
+type_qualifier_list: type_qualifier {
                        $$ = ast_node_new_list_node($1);
                      }
-                   | type-qualifier-list type-qualifier {
+                   | type_qualifier_list type_qualifier {
                        $$ = ast_node_append($1, $2);
                      }
                    ;
 
-parameter-type-list: parameter-list {
+parameter_type_list: parameter_list {
                        $$ = ast_node_new_list_node($1);
                      }
-                   | parameter-list ',' ELLIPSIS
+                   | parameter_list ',' ELLIPSIS
                    ;
 
-parameter-list: parameter-declaration {
+parameter_list: parameter_declaration {
                   $$ = ast_node_new_list_node($1);
                 }
-              | parameter-list ',' parameter-declaration {
+              | parameter_list ',' parameter_declaration {
                   $$ = ast_node_append($1, $3);
                 }
               ;
 
-parameter-declaration: declaration-specifiers declarator
-                     | declaration-specifiers
-                     //| declaration-specifiers abstract-declarator // NOT IMPLEMENTED
+parameter_declaration: declaration_specifiers {
+                         $$ = ast_node_new_list_node($1);
+                       }
+                     | declaration_specifiers declarator {
+                         $$ = ast_node_append($1, $2);
+                       }
+                     //| declaration_specifiers abstract_declarator // NOT IMPLEMENTED
                      ;
 
-identifier-list: identifier {
+identifier_list: identifier {
                    $$ = ast_node_new_list_node($1);
                  }
-               | identifier-list ',' identifier {
+               | identifier_list ',' identifier {
                    $$ = ast_node_append($1, $3);
                  }
                ;
 
-type-name: specifier-qualifier-list
-         // | specifier-qualifier-list abstract-declarator // NOT IMPLEMENTED
+type_name: specifier_qualifier_list
+         // | specifier_qualifier_list abstract_declarator // NOT IMPLEMENTED
          ;
 
-// abstract-declarator not implemented
-// direct-abstract-declarator not implemented
-// typedef-name not implemented
+// abstract_declarator not implemented
+// direct_abstract_declarator not implemented
+// typedef_name not implemented
 
-initializer: assignment-expression
-           | '{' initializer-list '}'
-           | '{' initializer-list ',' '}'
+initializer: assignment_expression
+           | '{' initializer_list '}'
+           | '{' initializer_list ',' '}'
            ;
 
-initializer-list: initializer
-                | designation initializer
-                | initializer-list ',' initializer
-                | initializer-list ',' designation initializer
+initializer_list: initializer {
+                    $$ = ast_node_new_list_node($1);
+                  }
+                | designation initializer {
+                    $$ = ast_node_apply_designator_to_all($1, $2);
+                  }
+                | initializer_list ',' initializer {
+                    $$ = ast_node_append($1, $3);
+                  }
+                | initializer_list ',' designation initializer {
+                    struct ast_node *n = ast_node_apply_designator_to_all($3, $4);
+                    $$ = ast_node_append($1, n);
+                  }
                 ;
 
-designation: designator-list '=';
+designation: designator_list '=' {
+               $$ = $1;
+             };
 
-designator-list: designator {
+designator_list: designator {
                    $$ = ast_node_new_list_node($1);
                  }
-               | designator-list designator {
+               | designator_list designator {
                    $$ = ast_node_append($1, $2);
                  }
                ;
 
-designator: '[' constant-expression ']'
-          | '.' IDENT
+designator: '[' constant_expression ']'
+          | '.' identifier
           ;
 
-// static_assert-declaration: _STATIC_ASSERT '(' constant-expression ',' STRING ')' ';'; // NOT IMPLEMENTED
+// static_assert_declaration: _STATIC_ASSERT '(' constant_expression ',' STRING ')' ';'; // NOT IMPLEMENTED
 
 // === BEGIN STATEMENTS ===
 
-compound-statement: '{' '}'
-                  | '{' block-item-list '}'
+compound_statement: '{' '}' {
+                      $$ = NULL;
+                    }
+                  | '{' block_item_list '}' {
+                      $$ = $2;
+                    }
                   ;
 
 
-statement: labeled-statement
-         | compound-statement
-         | expression-statement
-         | selection-statement
-         | iteration-statement
-         | jump-statement
+statement: labeled_statement
+         | compound_statement
+         | expression_statement
+         | selection_statement
+         | iteration_statement
+         | jump_statement
          ;
 
-labeled-statement: IDENT ':' statement
-                 | CASE constant-expression ':' statement
+labeled_statement: IDENT ':' statement
+                 | CASE constant_expression ':' statement
                  | DEFAULT ':' statement
                  ;
 
-block-item-list: block-item
-               | block-item-list block-item
+block_item_list: block_item {
+                   $$ = ast_node_new_list_node($1);
+                 }
+               | block_item_list block_item {
+                   $$ = ast_node_append($1, $2);
+                 }
                ;
 
-block-item: declaration
+block_item: declaration
           | statement
           ;
 
-expression-statement: ';'
+expression_statement: ';'
                     | expression ';'
                     ;
 
-selection-statement: IF '(' expression ')' statement %prec IF
+selection_statement: IF '(' expression ')' statement %prec IF
                    | IF '(' expression ')' statement ELSE statement %prec ELSE
                    | SWITCH '(' expression ')' statement
                    ;
 
-iteration-statement: WHILE '(' expression ')' statement
+iteration_statement: WHILE '(' expression ')' statement
                    | DO statement WHILE '(' expression ')' ';'
                    | FOR '(' ';' ';' ')' statement
                    | FOR '(' expression ';' ';' ')' statement
@@ -793,7 +824,7 @@ iteration-statement: WHILE '(' expression ')' statement
                    | FOR '(' declaration expression ';' expression ')'
                    ;
 
-jump-statement: GOTO IDENT ';'
+jump_statement: GOTO IDENT ';'
               | CONTINUE ';'
               | BREAK ';'
               | RETURN ';'
@@ -802,11 +833,21 @@ jump-statement: GOTO IDENT ';'
 
 // === BEGIN EXTERNAL DEFINITIONS ===
 
-function-definition: declaration-specifiers declarator compound-statement
-                   | declaration-specifiers declarator declaration-list compound-statement
+function_definition: declaration_specifiers declarator compound_statement {
+                       // TODO: Figure out how to seperate what parts of the declaration-specifiers applies to the
+                       // function and what defines to the returned type.
+                       $$ = ast_node_new_function_definition_node($declaration_specifiers, $declarator, NULL, $compound_statement);
+                     }
+                   //| declaration_specifiers declarator declaration_list compound_statement
+                   // NO, I am not supporting this old syntax (actually, on second thought, maybe later)
+                   // TODO: Should this be done?
                    ;
 
-declaration-list: declaration
-                | declaration-list declaration
+declaration_list: declaration {
+                    $$ = ast_node_new_list_node($1);
+                  }
+                | declaration_list declaration {
+                    $$ = ast_node_append($1, $2);
+                  }
                 ;
 
