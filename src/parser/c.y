@@ -602,11 +602,21 @@ struct_declarator: declarator
                  | ':' constant_expression
                  ;
 
-enum_specifier: ENUM '{' enumerator_list '}'
-              | ENUM identifier '{' enumerator_list '}'
-              | ENUM '{' enumerator_list ',' '}'
-              | ENUM identifier '{' enumerator_list ',' '}'
-              | ENUM identifier
+enum_specifier: ENUM '{' enumerator_list '}' {
+                  $$ = ast_node_new_enum_definition_node(NULL, $enumerator_list);
+                }
+              | ENUM identifier '{' enumerator_list '}' {
+                  $$ = ast_node_new_enum_definition_node($identifier, $enumerator_list);
+                }
+              | ENUM '{' enumerator_list ',' '}' {
+                  $$ = ast_node_new_enum_definition_node(NULL, $enumerator_list);
+                }
+              | ENUM identifier '{' enumerator_list ',' '}' {
+                  $$ = ast_node_new_enum_definition_node($identifier, $enumerator_list);
+                }
+              | ENUM identifier {
+                  $$ = ast_node_new_enum_definition_node($2, NULL);
+                }
               ;
 
 enumerator_list: enumerator {

@@ -154,6 +154,15 @@ struct ast_top_level {
   struct ast_node* list;
 };
 
+// ==================================
+// === struct ast_enum_definition ===
+// ==================================
+
+struct ast_enum_definition {
+  struct ast_node* enumerators;
+  struct ast_node* ident;
+};
+
 // ================================
 // === struct ast_function_call ===
 // ================================
@@ -211,19 +220,20 @@ struct ast_constant {
 // === struct ast_node ===
 // =======================
 
-#define ENUM_AST_NODE_TYPE(GEN) \
-  GEN(AST_NODE_UNKNOWN)         \
-  GEN(AST_NODE_BINOP)           \
-  GEN(AST_NODE_CONSTANT)        \
-  GEN(AST_NODE_IDENT)           \
-  GEN(AST_NODE_UNARY)           \
-  GEN(AST_NODE_TERNARY)         \
-  GEN(AST_NODE_GKCC_TYPE)       \
-  GEN(AST_NODE_DECLARATION)     \
-  GEN(AST_NODE_LIST)            \
-  GEN(AST_NODE_TOP_LEVEL)       \
-  GEN(AST_NODE_FUNCTION_CALL)   \
-  GEN(AST_NODE_FUNCTION_DEFINITION)
+#define ENUM_AST_NODE_TYPE(GEN)     \
+  GEN(AST_NODE_UNKNOWN)             \
+  GEN(AST_NODE_BINOP)               \
+  GEN(AST_NODE_CONSTANT)            \
+  GEN(AST_NODE_IDENT)               \
+  GEN(AST_NODE_UNARY)               \
+  GEN(AST_NODE_TERNARY)             \
+  GEN(AST_NODE_GKCC_TYPE)           \
+  GEN(AST_NODE_DECLARATION)         \
+  GEN(AST_NODE_LIST)                \
+  GEN(AST_NODE_TOP_LEVEL)           \
+  GEN(AST_NODE_FUNCTION_CALL)       \
+  GEN(AST_NODE_FUNCTION_DEFINITION) \
+  GEN(AST_NODE_ENUM_DEFINITION)
 
 enum ast_node_type { ENUM_AST_NODE_TYPE(ENUM_VALUES) };
 
@@ -244,6 +254,7 @@ struct ast_node {
     struct ast_top_level top_level;
     struct ast_function_call function_call;
     struct ast_function_definition function_definition;
+    struct ast_enum_definition enum_definition;
   };
 };
 
@@ -290,4 +301,6 @@ struct ast_node* ast_node_new_function_definition_node(
     struct ast_node* parameters, struct ast_node* statements);
 struct ast_node* ast_node_apply_designator_to_all(struct ast_node* designators,
                                                   struct ast_node* initializer);
+struct ast_node* ast_node_new_enum_definition_node(struct ast_node* ident,
+                                              struct ast_node* enumerators);
 #endif

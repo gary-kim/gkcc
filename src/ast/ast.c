@@ -90,6 +90,10 @@ void ast_print(struct ast_node *top, int depth, const char *prefix) {
       ast_print(top->function_definition.parameters, depth + 1, "parameters: ");
       ast_print(top->function_definition.statements, depth + 1, "statements: ");
       break;
+    case AST_NODE_ENUM_DEFINITION:
+      ast_print(top->enum_definition.enumerators, depth + 1, "enumerators: ");
+      ast_print(top->enum_definition.ident, depth + 1, "ident: ");
+      break;
   }
 }
 
@@ -345,10 +349,18 @@ struct ast_node *ast_node_new_function_definition_node(
 struct ast_node *ast_node_new_declaration_node(
     struct ast_node *declaration_specifiers,
     struct ast_node *init_declarator_list) {
-  gkcc_assert(init_declarator_list->type == AST_NODE_LIST,
+  gkcc_assert(init_declarator_list == NULL || init_declarator_list->type == AST_NODE_LIST,
               GKCC_ERROR_INVALID_ARGUMENTS,
               "ast_node_new_declaration_node() got an init_declarator_list "
               "that is not a list type");
+
+  // This is some kind of enum or struct definition
+  if (init_declarator_list == NULL) {
+    struct ast_node *node = ast_node_new(AST_NODE_DECLARATION);
+    node->declaration.specifiers = declaration_specifiers;
+    return node;
+  }
+
   struct ast_node *list_node = NULL;
   for (struct ast_node *n = init_declarator_list; n != NULL; n = n->list.next) {
     struct ast_node *node = ast_node_new(AST_NODE_DECLARATION);
@@ -398,6 +410,14 @@ struct ast_node *ast_node_apply_designator_to_all(
     tr_node = ast_node_append(tr_node, to_add);
   }
   return tr_node;
+}
+
+struct ast_node *ast_node_new_enum_definition_node(struct ast_node *ident,
+                                              struct ast_node *enumerators) {
+  struct ast_node *enum_node = ast_node_new(AST_NODE_ENUM_DEFINITION);
+  enum_node->enum_definition.ident = ident;
+  enum_node->enum_definition.enumerators = enumerators;
+  return enum_node;
 }
 
 struct ast_node *yylval2ast_node_ident(struct _yylval *yylval) {
