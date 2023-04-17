@@ -358,4 +358,13 @@ struct ast_node* ast_node_new_struct_or_union_definition_node(
     struct ast_node* members);
 struct ast_node* ast_node_update_struct_or_union_definition_node(
     struct ast_node* node, struct ast_node* ident, struct ast_node* members);
+struct ast_node *ast_node_new_if_statement(struct ast_node *condition,
+                                           struct ast_node *then_statement,
+                                           struct ast_node *else_statement);
+struct ast_node *ast_node_new_for_loop(struct ast_node *expr1,
+                                       struct ast_node *expr2,
+                                       struct ast_node *expr3,
+                                       struct ast_node *statements);
+struct ast_node *ast_node_new_do_while_loop(struct ast_node *condition,
+                                            struct ast_node *statements);
 #endif

@@ -98,6 +98,18 @@ void ast_print(struct ast_node *top, int depth, const char *prefix) {
       ast_print(top->struct_or_union_definition.ident, depth + 1, "ident: ");
       ast_print(top->struct_or_union_definition.members, depth + 1,
                 "members: ");
+      break;
+    case AST_NODE_IF_STATEMENT:
+      ast_print(top->if_statement.condition, depth + 1, "condition: ");
+      ast_print(top->if_statement.then_statement, depth + 1, "then: ");
+      ast_print(top->if_statement.else_statement, depth + 1, "else: ");
+      break;
+    case AST_NODE_FOR_LOOP:
+      ast_print(top->for_loop.expr1, depth + 1, "expr1: ");
+      ast_print(top->for_loop.expr2, depth + 1, "expr2: ");
+      ast_print(top->for_loop.expr3, depth + 1, "expr3: ");
+      ast_print(top->for_loop.statements, depth + 1, "do: ");
+      break;
   }
 }
 
@@ -139,6 +151,13 @@ void ast_node_string(char *buf, struct ast_node *node) {
               AST_STRUCT_OR_UNION_DEFINITION_TYPE_STRING
                   [node->struct_or_union_definition.type]);
       break;
+    case AST_NODE_FOR_LOOP:
+      if (node->for_loop.is_do_while)
+        strcpy(extrabuf, "true");
+      else
+        strcpy(extrabuf, "false");
+      sprintf(buf, "%s (is_do_while=%s):", AST_NODE_TYPE_STRING[node->type],
+              extrabuf);
     default:
       sprintf(buf, "%s:", AST_NODE_TYPE_STRING[node->type]);
       break;
@@ -259,13 +278,16 @@ void yynum2ast_node(struct ast_node *node, struct _yynum *yynum) {
 
 struct ast_node *ast_node_append(struct ast_node *parent,
                                  struct ast_node *child) {
-  gkcc_assert(child != NULL, GKCC_ERROR_INVALID_ARGUMENTS, "");
-
   // if parent == NULL, the user probably wanted to create a new list node
   // from scratch. Do it for them.
   if (parent == NULL) {
     return ast_node_new_list_node(child);
   }
+
+  // Sometimes, the child is NULL because there is an attempt to append a
+  // expression or other ast_node that actually turned out to be empty.
+  // In that case, just return the parent directly.
+  if (child == NULL) return parent;
 
   gkcc_assert(parent->type == AST_NODE_LIST, GKCC_ERROR_INVALID_ARGUMENTS,
               "ast_node_append given an ast_node that is not AST_NODE_LIST");
@@ -275,6 +297,9 @@ struct ast_node *ast_node_append(struct ast_node *parent,
   if (child->type == AST_NODE_LIST) {
     // Flatten the list
     for (struct ast_node *n = child; n != NULL; n = n->list.next) {
+      // Sometimes, list nodes of nothing are made for compatability reasons
+      // Throw it away at this stage.
+      if (n->list.node == NULL) continue;
       list_child = ast_node_new_list_node(n->list.node);
       last_node->list.next = list_child;
       last_node = list_child;
@@ -294,6 +319,39 @@ struct ast_node *ast_node_new_binop_node(enum ast_binop_type type,
   node->binop.type = type;
   node->binop.left = left;
   node->binop.right = right;
+  return node;
+}
+
+struct ast_node *ast_node_new_if_statement(struct ast_node *condition,
+                                           struct ast_node *then_statement,
+                                           struct ast_node *else_statement) {
+  struct ast_node *node = ast_node_new(AST_NODE_IF_STATEMENT);
+  node->if_statement.condition = condition;
+  node->if_statement.then_statement = then_statement;
+  node->if_statement.else_statement = else_statement;
+  return node;
+}
+struct ast_node *ast_node_new_for_loop(struct ast_node *expr1,
+                                       struct ast_node *expr2,
+                                       struct ast_node *expr3,
+                                       struct ast_node *statements) {
+  struct ast_node *node = ast_node_new(AST_NODE_FOR_LOOP);
+  node->for_loop.is_do_while = false;
+  node->for_loop.expr1 = expr1;
+  node->for_loop.expr2 = expr2;
+  node->for_loop.expr3 = expr3;
+  node->for_loop.statements = statements;
+  return node;
+}
+
+struct ast_node *ast_node_new_do_while_loop(struct ast_node *condition,
+                                            struct ast_node *statements) {
+  struct ast_node *node = ast_node_new(AST_NODE_FOR_LOOP);
+  node->for_loop.is_do_while = true;
+  node->for_loop.expr1 = NULL;
+  node->for_loop.expr2 = condition;
+  node->for_loop.expr3 = NULL;
+  node->for_loop.statements = statements;
   return node;
 }
 

@@ -287,7 +287,9 @@ unary_expression: postfix_expression
                 | SIZEOF unary_expression {
                     $$ = ast_node_new_unary_node(AST_UNARY_SIZEOF, $2);
                   }
-                | SIZEOF '(' type_name ')'
+                | SIZEOF '(' type_name ')' {
+                    $$ = ast_node_new_unary_node(AST_UNARY_SIZEOF, $type_name);
+                  }
                 ;
 
 cast_expression: unary_expression
@@ -782,8 +784,12 @@ designator_list: designator {
                  }
                ;
 
-designator: '[' constant_expression ']'
-          | '.' identifier
+designator: '[' constant_expression ']' {
+              $$ = $constant_expression;
+            }
+          | '.' identifier {
+              $$ = $identifier;
+            }
           ;
 
 // static_assert_declaration: _STATIC_ASSERT '(' constant_expression ',' STRING ')' ';'; // NOT IMPLEMENTED
@@ -824,24 +830,50 @@ block_item: declaration
           | statement
           ;
 
-expression_statement: ';'
-                    | expression ';'
+expression_statement: ';' {
+                        $$ = NULL;
+                      }
+                    | expression ';' {
+                        $$ = $expression;
+                      }
                     ;
 
-selection_statement: IF '(' expression ')' statement %prec IF
-                   | IF '(' expression ')' statement ELSE statement %prec ELSE
+selection_statement: IF '(' expression ')' statement %prec IF {
+                       $$ = ast_node_new_if_statement($expression, $statement, NULL);
+                     }
+                   | IF '(' expression ')' statement[then_statement] ELSE statement[else_statement] %prec ELSE {
+                       $$ = ast_node_new_if_statement($expression, $then_statement, $else_statement);
+                     }
                    | SWITCH '(' expression ')' statement
                    ;
 
-iteration_statement: WHILE '(' expression ')' statement
-                   | DO statement WHILE '(' expression ')' ';'
-                   | FOR '(' ';' ';' ')' statement
-                   | FOR '(' expression ';' ';' ')' statement
-                   | FOR '(' ';' expression ';' ')' statement
-                   | FOR '(' expression ';' expression ';' ')' statement
-                   | FOR '(' ';' ';' expression ')' statement
-                   | FOR '(' expression ';' ';' expression ')' statement
-                   | FOR '(' expression ';' expression ';' expression ')' statement
+iteration_statement: WHILE '(' expression ')' statement {
+                       $$ = ast_node_new_for_loop(NULL, $expression, NULL, $statement);
+                     }
+                   | DO statement WHILE '(' expression ')' ';' {
+                       $$ = ast_node_new_do_while_loop($expression, $statement);
+                     }
+                   | FOR '(' ';' ';' ')' statement {
+                       $$ = ast_node_new_for_loop(NULL, NULL, NULL, $statement);
+                     }
+                   | FOR '(' expression ';' ';' ')' statement {
+                       $$ = ast_node_new_for_loop($expression, NULL, NULL, $statement);
+                     }
+                   | FOR '(' ';' expression ';' ')' statement {
+                       $$ = ast_node_new_for_loop(NULL, $expression, NULL, $statement);
+                     }
+                   | FOR '(' expression[expr1] ';' expression[expr2] ';' ')' statement {
+                       $$ = ast_node_new_for_loop($expr1, $expr2, NULL, $statement);
+                     }
+                   | FOR '(' ';' ';' expression ')' statement {
+                       $$ = ast_node_new_for_loop(NULL, NULL, $expression, $statement);
+                     }
+                   | FOR '(' expression[expr1] ';' ';' expression[expr3] ')' statement {
+                       $$ = ast_node_new_for_loop($expr1, NULL, $expr3, $statement);
+                     }
+                   | FOR '(' expression[expr1] ';' expression[expr2]';' expression[expr3]')' statement {
+                       $$ = ast_node_new_for_loop($expr1, $expr2, $expr3, $statement);
+                     }
                    | FOR '(' declaration ';' ')'
                    | FOR '(' declaration expression ';' ')'
                    | FOR '(' declaration ';' expression ')'
