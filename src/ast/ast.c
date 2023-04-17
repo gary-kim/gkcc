@@ -94,6 +94,10 @@ void ast_print(struct ast_node *top, int depth, const char *prefix) {
       ast_print(top->enum_definition.enumerators, depth + 1, "enumerators: ");
       ast_print(top->enum_definition.ident, depth + 1, "ident: ");
       break;
+    case AST_NODE_STRUCT_OR_UNION_DEFINITION:
+      ast_print(top->struct_or_union_definition.ident, depth + 1, "ident: ");
+      ast_print(top->struct_or_union_definition.members, depth + 1,
+                "members: ");
   }
 }
 
@@ -129,6 +133,11 @@ void ast_node_string(char *buf, struct ast_node *node) {
       break;
     case AST_NODE_LIST:
       buf[0] = '\0';
+      break;
+    case AST_NODE_STRUCT_OR_UNION_DEFINITION:
+      sprintf(buf, "%s (type=%s): ", AST_NODE_TYPE_STRING[node->type],
+              AST_STRUCT_OR_UNION_DEFINITION_TYPE_STRING
+                  [node->struct_or_union_definition.type]);
       break;
     default:
       sprintf(buf, "%s:", AST_NODE_TYPE_STRING[node->type]);
@@ -349,7 +358,8 @@ struct ast_node *ast_node_new_function_definition_node(
 struct ast_node *ast_node_new_declaration_node(
     struct ast_node *declaration_specifiers,
     struct ast_node *init_declarator_list) {
-  gkcc_assert(init_declarator_list == NULL || init_declarator_list->type == AST_NODE_LIST,
+  gkcc_assert(init_declarator_list == NULL ||
+                  init_declarator_list->type == AST_NODE_LIST,
               GKCC_ERROR_INVALID_ARGUMENTS,
               "ast_node_new_declaration_node() got an init_declarator_list "
               "that is not a list type");
@@ -412,12 +422,34 @@ struct ast_node *ast_node_apply_designator_to_all(
   return tr_node;
 }
 
-struct ast_node *ast_node_new_enum_definition_node(struct ast_node *ident,
-                                              struct ast_node *enumerators) {
+struct ast_node *ast_node_new_enum_definition_node(
+    struct ast_node *ident, struct ast_node *enumerators) {
   struct ast_node *enum_node = ast_node_new(AST_NODE_ENUM_DEFINITION);
   enum_node->enum_definition.ident = ident;
   enum_node->enum_definition.enumerators = enumerators;
   return enum_node;
+}
+
+struct ast_node *ast_node_new_struct_or_union_definition_node(
+    enum ast_struct_or_union_definition_type type, struct ast_node *ident,
+    struct ast_node *members) {
+  struct ast_node *node = ast_node_new(AST_NODE_STRUCT_OR_UNION_DEFINITION);
+  node->struct_or_union_definition.type = type;
+  node->struct_or_union_definition.ident = ident;
+  node->struct_or_union_definition.members = members;
+  return node;
+}
+
+struct ast_node *ast_node_update_struct_or_union_definition_node(
+    struct ast_node *node, struct ast_node *ident, struct ast_node *members) {
+  gkcc_assert(node->type == AST_NODE_STRUCT_OR_UNION_DEFINITION,
+              GKCC_ERROR_INVALID_ARGUMENTS,
+              "ast_node_update_struct_or_union_definition_node() got node that "
+              "is not AST_NODE_STRUCT_OR_UNION_DEFINITION");
+
+  node->struct_or_union_definition.ident = ident;
+  node->struct_or_union_definition.members = members;
+  return node;
 }
 
 struct ast_node *yylval2ast_node_ident(struct _yylval *yylval) {

@@ -36,7 +36,7 @@ static const char* const GKCC_ERROR_STRING[] = {ENUM_GKCC_ERROR(ENUM_STRINGS)};
 void gkcc_report_error(enum gkcc_error error, char* reporter);
 void gkcc_assert(int to_assert, enum gkcc_error err, char* message);
 void setup_segfault_stack_trace();
-inline void gkcc_error_fatal(enum gkcc_error err, char* message);
+void gkcc_error_fatal(enum gkcc_error err, char* message);
 void print_escaped_char(char toprint);
 void print_escaped_string(char *str, size_t len);
 int sprint_escaped_char(char* buf, char toprint);

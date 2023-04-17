@@ -163,6 +163,28 @@ struct ast_enum_definition {
   struct ast_node* ident;
 };
 
+// ==================================================
+// === struct ast_struct_or_union_definition ===
+// ==================================================
+
+#define ENUM_AST_STRUCT_OR_UNION_DEFINITION_TYPE(GEN) \
+  GEN(AST_STRUCT_OR_UNION_DEFINITION_STRUCT)          \
+  GEN(AST_STRUCT_OR_UNION_DEFINITION_UNION)
+
+enum ast_struct_or_union_definition_type {
+  ENUM_AST_STRUCT_OR_UNION_DEFINITION_TYPE(ENUM_VALUES)
+};
+
+static const char* const AST_STRUCT_OR_UNION_DEFINITION_TYPE_STRING[] = {
+    ENUM_AST_STRUCT_OR_UNION_DEFINITION_TYPE(ENUM_STRINGS)};
+
+#undef ENUM_AST_STRUCT_OR_UNION_DEFINITION_TYPE
+struct ast_struct_or_union_definition {
+  enum ast_struct_or_union_definition_type type;
+  struct ast_node* ident;
+  struct ast_node* members;
+};
+
 // ================================
 // === struct ast_function_call ===
 // ================================
@@ -180,6 +202,28 @@ struct ast_function_definition {
   struct ast_node* name;
   struct ast_node* parameters;
   struct ast_node* returns;
+  struct ast_node* statements;
+};
+
+// ===============================
+// === struct ast_if_statement ===
+// ===============================
+
+struct ast_if_statement {
+  struct ast_node* condition;
+  struct ast_node* then_statement;
+  struct ast_node* else_statement;
+};
+
+// ===========================
+// === struct ast_for_loop ===
+// ===========================
+
+struct ast_for_loop {
+  bool is_do_while;
+  struct ast_node* expr1;
+  struct ast_node* expr2;
+  struct ast_node* expr3;
   struct ast_node* statements;
 };
 
@@ -220,20 +264,23 @@ struct ast_constant {
 // === struct ast_node ===
 // =======================
 
-#define ENUM_AST_NODE_TYPE(GEN)     \
-  GEN(AST_NODE_UNKNOWN)             \
-  GEN(AST_NODE_BINOP)               \
-  GEN(AST_NODE_CONSTANT)            \
-  GEN(AST_NODE_IDENT)               \
-  GEN(AST_NODE_UNARY)               \
-  GEN(AST_NODE_TERNARY)             \
-  GEN(AST_NODE_GKCC_TYPE)           \
-  GEN(AST_NODE_DECLARATION)         \
-  GEN(AST_NODE_LIST)                \
-  GEN(AST_NODE_TOP_LEVEL)           \
-  GEN(AST_NODE_FUNCTION_CALL)       \
-  GEN(AST_NODE_FUNCTION_DEFINITION) \
-  GEN(AST_NODE_ENUM_DEFINITION)
+#define ENUM_AST_NODE_TYPE(GEN)            \
+  GEN(AST_NODE_UNKNOWN)                    \
+  GEN(AST_NODE_BINOP)                      \
+  GEN(AST_NODE_CONSTANT)                   \
+  GEN(AST_NODE_IDENT)                      \
+  GEN(AST_NODE_UNARY)                      \
+  GEN(AST_NODE_TERNARY)                    \
+  GEN(AST_NODE_GKCC_TYPE)                  \
+  GEN(AST_NODE_DECLARATION)                \
+  GEN(AST_NODE_LIST)                       \
+  GEN(AST_NODE_TOP_LEVEL)                  \
+  GEN(AST_NODE_FUNCTION_CALL)              \
+  GEN(AST_NODE_FUNCTION_DEFINITION)        \
+  GEN(AST_NODE_ENUM_DEFINITION)            \
+  GEN(AST_NODE_STRUCT_OR_UNION_DEFINITION) \
+  GEN(AST_NODE_FOR_LOOP)                   \
+  GEN(AST_NODE_IF_STATEMENT)
 
 enum ast_node_type { ENUM_AST_NODE_TYPE(ENUM_VALUES) };
 
@@ -255,6 +302,9 @@ struct ast_node {
     struct ast_function_call function_call;
     struct ast_function_definition function_definition;
     struct ast_enum_definition enum_definition;
+    struct ast_struct_or_union_definition struct_or_union_definition;
+    struct ast_if_statement if_statement;
+    struct ast_for_loop for_loop;
   };
 };
 
@@ -301,6 +351,11 @@ struct ast_node* ast_node_new_function_definition_node(
     struct ast_node* parameters, struct ast_node* statements);
 struct ast_node* ast_node_apply_designator_to_all(struct ast_node* designators,
                                                   struct ast_node* initializer);
-struct ast_node* ast_node_new_enum_definition_node(struct ast_node* ident,
-                                              struct ast_node* enumerators);
+struct ast_node* ast_node_new_enum_definition_node(
+    struct ast_node* ident, struct ast_node* enumerators);
+struct ast_node* ast_node_new_struct_or_union_definition_node(
+    enum ast_struct_or_union_definition_type type, struct ast_node* ident,
+    struct ast_node* members);
+struct ast_node* ast_node_update_struct_or_union_definition_node(
+    struct ast_node* node, struct ast_node* ident, struct ast_node* members);
 #endif

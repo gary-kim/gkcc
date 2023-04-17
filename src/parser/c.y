@@ -553,13 +553,23 @@ type_specifier: VOID {
               //| typedef_name // NOT IMPLEMENTED
               //;
 
-struct_or_union_specifier: struct_or_union identifier '{' struct_declaration_list '}'
-                         | struct_or_union '{' struct_declaration_list '}'
-                         | struct_or_union identifier
+struct_or_union_specifier: struct_or_union identifier '{' struct_declaration_list '}' {
+                             $$ = ast_node_update_struct_or_union_definition_node($struct_or_union, $identifier, $struct_declaration_list);
+                           }
+                         | struct_or_union '{' struct_declaration_list '}' {
+                             $$ = ast_node_update_struct_or_union_definition_node($struct_or_union, NULL, $struct_declaration_list);
+                           }
+                         | struct_or_union identifier {
+                             $$ = ast_node_update_struct_or_union_definition_node($struct_or_union, $identifier, NULL);
+                           }
                          ;
 
-struct_or_union: STRUCT
-               | UNION
+struct_or_union: STRUCT {
+                   $$ = ast_node_new_struct_or_union_definition_node(AST_STRUCT_OR_UNION_DEFINITION_STRUCT, NULL, NULL);
+                 }
+               | UNION {
+                   $$ = ast_node_new_struct_or_union_definition_node(AST_STRUCT_OR_UNION_DEFINITION_UNION, NULL, NULL);
+                 }
                ;
 
 struct_declaration_list: struct_declaration {
@@ -570,8 +580,12 @@ struct_declaration_list: struct_declaration {
                          }
                        ;
 
-struct_declaration: specifier_qualifier_list ';'
-                  | specifier_qualifier_list struct_declarator_list ';'
+struct_declaration: specifier_qualifier_list ';' {
+                      $$ = ast_node_new_declaration_node($1, NULL);
+                    }
+                  | specifier_qualifier_list struct_declarator_list ';' {
+                      $$ = ast_node_new_declaration_node($1, $2);
+                    }
                   // | static_assert_declaration // NOT IMPLEMENTED
                   ;
 
