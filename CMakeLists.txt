@@ -75,7 +75,7 @@ add_executable(parsetester
         ${CMAKE_SOURCE_DIR}/src/misc/misc.c
         ${CMAKE_SOURCE_DIR}/src/ast/types.c
         ${CMAKE_SOURCE_DIR}/3rdparty/dmezh/backtrace.c
-        )
+        src/ast/ast_constructors.c src/ast/ast_constructors.h)
 
 target_include_directories(parsetester PRIVATE ${INCLUDE_DIRS})
 if(DEFINED GKCC_UNDEFINED_BEHAVIOR_SANITIZER)

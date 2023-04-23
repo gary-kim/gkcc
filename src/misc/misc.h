@@ -28,7 +28,10 @@
   GEN(GKCC_ERROR_INVALID_ARGUMENTS)     \
   GEN(GKCC_ERROR_SYMBOL_ALREADY_EXISTS) \
   GEN(GKCC_ERROR_YYERROR)               \
-  GEN(GKCC_ERROR_UNEXPECTED_NULL_VALUE)
+  GEN(GKCC_ERROR_UNEXPECTED_NULL_VALUE) \
+  GEN(GKCC_ERROR_UNEXPECTED_VALUE)      \
+  GEN(GKCC_ERROR_REDECLARATION)         \
+  GEN(GKCC_ERROR_CONFLICT)
 
 enum gkcc_error { ENUM_GKCC_ERROR(ENUM_VALUES) };
 
@@ -39,7 +42,7 @@ void gkcc_assert(int to_assert, enum gkcc_error err, char* message);
 void setup_segfault_stack_trace();
 void gkcc_error_fatal(enum gkcc_error err, char* message);
 void print_escaped_char(char toprint);
-void print_escaped_string(char *str, size_t len);
+void print_escaped_string(char* str, size_t len);
 int sprint_escaped_char(char* buf, char toprint);
 void sprint_escaped_string(char* buf, char* str, size_t len);
 

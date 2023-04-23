@@ -16,7 +16,9 @@
 %{
 #include "lex_extras.h"
 #include "ast.h"
+#include "ast_constructors.h"
 #include "scope.h"
+#include "lex.yy.h"
 
 #include <stdio.h>
 
@@ -498,7 +500,7 @@ init_declarator_list: init_declarator {
 
 init_declarator: declarator
                | declarator '=' initializer {
-                   $$ = ast_node_new_binop_node(AST_BINOP_ASSIGN, $1, $3);
+                   $declarator->declaration.assignment = $initializer;
                  }
                ;
 
@@ -550,8 +552,6 @@ type_specifier: VOID {
               | UNSIGNED {
                   $$ = ast_node_new_gkcc_type_specifier_node(GKCC_TYPE_SPECIFIER_UNSIGNED);
                 }
-              | _BOOL
-              | _COMPLEX
               | struct_or_union_specifier {
                   $$ = $1;
                 }
@@ -677,25 +677,30 @@ alignment_specifier: _ALIGNAS '(' type_name ')'
                   | _ALIGNAS '(' constant_expression ')'
                   ;
 
-declarator: direct_declarator
+declarator: direct_declarator {
+              $$ = ast_node_direct_declarator_to_declarator($direct_declarator);
+            }
           | pointer direct_declarator {
-              $$ = ast_node_append($pointer, $direct_declarator);
+              struct ast_node *n = ast_node_append($direct_declarator, $pointer);
+              $$ = ast_node_direct_declarator_to_declarator(n);
             }
           ;
 
-direct_declarator: identifier
-                 | '(' declarator ')' {
-                     $$ = $declarator;
+direct_declarator: identifier {
+                     struct ast_node *n = ast_node_new_declaration_node_from_ident($identifier);
+                     $$ = ast_node_new_list_node(n);
                    }
-                 | direct_declarator '[' ']'
-                 | direct_declarator '[' type_qualifier_list ']'
-                 | direct_declarator '[' assignment_expression ']'
-                 | direct_declarator '[' type_qualifier_list assignment_expression']'
-                 | direct_declarator '[' STATIC assignment_expression ']'
-                 | direct_declarator '[' STATIC type_qualifier_list assignment_expression ']'
-                 | direct_declarator '[' type_qualifier_list STATIC assignment_expression ']'
-                 | direct_declarator '[' type_qualifier_list '*' ']'
-                 | direct_declarator '[' '*' ']'
+                 | '(' declarator ')' {
+                     $$ = ast_node_new_list_node($declarator);
+                   }
+                 | direct_declarator '[' ']' {
+                     struct ast_node *node = ast_node_new_gkcc_array_type_node(NULL);
+                     $$ = ast_node_append($1, node);
+                   }
+                 | direct_declarator '[' assignment_expression ']' {
+                     struct ast_node *node = ast_node_new_gkcc_array_type_node($assignment_expression);
+                     $$ = ast_node_append($1, node);
+                   }
                  | direct_declarator '(' parameter_type_list ')'
                  | direct_declarator '(' identifier_list ')'
                  | direct_declarator '(' ')'
@@ -704,11 +709,11 @@ direct_declarator: identifier
 pointer: '*' {
            $$ = ast_node_new_list_node(ast_node_new_gkcc_type_node(GKCC_TYPE_PTR));
          }
-       | '*' type_qualifier_list {
-           // Ignoring these type qualifiers
-           // TODO: Maybe include these type qualifiers?
-           $$ = ast_node_new_gkcc_type_node(GKCC_TYPE_PTR);
-         }
+//       | '*' type_qualifier_list {
+//           // Ignoring these type qualifiers
+//           // TODO: Maybe include these type qualifiers?
+//           $$ = ast_node_new_gkcc_type_node(GKCC_TYPE_PTR);
+//         }
        | '*' type_qualifier_list pointer {
            // Ignoring these type qualifiers
            // TODO: Maybe include these type qualifiers?
@@ -890,10 +895,6 @@ iteration_statement: WHILE '(' expression ')' statement {
                    | FOR '(' expression[expr1] ';' expression[expr2]';' expression[expr3]')' statement {
                        $$ = ast_node_new_for_loop($expr1, $expr2, $expr3, $statement);
                      }
-                   | FOR '(' declaration ';' ')'
-                   | FOR '(' declaration expression ';' ')'
-                   | FOR '(' declaration ';' expression ')'
-                   | FOR '(' declaration expression ';' expression ')'
                    ;
 
 jump_statement: GOTO IDENT ';'
@@ -906,8 +907,9 @@ jump_statement: GOTO IDENT ';'
 // === BEGIN EXTERNAL DEFINITIONS ===
 
 function_definition: declaration_specifiers declarator compound_statement {
-                       // TODO: Figure out how to seperate what parts of the declaration-specifiers applies to the
+                       // TODO: Figure out how to seperate what parts of the declaration-type applies to the
                        // function and what defines to the returned type.
+                       // TODO: Also, merge in function_definition_node to use a gkcc_type for the function declaration.
                        $$ = ast_node_new_function_definition_node($declaration_specifiers, $declarator, NULL, $compound_statement);
                      }
                    //| declaration_specifiers declarator declaration_list compound_statement

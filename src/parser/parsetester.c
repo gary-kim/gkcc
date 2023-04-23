@@ -19,6 +19,7 @@
 #include <string.h>
 
 #include "ast.h"
+#include "ast_constructors.h"
 #include "c.tab.h"
 #include "scope.h"
 

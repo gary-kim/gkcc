@@ -18,30 +18,6 @@
 
 #include "misc.h"
 
-// ==========================
-// === struct gkcc_scalar ===
-// ==========================
-
-#define ENUM_GKCC_SCALAR_TYPE(GEN) \
-  GEN(GKCC_SCALAR_LONGLONG)        \
-  GEN(GKCC_SCALAR_LONG_DOUBLE)     \
-  GEN(GKCC_SCALAR_DOUBLE)          \
-  GEN(GKCC_SCALAR_FLOAT)           \
-  GEN(GKCC_SCALAR_LONG)            \
-  GEN(GKCC_SCALAR_INT)             \
-  GEN(GKCC_SCALAR_CHAR)
-
-enum gkcc_scalar_type { ENUM_GKCC_SCALAR_TYPE(ENUM_VALUES) };
-
-static const char* const GKCC_SCALAR_TYPE_STRING[] = {
-    ENUM_GKCC_SCALAR_TYPE(ENUM_STRINGS)};
-
-#undef ENUM_GKCC_SCALAR_TYPE
-
-struct gkcc_scalar {
-  enum gkcc_scalar_type type;
-};
-
 // =============================
 // === struct gkcc_qualifier ===
 // =============================
@@ -119,12 +95,12 @@ struct gkcc_type_specifier {
 
 #undef ENUM_GKCC_TYPE_SPECIFIER_TYPE
 
-// ============================
-// === struct gkcc_type_ptr ===
-// ============================
+// ==============================
+// === struct gkcc_array ===
+// ==============================
 
-struct gkcc_type_ptr {
-  struct gkcc_type* to;
+struct gkcc_array {
+  struct ast_node* size;
 };
 
 // ========================
@@ -132,15 +108,27 @@ struct gkcc_type_ptr {
 // ========================
 
 #define ENUM_GKCC_TYPE_TYPE(GEN)         \
-  GEN(GKCC_TYPE_SCALAR)                  \
+  GEN(GKCC_TYPE_UNKNOWN)                 \
   GEN(GKCC_TYPE_FUNCTION)                \
   GEN(GKCC_TYPE_PTR)                     \
   GEN(GKCC_TYPE_ARRAY)                   \
   GEN(GKCC_TYPE_STRUCT)                  \
   GEN(GKCC_TYPE_UNION)                   \
+  GEN(GKCC_TYPE_ENUM)                    \
   GEN(GKCC_TYPE_QUALIFIER)               \
   GEN(GKCC_TYPE_STORAGE_CLASS_SPECIFIER) \
-  GEN(GKCC_TYPE_TYPE_SPECIFIER)
+  GEN(GKCC_TYPE_TYPE_SPECIFIER)          \
+  GEN(GKCC_TYPE_SCALAR_LONGLONG)         \
+  GEN(GKCC_TYPE_SCALAR_LONG_DOUBLE)      \
+  GEN(GKCC_TYPE_SCALAR_DOUBLE)           \
+  GEN(GKCC_TYPE_SCALAR_FLOAT)            \
+  GEN(GKCC_TYPE_SCALAR_LONG)             \
+  GEN(GKCC_TYPE_SCALAR_INT)              \
+  GEN(GKCC_TYPE_SCALAR_CHAR)             \
+  GEN(GKCC_TYPE_SCALAR_VOID)             \
+  GEN(GKCC_TYPE_SCALAR_SHORT)            \
+  GEN(GKCC_TYPE_SIGNED)                  \
+  GEN(GKCC_TYPE_UNSIGNED)
 
 enum gkcc_type_type { ENUM_GKCC_TYPE_TYPE(ENUM_VALUES) };
 
@@ -152,12 +140,12 @@ static const char* const GKCC_TYPE_TYPE_STRING[] = {
 struct gkcc_type {
   enum gkcc_type_type type;
   union {
-    struct gkcc_scalar scalar;
     struct gkcc_qualifier qualifier;
     struct gkcc_storage_class_specifier storage_class_specifier;
-    struct gkcc_type_ptr ptr;
     struct gkcc_type_specifier type_specifier;
+    struct gkcc_array array;
   };
+  struct gkcc_type* of;
 };
 
 // =============================
@@ -165,5 +153,7 @@ struct gkcc_type {
 // =============================
 
 struct gkcc_type* gkcc_type_new(enum gkcc_type_type type);
+struct gkcc_type* gkcc_type_append(struct gkcc_type* parent,
+                                   struct gkcc_type* child);
 
 #endif  // GKCC_TYPES_H
