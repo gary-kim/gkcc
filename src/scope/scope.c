@@ -36,6 +36,11 @@ struct gkcc_symbol_table_set *gkcc_symbol_table_set_new(
   return table;
 }
 
+struct gkcc_symbol_table_set *gkcc_symbol_table_set_get_parent_symbol_table_set(
+    struct gkcc_symbol_table_set *symbol_table_set) {
+  return symbol_table_set->parent_scope;
+}
+
 struct gkcc_symbol_table *gkcc_symbol_table_set_get_symbol_table(
     struct gkcc_symbol_table_set *table_set, enum gkcc_namespace namespace) {
   switch (namespace) {
@@ -68,7 +73,8 @@ enum gkcc_error gkcc_symbol_table_add_symbol(struct gkcc_symbol_table *table,
     return GKCC_ERROR_SYMBOL_ALREADY_EXISTS;
 
   // Go to last symbol in list
-  for (; last_symbol->next != NULL; last_symbol = last_symbol->next);
+  for (; last_symbol->next != NULL; last_symbol = last_symbol->next)
+    ;
 
   // Set the next symbol as our desired symbol
   last_symbol->next = symbol;
@@ -101,15 +107,19 @@ enum gkcc_error gkcc_symbol_table_set_add_symbol(
 // the name need not be allocated forever as it will be strcpy(ed)
 // at creation.
 struct gkcc_symbol *gkcc_symbol_new(char *name,
-                                    enum gkcc_storage_class storage_class) {
+                                    enum gkcc_storage_class storage_class,
+                                    int line_number, char *filename) {
   struct gkcc_symbol *symbol = malloc(sizeof(struct gkcc_symbol));
 
   symbol->storage_class = storage_class;
+  symbol->effective_line_number = line_number;
   symbol->next = NULL;
 
-  symbol->symbol_name = malloc(strlen(name));
+  symbol->symbol_name = malloc(strlen(name) + 1);
   strcpy(symbol->symbol_name, name);
 
+  symbol->filename = malloc(strlen(filename) + 1);
+  strcpy(symbol->filename, filename);
   return symbol;
 }
 
@@ -120,8 +130,8 @@ struct gkcc_symbol *gkcc_symbol_new(char *name,
 // but this cannot be recursive.
 struct gkcc_symbol *gkcc_symbol_table_get_symbol(
     struct gkcc_symbol_table *symbol_table, char *name) {
-  for (struct gkcc_symbol *symbol = symbol_table->symbol_list;
-       symbol != NULL; symbol = symbol->next) {
+  for (struct gkcc_symbol *symbol = symbol_table->symbol_list; symbol != NULL;
+       symbol = symbol->next) {
     if (strcmp(symbol->symbol_name, name) == 0) {
       return symbol;
     }
@@ -135,6 +145,9 @@ struct gkcc_symbol *gkcc_symbol_table_get_symbol(
 struct gkcc_symbol *gkcc_symbol_table_set_get_symbol(
     struct gkcc_symbol_table_set *symbol_table_set, char *name,
     enum gkcc_namespace namespace, bool recurse) {
+  // Never recurse if this is a struct or union definition scope
+  if (symbol_table_set->scope == GKCC_SCOPE_STRUCT_OR_UNION) recurse = false;
+
   struct gkcc_symbol_table *symbol_table =
       gkcc_symbol_table_set_get_symbol_table(symbol_table_set, namespace);
   for (struct gkcc_symbol *symbol = symbol_table->symbol_list; symbol != NULL;

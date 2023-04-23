@@ -709,11 +709,11 @@ direct_declarator: identifier {
 pointer: '*' {
            $$ = ast_node_new_list_node(ast_node_new_gkcc_type_node(GKCC_TYPE_PTR));
          }
-//       | '*' type_qualifier_list {
-//           // Ignoring these type qualifiers
-//           // TODO: Maybe include these type qualifiers?
-//           $$ = ast_node_new_gkcc_type_node(GKCC_TYPE_PTR);
-//         }
+       | '*' type_qualifier_list {
+           // Ignoring these type qualifiers
+           // TODO: Maybe include these type qualifiers?
+           $$ = ast_node_new_gkcc_type_node(GKCC_TYPE_PTR);
+         }
        | '*' type_qualifier_list pointer {
            // Ignoring these type qualifiers
            // TODO: Maybe include these type qualifiers?
