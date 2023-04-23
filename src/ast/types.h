@@ -107,33 +107,38 @@ struct gkcc_storage_class_specifier {
   GEN(GKCC_TYPE_SPECIFIER_UNION)           \
   GEN(GKCC_TYPE_SPECIFIER_ENUM)
 
-enum gkcc_type_specifier_type {
-    ENUM_GKCC_TYPE_SPECIFIER_TYPE(ENUM_VALUES)
-};
+enum gkcc_type_specifier_type { ENUM_GKCC_TYPE_SPECIFIER_TYPE(ENUM_VALUES) };
 
-static const char * const GKCC_TYPE_SPECIFIER_TYPE_STRING[] = {
-    ENUM_GKCC_TYPE_SPECIFIER_TYPE(ENUM_STRINGS)
-};
+static const char* const GKCC_TYPE_SPECIFIER_TYPE_STRING[] = {
+    ENUM_GKCC_TYPE_SPECIFIER_TYPE(ENUM_STRINGS)};
 
 struct gkcc_type_specifier {
   enum gkcc_type_specifier_type type;
-  struct gkcc_type *of;
+  struct gkcc_type* of;
 };
 
 #undef ENUM_GKCC_TYPE_SPECIFIER_TYPE
+
+// ============================
+// === struct gkcc_type_ptr ===
+// ============================
+
+struct gkcc_type_ptr {
+  struct gkcc_type* to;
+};
 
 // ========================
 // === struct gkcc_type ===
 // ========================
 
-#define ENUM_GKCC_TYPE_TYPE(GEN) \
-  GEN(GKCC_TYPE_SCALAR)          \
-  GEN(GKCC_TYPE_FUNCTION)        \
-  GEN(GKCC_TYPE_PTR)             \
-  GEN(GKCC_TYPE_ARRAY)           \
-  GEN(GKCC_TYPE_STRUCT)          \
-  GEN(GKCC_TYPE_UNION)           \
-  GEN(GKCC_TYPE_QUALIFIER)       \
+#define ENUM_GKCC_TYPE_TYPE(GEN)         \
+  GEN(GKCC_TYPE_SCALAR)                  \
+  GEN(GKCC_TYPE_FUNCTION)                \
+  GEN(GKCC_TYPE_PTR)                     \
+  GEN(GKCC_TYPE_ARRAY)                   \
+  GEN(GKCC_TYPE_STRUCT)                  \
+  GEN(GKCC_TYPE_UNION)                   \
+  GEN(GKCC_TYPE_QUALIFIER)               \
   GEN(GKCC_TYPE_STORAGE_CLASS_SPECIFIER) \
   GEN(GKCC_TYPE_TYPE_SPECIFIER)
 
@@ -150,6 +155,7 @@ struct gkcc_type {
     struct gkcc_scalar scalar;
     struct gkcc_qualifier qualifier;
     struct gkcc_storage_class_specifier storage_class_specifier;
+    struct gkcc_type_ptr ptr;
     struct gkcc_type_specifier type_specifier;
   };
 };

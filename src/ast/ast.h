@@ -123,7 +123,6 @@ struct ast_ident {
 
 struct ast_gkcc_type {
   struct gkcc_type* gkcc_type;
-  struct ast_node* child;
 };
 
 // ==============================
@@ -329,13 +328,13 @@ struct ast_node* ast_node_new_ternary_node(struct ast_node* condition,
                                            struct ast_node* false_expr);
 char* ast_ternary_string(struct ast_ternary* node);
 struct ast_node* ast_node_new_gkcc_type_qualifier_node(
-    enum gkcc_qualifier_type qualifier_type, struct ast_node* child);
+    enum gkcc_qualifier_type qualifier_type);
 struct ast_node* ast_node_new_constant_int_node(int val);
 struct ast_node* yylval2ast_node(struct _yylval* yylval);
 struct ast_node* ast_node_new_gkcc_storage_class_specifier_node(
-    enum gkcc_storage_class_specifier_type type, struct ast_node* child);
+    enum gkcc_storage_class_specifier_type type);
 struct ast_node* ast_node_new_gkcc_type_specifier_node(
-    enum gkcc_type_specifier_type type, struct ast_node* child);
+    enum gkcc_type_specifier_type type);
 struct ast_node* yylval2ast_node_ident(struct _yylval* yylval);
 char* ast_gkcc_type_string(struct ast_gkcc_type* gkcc_type);
 struct ast_node* ast_node_new_declaration_node(
@@ -358,13 +357,14 @@ struct ast_node* ast_node_new_struct_or_union_definition_node(
     struct ast_node* members);
 struct ast_node* ast_node_update_struct_or_union_definition_node(
     struct ast_node* node, struct ast_node* ident, struct ast_node* members);
-struct ast_node *ast_node_new_if_statement(struct ast_node *condition,
-                                           struct ast_node *then_statement,
-                                           struct ast_node *else_statement);
-struct ast_node *ast_node_new_for_loop(struct ast_node *expr1,
-                                       struct ast_node *expr2,
-                                       struct ast_node *expr3,
-                                       struct ast_node *statements);
-struct ast_node *ast_node_new_do_while_loop(struct ast_node *condition,
-                                            struct ast_node *statements);
+struct ast_node* ast_node_new_if_statement(struct ast_node* condition,
+                                           struct ast_node* then_statement,
+                                           struct ast_node* else_statement);
+struct ast_node* ast_node_new_for_loop(struct ast_node* expr1,
+                                       struct ast_node* expr2,
+                                       struct ast_node* expr3,
+                                       struct ast_node* statements);
+struct ast_node* ast_node_new_do_while_loop(struct ast_node* condition,
+                                            struct ast_node* statements);
+struct ast_node* ast_node_new_gkcc_type_node(enum gkcc_type_type type);
 #endif

@@ -63,10 +63,6 @@ void ast_print(struct ast_node *top, int depth, const char *prefix) {
       ast_print(top->ternary.true_expr, depth + 1, "true_expr: ");
       ast_print(top->ternary.false_expr, depth + 1, "false_expr: ");
       break;
-    case AST_NODE_GKCC_TYPE:
-      // TODO: This should be removed once declarations are done
-      ast_print(top->gkcc_type.child, depth + 1, "");
-      break;
     case AST_NODE_DECLARATION:
       ast_print(top->declaration.specifiers, depth + 1, "specifiers: ");
       ast_print(top->declaration.init_declarator, depth + 1,
@@ -373,19 +369,22 @@ struct ast_node *ast_node_new_ternary_node(struct ast_node *condition,
   return node;
 }
 
-struct ast_node *ast_node_new_gkcc_type_qualifier_node(
-    enum gkcc_qualifier_type qualifier_type, struct ast_node *child) {
+struct ast_node *ast_node_new_gkcc_type_node(enum gkcc_type_type type) {
   struct ast_node *node = ast_node_new(AST_NODE_GKCC_TYPE);
-  node->gkcc_type.child = child;
-  node->gkcc_type.gkcc_type = gkcc_type_new(GKCC_TYPE_QUALIFIER);
+  node->gkcc_type.gkcc_type = gkcc_type_new(type);
+  return node;
+}
+
+struct ast_node *ast_node_new_gkcc_type_qualifier_node(
+    enum gkcc_qualifier_type qualifier_type) {
+  struct ast_node *node = ast_node_new_gkcc_type_node(GKCC_TYPE_QUALIFIER);
   node->gkcc_type.gkcc_type->qualifier.type = qualifier_type;
   return node;
 }
 
 struct ast_node *ast_node_new_gkcc_storage_class_specifier_node(
-    enum gkcc_storage_class_specifier_type type, struct ast_node *child) {
+    enum gkcc_storage_class_specifier_type type) {
   struct ast_node *node = ast_node_new(AST_NODE_GKCC_TYPE);
-  node->gkcc_type.child = child;
   node->gkcc_type.gkcc_type = gkcc_type_new(GKCC_TYPE_TYPE_SPECIFIER);
   node->gkcc_type.gkcc_type->type = GKCC_TYPE_STORAGE_CLASS_SPECIFIER;
   node->gkcc_type.gkcc_type->storage_class_specifier.type = type;
@@ -393,9 +392,8 @@ struct ast_node *ast_node_new_gkcc_storage_class_specifier_node(
 }
 
 struct ast_node *ast_node_new_gkcc_type_specifier_node(
-    enum gkcc_type_specifier_type type, struct ast_node *child) {
+    enum gkcc_type_specifier_type type) {
   struct ast_node *node = ast_node_new(AST_NODE_GKCC_TYPE);
-  node->gkcc_type.child = child;
   node->gkcc_type.gkcc_type = gkcc_type_new(GKCC_TYPE_TYPE_SPECIFIER);
   node->gkcc_type.gkcc_type->type = GKCC_TYPE_TYPE_SPECIFIER;
   node->gkcc_type.gkcc_type->type_specifier.type = type;
@@ -508,6 +506,20 @@ struct ast_node *ast_node_update_struct_or_union_definition_node(
   node->struct_or_union_definition.ident = ident;
   node->struct_or_union_definition.members = members;
   return node;
+}
+
+struct ast_node *ast_node_declaration_to_type(struct ast_node *original_node) {
+  if (original_node->type != AST_NODE_LIST) {
+    original_node = ast_node_new_list_node(original_node);
+  }
+
+  struct ast_node *new_node = ast_node_new(AST_NODE_GKCC_TYPE);
+
+  for (struct ast_node *n_list = original_node; n_list != NULL;
+       n_list = n_list->list.next) {
+    struct ast_node *n = n_list->list.node;
+  }
+  // TODO: CONTINUE HERE
 }
 
 struct ast_node *yylval2ast_node_ident(struct _yylval *yylval) {

@@ -486,6 +486,8 @@ declaration_specifiers: storage_class_specifier {
                         }
                       ;
 
+// TODO: Must handle filippy flippy to not take pointers as another type.
+// Pointers are in fact part of the next symbol it will find.
 init_declarator_list: init_declarator {
                         $$ = ast_node_new_list_node($1);
                       }
@@ -501,57 +503,61 @@ init_declarator: declarator
                ;
 
 storage_class_specifier: TYPEDEF {
-                            $$ = ast_node_new_gkcc_storage_class_specifier_node(GKCC_STORAGE_CLASS_SPECIFIER_TYPEDEF, NULL);
+                            $$ = ast_node_new_gkcc_storage_class_specifier_node(GKCC_STORAGE_CLASS_SPECIFIER_TYPEDEF);
                          }
                        | EXTERN {
-                           $$ = ast_node_new_gkcc_storage_class_specifier_node(GKCC_STORAGE_CLASS_SPECIFIER_EXTERN, NULL);
+                           $$ = ast_node_new_gkcc_storage_class_specifier_node(GKCC_STORAGE_CLASS_SPECIFIER_EXTERN);
                          }
                        | STATIC {
-                           $$ = ast_node_new_gkcc_storage_class_specifier_node(GKCC_STORAGE_CLASS_SPECIFIER_EXTERN, NULL);
+                           $$ = ast_node_new_gkcc_storage_class_specifier_node(GKCC_STORAGE_CLASS_SPECIFIER_EXTERN);
                          }
                        | _THREAD_LOCAL {
-                           $$ = ast_node_new_gkcc_storage_class_specifier_node(GKCC_STORAGE_CLASS_SPECIFIER_THREAD_LOCAL, NULL);
+                           $$ = ast_node_new_gkcc_storage_class_specifier_node(GKCC_STORAGE_CLASS_SPECIFIER_THREAD_LOCAL);
                          }
                        | AUTO {
-                           $$ = ast_node_new_gkcc_storage_class_specifier_node(GKCC_STORAGE_CLASS_SPECIFIER_AUTO, NULL);
+                           $$ = ast_node_new_gkcc_storage_class_specifier_node(GKCC_STORAGE_CLASS_SPECIFIER_AUTO);
                          }
                        | REGISTER {
-                           $$ = ast_node_new_gkcc_storage_class_specifier_node(GKCC_STORAGE_CLASS_SPECIFIER_REGISTER, NULL);
+                           $$ = ast_node_new_gkcc_storage_class_specifier_node(GKCC_STORAGE_CLASS_SPECIFIER_REGISTER);
                          }
                        ;
 
 // TODO: Fill these in. The enum types already exist for them
 type_specifier: VOID {
-                  $$ = ast_node_new_gkcc_type_specifier_node(GKCC_TYPE_SPECIFIER_VOID, NULL);
+                  $$ = ast_node_new_gkcc_type_specifier_node(GKCC_TYPE_SPECIFIER_VOID);
                 }
               | CHAR {
-                  $$ = ast_node_new_gkcc_type_specifier_node(GKCC_TYPE_SPECIFIER_CHAR, NULL);
+                  $$ = ast_node_new_gkcc_type_specifier_node(GKCC_TYPE_SPECIFIER_CHAR);
                 }
               | SHORT {
-                  $$ = ast_node_new_gkcc_type_specifier_node(GKCC_TYPE_SPECIFIER_SHORT, NULL);
+                  $$ = ast_node_new_gkcc_type_specifier_node(GKCC_TYPE_SPECIFIER_SHORT);
                 }
               | INT {
-                  $$ = ast_node_new_gkcc_type_specifier_node(GKCC_TYPE_SPECIFIER_INT, NULL);
+                  $$ = ast_node_new_gkcc_type_specifier_node(GKCC_TYPE_SPECIFIER_INT);
                 }
               | LONG {
-                  $$ = ast_node_new_gkcc_type_specifier_node(GKCC_TYPE_SPECIFIER_LONG, NULL);
+                  $$ = ast_node_new_gkcc_type_specifier_node(GKCC_TYPE_SPECIFIER_LONG);
                 }
               | FLOAT {
-                  $$ = ast_node_new_gkcc_type_specifier_node(GKCC_TYPE_SPECIFIER_FLOAT, NULL);
+                  $$ = ast_node_new_gkcc_type_specifier_node(GKCC_TYPE_SPECIFIER_FLOAT);
                 }
               | DOUBLE {
-                  $$ = ast_node_new_gkcc_type_specifier_node(GKCC_TYPE_SPECIFIER_DOUBLE, NULL);
+                  $$ = ast_node_new_gkcc_type_specifier_node(GKCC_TYPE_SPECIFIER_DOUBLE);
                 }
               | SIGNED {
-                  $$ = ast_node_new_gkcc_type_specifier_node(GKCC_TYPE_SPECIFIER_SIGNED, NULL);
+                  $$ = ast_node_new_gkcc_type_specifier_node(GKCC_TYPE_SPECIFIER_SIGNED);
                 }
               | UNSIGNED {
-                  $$ = ast_node_new_gkcc_type_specifier_node(GKCC_TYPE_SPECIFIER_UNSIGNED, NULL);
+                  $$ = ast_node_new_gkcc_type_specifier_node(GKCC_TYPE_SPECIFIER_UNSIGNED);
                 }
               | _BOOL
               | _COMPLEX
-              | struct_or_union_specifier
-              | enum_specifier
+              | struct_or_union_specifier {
+                  $$ = $1;
+                }
+              | enum_specifier {
+                  $$ = $1;
+                }
               //| typedef_name // NOT IMPLEMENTED
               //;
 
@@ -614,8 +620,8 @@ struct_declarator_list: struct_declarator {
                       ;
 
 struct_declarator: declarator
-                 | declarator ':' constant_expression
-                 | ':' constant_expression
+                 //| declarator ':' constant_expression // Not implemented
+                 //| ':' constant_expression // Not implemented
                  ;
 
 enum_specifier: ENUM '{' enumerator_list '}' {
@@ -653,13 +659,13 @@ enumerator: identifier
 
 
 type_qualifier: CONST {
-                  $$ = ast_node_new_gkcc_type_qualifier_node(GKCC_QUALIFIER_CONST, NULL);
+                  $$ = ast_node_new_gkcc_type_qualifier_node(GKCC_QUALIFIER_CONST);
                 }
               | RESTRICT {
-                  $$ = ast_node_new_gkcc_type_qualifier_node(GKCC_QUALIFIER_RESTRICT, NULL);
+                  $$ = ast_node_new_gkcc_type_qualifier_node(GKCC_QUALIFIER_RESTRICT);
                 }
               | VOLATILE {
-                  $$ = ast_node_new_gkcc_type_qualifier_node(GKCC_QUALIFIER_VOLATILE, NULL);
+                  $$ = ast_node_new_gkcc_type_qualifier_node(GKCC_QUALIFIER_VOLATILE);
                 }
               ;
 
@@ -673,7 +679,7 @@ alignment_specifier: _ALIGNAS '(' type_name ')'
 
 declarator: direct_declarator
           | pointer direct_declarator {
-              $$ = ast_node_new_unary_node(AST_UNARY_DEREFERENCE, $2);
+              $$ = ast_node_append($pointer, $direct_declarator);
             }
           ;
 
@@ -695,13 +701,23 @@ direct_declarator: identifier
                  | direct_declarator '(' ')'
                  ;
 
-pointer: '*'
-       | '*' type_qualifier_list {
-           $$ = ast_node_new_unary_node(AST_UNARY_DEREFERENCE, $2);
+pointer: '*' {
+           $$ = ast_node_new_list_node(ast_node_new_gkcc_type_node(GKCC_TYPE_PTR));
          }
-       | '*' type_qualifier_list pointer
+       | '*' type_qualifier_list {
+           // Ignoring these type qualifiers
+           // TODO: Maybe include these type qualifiers?
+           $$ = ast_node_new_gkcc_type_node(GKCC_TYPE_PTR);
+         }
+       | '*' type_qualifier_list pointer {
+           // Ignoring these type qualifiers
+           // TODO: Maybe include these type qualifiers?
+           struct ast_node *ptr = ast_node_new_list_node(ast_node_new_gkcc_type_node(GKCC_TYPE_PTR));
+           $$ = ast_node_append($3, ptr);
+         }
        | '*' pointer {
-           $$ = ast_node_new_unary_node(AST_UNARY_DEREFERENCE, $2);
+           struct ast_node *ptr = ast_node_new_list_node(ast_node_new_gkcc_type_node(GKCC_TYPE_PTR));
+           $$ = ast_node_append($2, ptr);
          }
        ;
 
