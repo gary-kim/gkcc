@@ -108,8 +108,8 @@ static void yyerror() {
 %token <yylval> _STATIC_ASSERT
 %token <yylval> _THREAD_LOCAL
 
-%left IF
-%left ELSE
+%precedence IF
+%precedence ELSE
 
 %nterm <ast_node> declaration_or_fndef
 %nterm <ast_node> primary_expression

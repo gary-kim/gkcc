@@ -19,7 +19,7 @@ project(gkcc)
 set(GKCC_UNDEFINED_BEHAVIOR_SANITIZER 1)
 
 set (CMAKE_C_STANDARD 17)
-set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -pedantic -ggdb -fno-omit-frame-pointer -static-libubsan")
+set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -pedantic -Werror-implicit-function-declaration -Wreturn-type -ggdb -fno-omit-frame-pointer -static-libubsan")
 if(DEFINED GKCC_UNDEFINED_BEHAVIOR_SANITIZER)
        set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=undefined -fsanitize=address")
 endif()
@@ -38,6 +38,7 @@ add_custom_command(
         OUTPUT
                 ${GENERATED_DIR}/c.tab.c
                 ${GENERATED_DIR}/c.tab.h
+                ${GENERATED_DIR}/report.html
         COMMAND bison
         ARGS c.y --debug --output=${GENERATED_DIR}/c.tab.c --header=${GENERATED_DIR}/c.tab.h --html=${GENERATED_DIR}/report.html --report=lookaheads -v -Wall
         DEPENDS ${CMAKE_SOURCE_DIR}/src/parser/c.y
@@ -57,6 +58,7 @@ add_custom_command(
 add_executable(lextester
         ${CMAKE_SOURCE_DIR}/src/lexical/test.c
         ${GENERATED_DIR}/lex.yy.c
+        ${GENERATED_DIR}/c.tab.h
         ${CMAKE_SOURCE_DIR}/src/misc/misc.c
         ${CMAKE_SOURCE_DIR}/3rdparty/dmezh/backtrace.c
         )
