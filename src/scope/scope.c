@@ -73,6 +73,7 @@ enum gkcc_error gkcc_symbol_table_add_symbol(struct gkcc_symbol_table *table,
     return GKCC_ERROR_SYMBOL_ALREADY_EXISTS;
 
   // Go to last symbol in list
+  // TODO: Keep pointer to last instead of this
   for (; last_symbol->next != NULL; last_symbol = last_symbol->next)
     ;
 

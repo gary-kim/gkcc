@@ -40,25 +40,21 @@ struct gkcc_type* gkcc_type_append(struct gkcc_type* parent,
   return parent;
 }
 
-enum gkcc_type_type gkcc_type_make_scalar_long(enum gkcc_type_type original) {
-  switch (original) {
+bool gkcc_is_gkcc_type_scalar(struct gkcc_type* gkcc_type) {
+  enum gkcc_type_type type = gkcc_type->type;
+  switch (type) {
     case GKCC_TYPE_SCALAR_LONGLONG:
-      break;
     case GKCC_TYPE_SCALAR_LONG_DOUBLE:
-      break;
     case GKCC_TYPE_SCALAR_DOUBLE:
-      break;
     case GKCC_TYPE_SCALAR_FLOAT:
-      break;
     case GKCC_TYPE_SCALAR_LONG:
-      break;
     case GKCC_TYPE_SCALAR_INT:
-      break;
     case GKCC_TYPE_SCALAR_CHAR:
-      break;
     case GKCC_TYPE_SCALAR_VOID:
-      break;
     case GKCC_TYPE_SCALAR_SHORT:
-      break;
+      return true;
+    default:
+      return false;
   }
+  return false;
 }

@@ -500,10 +500,13 @@ struct gkcc_type *ast_node_declaration_specifiers_to_gkcc_data_type(
     }
   }
 
-  // TODO: Check if the finally found value can actually be signed
   struct gkcc_type *new_type = gkcc_type_new(gkcc_type_type);
   new_type->ident = ident;
-  type = gkcc_type_append(type, new_type);
+  if (gkcc_is_gkcc_type_scalar(new_type)) {
+    type = gkcc_type_append(type, new_type);
+  } else {
+    type = new_type;
+  }
   return type;
 }
 

@@ -13,19 +13,21 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-%{
+%code requires {
 #include "lex_extras.h"
 #include "ast.h"
 #include "ast_constructors.h"
 #include "scope.h"
-#include "lex.yy.h"
+}
 
+%code {
 #include <stdio.h>
+#include "lex.yy.h"
 
 static void yyerror() {
   gkcc_error_fatal(GKCC_ERROR_YYERROR, "Got yyerror");
 }
-%}
+}
 
 %parse-param { struct ast_node* top_ast_node }
 %parse-param { struct gkcc_symbol_table_set *current_symbol_table }
@@ -673,8 +675,13 @@ function_specifier: INLINE
                   | _NORETURN
                   ;
 
-alignment_specifier: _ALIGNAS '(' type_name ')'
-                  | _ALIGNAS '(' constant_expression ')'
+alignment_specifier: _ALIGNAS '(' type_name ')' {
+                      // TODO: implement properly
+                      $$ = $type_name;
+                    }
+                  | _ALIGNAS '(' constant_expression ')' {
+                      $$ = $constant_expression;
+                    }
                   ;
 
 declarator: direct_declarator {

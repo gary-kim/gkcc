@@ -158,5 +158,5 @@ struct gkcc_type {
 struct gkcc_type* gkcc_type_new(enum gkcc_type_type type);
 struct gkcc_type* gkcc_type_append(struct gkcc_type* parent,
                                    struct gkcc_type* child);
-
+bool gkcc_is_gkcc_type_scalar(struct gkcc_type *gkcc_type);
 #endif  // GKCC_TYPES_H
