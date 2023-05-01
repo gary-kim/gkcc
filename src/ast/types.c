@@ -31,11 +31,12 @@ struct gkcc_type* gkcc_type_append(struct gkcc_type* parent,
   if (child == NULL) return parent;
   if (parent == NULL) return child;
 
-  if (parent->of != NULL) {
-    gkcc_type_append(parent->of, child);
-    return parent;
+  struct gkcc_type* last_node = parent;
+  while (last_node->of != NULL) {
+    last_node = last_node->of;
   }
-  parent->of = child;
+
+  last_node->of = child;
   return parent;
 }
 

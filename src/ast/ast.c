@@ -49,7 +49,7 @@ void ast_print(struct ast_node *top, int depth, const char *prefix) {
 
     ast_node_string(buf, top, depth + 1);
 
-    if (buf[0] != '\0') // Function has handled its own printing
+    if (buf[0] != '\0')  // Function has handled its own printing
       printf("%s\n", buf);
     else
       printf("\n");
@@ -97,10 +97,8 @@ void ast_print(struct ast_node *top, int depth, const char *prefix) {
       ast_print(top->enum_definition.enumerators, depth + 1, "enumerators: ");
       ast_print(top->enum_definition.ident, depth + 1, "ident: ");
       break;
-    case AST_NODE_STRUCT_OR_UNION_DEFINITION:
-      ast_print(top->struct_or_union_definition.ident, depth + 1, "ident: ");
-      ast_print(top->struct_or_union_definition.members, depth + 1,
-                "members: ");
+    case AST_NODE_STRUCT_OR_UNION_SPECIFIER:
+      ast_print(top->struct_or_union_specifier.ident, depth + 1, "ident: ");
       break;
     case AST_NODE_IF_STATEMENT:
       ast_print(top->if_statement.condition, depth + 1, "condition: ");
@@ -144,10 +142,10 @@ void ast_node_string(char *buf, struct ast_node *node, int depth) {
     case AST_NODE_LIST:
       buf[0] = '\0';
       break;
-    case AST_NODE_STRUCT_OR_UNION_DEFINITION:
+    case AST_NODE_STRUCT_OR_UNION_SPECIFIER:
       sprintf(buf, "%s (type=%s): ", AST_NODE_TYPE_STRING[node->type],
-              AST_STRUCT_OR_UNION_DEFINITION_TYPE_STRING
-                  [node->struct_or_union_definition.type]);
+              AST_STRUCT_OR_UNION_SPECIFIER_TYPE_STRING
+                  [node->struct_or_union_specifier.type]);
       break;
     case AST_NODE_FOR_LOOP:
       if (node->for_loop.is_do_while)
@@ -175,24 +173,26 @@ void ast_gkcc_type_string(struct gkcc_type *gkcc_type, int depth) {
   }
   char *writeloc = &flbuf[start_of_line];
   sprintf(writeloc, "GKCC_TYPE (type=%s):\n", type_type);
-  printf("%s", flbuf);
   switch (gkcc_type->type) {
     case GKCC_TYPE_FUNCTION:
       break;
     case GKCC_TYPE_ARRAY:
       ast_print(gkcc_type->array.size, depth + 1, "size: ");
       break;
-    case GKCC_TYPE_STRUCT:
-      break;
-    case GKCC_TYPE_UNION:
-      break;
     case GKCC_TYPE_QUALIFIER:
     case GKCC_TYPE_STORAGE_CLASS_SPECIFIER:
     case GKCC_TYPE_TYPE_SPECIFIER:
       sprintf(writeloc, "GKCC_TYPE (type=%s): %s\n", type_type,
               GKCC_TYPE_SPECIFIER_TYPE_STRING[gkcc_type->type_specifier.type]);
+      printf("%s", flbuf);
+      break;
+    case GKCC_TYPE_STRUCT:
+    case GKCC_TYPE_UNION:
+      sprintf(writeloc, "GKCC_TYPE (type=%s): %s\n", type_type, gkcc_type->ident->ident.name);
+      printf("%s", flbuf);
       break;
     default:
+      printf("%s", flbuf);
       break;
   }
 
@@ -339,6 +339,16 @@ struct ast_node *ast_node_new_gkcc_type_specifier_node(
   return node;
 }
 
+struct ast_node *ast_node_gkcc_type_append(struct ast_node *parent,
+                                           struct ast_node *child) {
+  gkcc_assert(parent->type != AST_NODE_GKCC_TYPE, GKCC_ERROR_INVALID_ARGUMENTS,
+              "ast_node_gkcc_type_append got a parent that is not a "
+              "AST_NODE_GKCC_TYPE");
+  gkcc_assert(
+      child->type != AST_NODE_GKCC_TYPE, GKCC_ERROR_INVALID_ARGUMENTS,
+      "ast_node_gkcc_type_append got a child that is not a AST_NODE_GKCC_TYPE");
+}
+
 struct ast_node *ast_node_direct_declarator_to_declarator(
     struct ast_node *original_node) {
   if (original_node->type != AST_NODE_LIST) {
@@ -373,8 +383,8 @@ struct ast_node *ast_node_direct_declarator_to_declarator(
   }
   if (new_declaration_type != NULL) {
     new_declaration_type->gkcc_type.gkcc_type =
-        gkcc_type_append(new_declaration_type->gkcc_type.gkcc_type,
-                         declaration_node->type->gkcc_type.gkcc_type);
+        gkcc_type_append(declaration_node->type->gkcc_type.gkcc_type,
+                         new_declaration_type->gkcc_type.gkcc_type);
     declaration_node->type = new_declaration_type;
   }
   return original_node->list.node;
@@ -413,6 +423,8 @@ struct gkcc_type *ast_node_declaration_specifiers_to_gkcc_data_type(
   struct gkcc_type *type = is_signed ? gkcc_type_new(GKCC_TYPE_SIGNED)
                                      : gkcc_type_new(GKCC_TYPE_UNSIGNED);
 
+  struct ast_node *ident = NULL;
+
   // Figure out data type
   // This part is sort of a disaster because it's basically an entire state
   // machine
@@ -420,8 +432,7 @@ struct gkcc_type *ast_node_declaration_specifiers_to_gkcc_data_type(
 #define CHECK_AND_SET_TYPE(type)                                         \
   if (gkcc_type_type != GKCC_TYPE_UNKNOWN)                               \
     gkcc_error_fatal(GKCC_ERROR_CONFLICT, "conflicting datatype found"); \
-  gkcc_type_type = type;                                                 \
-  continue;
+  gkcc_type_type = type;
 
   enum gkcc_type_type gkcc_type_type = GKCC_TYPE_UNKNOWN;
   for (struct ast_node *lc = declaration_specifiers; lc != NULL;
@@ -475,9 +486,11 @@ struct gkcc_type *ast_node_declaration_specifiers_to_gkcc_data_type(
         break;
       case GKCC_TYPE_SPECIFIER_STRUCT:
         CHECK_AND_SET_TYPE(GKCC_TYPE_STRUCT);
+        ident = current_type->type_specifier.ident;
         break;
       case GKCC_TYPE_SPECIFIER_UNION:
         CHECK_AND_SET_TYPE(GKCC_TYPE_UNION);
+        ident = current_type->type_specifier.ident;
         break;
       case GKCC_TYPE_SPECIFIER_ENUM:
         CHECK_AND_SET_TYPE(GKCC_TYPE_ENUM);
@@ -488,7 +501,9 @@ struct gkcc_type *ast_node_declaration_specifiers_to_gkcc_data_type(
   }
 
   // TODO: Check if the finally found value can actually be signed
-  type = gkcc_type_append(type, gkcc_type_new(gkcc_type_type));
+  struct gkcc_type *new_type = gkcc_type_new(gkcc_type_type);
+  new_type->ident = ident;
+  type = gkcc_type_append(type, new_type);
   return type;
 }
 
@@ -498,8 +513,9 @@ struct ast_node *yylval2ast_node_ident(struct _yylval *yylval) {
               "yylval2ast_node_ident() was given a non-string yylval");
 
   node->ident.length = yylval->data.string.length;
-  node->ident.name = malloc(node->ident.length);
+  node->ident.name = malloc(node->ident.length + 1);
   memcpy(node->ident.name, yylval->data.string.string, node->ident.length);
+  node->ident.name[node->ident.length] = '\0';
 
   return node;
 }

@@ -214,24 +214,30 @@ struct ast_node *ast_node_new_enum_definition_node(
   return enum_node;
 }
 
-struct ast_node *ast_node_new_struct_or_union_definition_node(
-    enum ast_struct_or_union_definition_type type, struct ast_node *ident,
+struct ast_node *ast_node_new_struct_or_union_specifier_node(
+    enum ast_struct_or_union_specifier_type type, struct ast_node *ident,
     struct ast_node *members) {
-  struct ast_node *node = ast_node_new(AST_NODE_STRUCT_OR_UNION_DEFINITION);
-  node->struct_or_union_definition.type = type;
-  node->struct_or_union_definition.ident = ident;
-  node->struct_or_union_definition.members = members;
+  struct ast_node *node = ast_node_new(AST_NODE_GKCC_TYPE);
+  node->gkcc_type.gkcc_type = gkcc_type_new(GKCC_TYPE_TYPE_SPECIFIER);
+  node->gkcc_type.gkcc_type->type_specifier.type = type;
+  node->gkcc_type.gkcc_type->type_specifier.ident = ident;
+  // TODO: Put members in symbol table
   return node;
 }
 
-struct ast_node *ast_node_update_struct_or_union_definition_node(
+struct ast_node *ast_node_update_struct_or_union_specifier_node(
     struct ast_node *node, struct ast_node *ident, struct ast_node *members) {
-  gkcc_assert(node->type == AST_NODE_STRUCT_OR_UNION_DEFINITION,
+  gkcc_assert(node->type == AST_NODE_GKCC_TYPE &&
+                  node->gkcc_type.gkcc_type->type == GKCC_TYPE_TYPE_SPECIFIER &&
+                  (node->gkcc_type.gkcc_type->type_specifier.type ==
+                       GKCC_TYPE_SPECIFIER_STRUCT ||
+                   node->gkcc_type.gkcc_type->type_specifier.type ==
+                       GKCC_TYPE_SPECIFIER_UNION),
               GKCC_ERROR_INVALID_ARGUMENTS,
-              "ast_node_update_struct_or_union_definition_node() got node that "
-              "is not AST_NODE_STRUCT_OR_UNION_DEFINITION");
+              "ast_node_update_struct_or_union_specifier_node() got node that "
+              "is not AST_NODE_STRUCT_OR_UNION_SPECIFIER");
 
-  node->struct_or_union_definition.ident = ident;
-  node->struct_or_union_definition.members = members;
+  node->gkcc_type.gkcc_type->type_specifier.ident = ident;
+  // TODO: Put members in scope table
   return node;
 }

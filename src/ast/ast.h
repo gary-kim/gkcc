@@ -162,26 +162,26 @@ struct ast_enum_definition {
   struct ast_node* ident;
 };
 
-// ==================================================
-// === struct ast_struct_or_union_definition ===
-// ==================================================
+// ============================================
+// === struct ast_struct_or_union_specifier ===
+// ============================================
 
-#define ENUM_AST_STRUCT_OR_UNION_DEFINITION_TYPE(GEN) \
+#define ENUM_AST_STRUCT_OR_UNION_SPECIFIER_TYPE(GEN) \
   GEN(AST_STRUCT_OR_UNION_DEFINITION_STRUCT)          \
   GEN(AST_STRUCT_OR_UNION_DEFINITION_UNION)
 
-enum ast_struct_or_union_definition_type {
-  ENUM_AST_STRUCT_OR_UNION_DEFINITION_TYPE(ENUM_VALUES)
+enum ast_struct_or_union_specifier_type {
+  ENUM_AST_STRUCT_OR_UNION_SPECIFIER_TYPE(ENUM_VALUES)
 };
 
-static const char* const AST_STRUCT_OR_UNION_DEFINITION_TYPE_STRING[] = {
-    ENUM_AST_STRUCT_OR_UNION_DEFINITION_TYPE(ENUM_STRINGS)};
+static const char* const AST_STRUCT_OR_UNION_SPECIFIER_TYPE_STRING[] = {
+    ENUM_AST_STRUCT_OR_UNION_SPECIFIER_TYPE(ENUM_STRINGS)};
 
 #undef ENUM_AST_STRUCT_OR_UNION_DEFINITION_TYPE
-struct ast_struct_or_union_definition {
-  enum ast_struct_or_union_definition_type type;
+
+struct ast_struct_or_union_specifier {
+  enum ast_struct_or_union_specifier_type type;
   struct ast_node* ident;
-  struct ast_node* members;
 };
 
 // ================================
@@ -277,7 +277,7 @@ struct ast_constant {
   GEN(AST_NODE_FUNCTION_CALL)              \
   GEN(AST_NODE_FUNCTION_DEFINITION)        \
   GEN(AST_NODE_ENUM_DEFINITION)            \
-  GEN(AST_NODE_STRUCT_OR_UNION_DEFINITION) \
+  GEN(AST_NODE_STRUCT_OR_UNION_SPECIFIER) \
   GEN(AST_NODE_FOR_LOOP)                   \
   GEN(AST_NODE_IF_STATEMENT)
 
@@ -301,7 +301,7 @@ struct ast_node {
     struct ast_function_call function_call;
     struct ast_function_definition function_definition;
     struct ast_enum_definition enum_definition;
-    struct ast_struct_or_union_definition struct_or_union_definition;
+    struct ast_struct_or_union_specifier struct_or_union_specifier;
     struct ast_if_statement if_statement;
     struct ast_for_loop for_loop;
   };

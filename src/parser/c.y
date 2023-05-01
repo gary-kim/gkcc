@@ -562,21 +562,21 @@ type_specifier: VOID {
               //;
 
 struct_or_union_specifier: struct_or_union identifier '{' struct_declaration_list '}' {
-                             $$ = ast_node_update_struct_or_union_definition_node($struct_or_union, $identifier, $struct_declaration_list);
+                             $$ = ast_node_update_struct_or_union_specifier_node($struct_or_union, $identifier, $struct_declaration_list);
                            }
                          | struct_or_union '{' struct_declaration_list '}' {
-                             $$ = ast_node_update_struct_or_union_definition_node($struct_or_union, NULL, $struct_declaration_list);
+                             $$ = ast_node_update_struct_or_union_specifier_node($struct_or_union, NULL, $struct_declaration_list);
                            }
                          | struct_or_union identifier {
-                             $$ = ast_node_update_struct_or_union_definition_node($struct_or_union, $identifier, NULL);
+                             $$ = ast_node_update_struct_or_union_specifier_node($struct_or_union, $identifier, NULL);
                            }
                          ;
 
 struct_or_union: STRUCT {
-                   $$ = ast_node_new_struct_or_union_definition_node(AST_STRUCT_OR_UNION_DEFINITION_STRUCT, NULL, NULL);
+                   $$ = ast_node_new_struct_or_union_specifier_node(GKCC_TYPE_SPECIFIER_STRUCT, NULL, NULL);
                  }
                | UNION {
-                   $$ = ast_node_new_struct_or_union_definition_node(AST_STRUCT_OR_UNION_DEFINITION_UNION, NULL, NULL);
+                   $$ = ast_node_new_struct_or_union_specifier_node(GKCC_TYPE_SPECIFIER_UNION, NULL, NULL);
                  }
                ;
 

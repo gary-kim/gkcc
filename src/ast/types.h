@@ -16,6 +16,7 @@
 #ifndef GKCC_TYPES_H
 #define GKCC_TYPES_H
 
+#include "ast.h"
 #include "misc.h"
 
 // =============================
@@ -90,6 +91,7 @@ static const char* const GKCC_TYPE_SPECIFIER_TYPE_STRING[] = {
 
 struct gkcc_type_specifier {
   enum gkcc_type_specifier_type type;
+  struct ast_node* ident;
   struct gkcc_type* of;
 };
 
@@ -146,6 +148,7 @@ struct gkcc_type {
     struct gkcc_array array;
   };
   struct gkcc_type* of;
+  struct ast_node* ident;
 };
 
 // =============================

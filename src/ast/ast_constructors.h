@@ -57,11 +57,11 @@ struct ast_node *ast_node_new_for_loop(struct ast_node *expr1,
 
 struct ast_node *ast_node_new(enum ast_node_type node_type);
 
-struct ast_node *ast_node_update_struct_or_union_definition_node(
+struct ast_node *ast_node_update_struct_or_union_specifier_node(
     struct ast_node *node, struct ast_node *ident, struct ast_node *members);
 
-struct ast_node *ast_node_new_struct_or_union_definition_node(
-    enum ast_struct_or_union_definition_type type, struct ast_node *ident,
+struct ast_node *ast_node_new_struct_or_union_specifier_node(
+    enum ast_struct_or_union_specifier_type type, struct ast_node *ident,
     struct ast_node *members);
 
 struct ast_node *ast_node_new_enum_definition_node(
