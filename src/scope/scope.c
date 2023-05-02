@@ -111,14 +111,15 @@ enum gkcc_error gkcc_symbol_table_set_add_symbol(
 // at creation.
 struct gkcc_symbol *gkcc_symbol_new(char *name,
                                     enum gkcc_storage_class storage_class,
-                                    enum gkcc_type_type *type,
-                                    int line_number, char *filename) {
+                                    struct gkcc_type *type, int line_number,
+                                    char *filename) {
   struct gkcc_symbol *symbol = malloc(sizeof(struct gkcc_symbol));
+  memset(symbol, 0, sizeof(struct gkcc_symbol));
 
   symbol->storage_class = storage_class;
   symbol->effective_line_number = line_number;
   symbol->symbol_type = type;
-  
+
   symbol->next = NULL;
 
   symbol->symbol_name = malloc(strlen(name) + 1);
@@ -127,6 +128,17 @@ struct gkcc_symbol *gkcc_symbol_new(char *name,
   symbol->filename = malloc(strlen(filename) + 1);
   strcpy(symbol->filename, filename);
   return symbol;
+}
+
+void gkcc_symbol_print_string(struct gkcc_symbol *symbol, int depth) {
+  if (symbol == NULL)
+    return;
+
+  for (int i = 0; i < 2 * depth; i++){
+    printf(" ");
+  }
+  printf("Symbol of type:\n");
+  ast_gkcc_type_string(symbol->symbol_type, depth + 1);
 }
 
 // Gets a struct gkcc_symbol from the symbol table.

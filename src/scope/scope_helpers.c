@@ -39,16 +39,17 @@ enum gkcc_error gkcc_scope_add_variable_to_scope(
     // TODO: Other storage classes exist
     enum gkcc_storage_class storage_class =
         (symbol_table_set->scope == GKCC_SCOPE_GLOBAL)
-        ? GKCC_STORAGE_CLASS_EXTERN
-        : GKCC_STORAGE_CLASS_AUTO;
-    struct gkcc_symbol *symbol =
-        gkcc_symbol_new(decl->declaration.identifier->ident.name, storage_class,
-                        line_number, file_name);
+            ? GKCC_STORAGE_CLASS_EXTERN
+            : GKCC_STORAGE_CLASS_AUTO;
+    struct gkcc_symbol *symbol = gkcc_symbol_new(
+        decl->declaration.identifier->ident.name, storage_class,
+        decl->declaration.type->gkcc_type.gkcc_type, line_number, file_name);
 
     // Add pointer back to the gkcc_symbol
-    decl->declaration.symbol_table_entry = symbol;
+    decl->declaration.identifier->ident.symbol_table_entry = symbol;
 
-    enum gkcc_error error =  gkcc_symbol_table_set_add_symbol(symbol_table_set, GKCC_NAMESPACE_GENERAL, symbol);
+    enum gkcc_error error = gkcc_symbol_table_set_add_symbol(
+        symbol_table_set, GKCC_NAMESPACE_GENERAL, symbol);
     if (error != GKCC_ERROR_SUCCESS) {
       return error;
     }

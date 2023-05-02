@@ -115,6 +115,7 @@ struct ast_unary {
 struct ast_ident {
   char* name;
   int length;
+  struct gkcc_symbol *symbol_table_entry;
 };
 
 // ============================
@@ -133,7 +134,6 @@ struct ast_declaration {
   struct ast_node* type;
   struct ast_node* identifier;
   struct ast_node* assignment;
-  struct gkcc_symbol* symbol_table_entry;
 };
 
 // =======================

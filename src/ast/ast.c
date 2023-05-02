@@ -21,6 +21,7 @@
 
 #include "ast_constructors.h"
 #include "lex_extras.h"
+#include "scope.h"
 #include "misc.h"
 
 char flbuf[(1 << 16) + 1];
@@ -61,7 +62,9 @@ void ast_print(struct ast_node *top, int depth, const char *prefix) {
       ast_print(top->binop.right, depth + 1, "expr 2: ");
       break;
     case AST_NODE_CONSTANT:
+      break;
     case AST_NODE_IDENT:
+      gkcc_symbol_print_string(top->ident.symbol_table_entry, depth + 1);
       break;
     case AST_NODE_UNARY:
       ast_print(top->unary.of, depth + 1, "");
@@ -188,7 +191,8 @@ void ast_gkcc_type_string(struct gkcc_type *gkcc_type, int depth) {
       break;
     case GKCC_TYPE_STRUCT:
     case GKCC_TYPE_UNION:
-      sprintf(writeloc, "GKCC_TYPE (type=%s): %s\n", type_type, gkcc_type->ident->ident.name);
+      sprintf(writeloc, "GKCC_TYPE (type=%s): %s\n", type_type,
+              gkcc_type->ident->ident.name);
       printf("%s", flbuf);
       break;
     default:
