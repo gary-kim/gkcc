@@ -51,12 +51,12 @@ static const char *const GKCC_SCOPE_STRING[] = {ENUM_GKCC_SCOPE(ENUM_STRINGS)};
 #undef ENUM_GKCC_SCOPE
 
 // === gkcc_storage_class ===
-#define ENUM_GKCC_STORAGE_CLASS(GEN)    \
-  GEN(GKCC_STORAGE_CLASS_INVALID)       \
-  GEN(GKCC_STORAGE_CLASS_AUTO_EXPLICIT) \
-  GEN(GKCC_STORAGE_CLASS_AUTO)          \
-  GEN(GKCC_STORAGE_CLASS_REGISTER)      \
-  GEN(GKCC_STORAGE_CLASS_EXTERN)        \
+#define ENUM_GKCC_STORAGE_CLASS(GEN)      \
+  GEN(GKCC_STORAGE_CLASS_INVALID)         \
+  GEN(GKCC_STORAGE_CLASS_AUTO)            \
+  GEN(GKCC_STORAGE_CLASS_REGISTER)        \
+  GEN(GKCC_STORAGE_CLASS_EXTERN)          \
+  GEN(GKCC_STORAGE_CLASS_EXTERN_EXPLICIT) \
   GEN(GKCC_STORAGE_CLASS_STATIC)
 
 enum gkcc_storage_class { ENUM_GKCC_STORAGE_CLASS(ENUM_VALUES) };
@@ -72,6 +72,7 @@ struct gkcc_symbol {
   char *symbol_name;
   enum gkcc_storage_class storage_class;
   struct gkcc_type *symbol_type;
+  bool fully_defined;
   int effective_line_number;
   char *filename;
 
@@ -107,4 +108,7 @@ struct gkcc_symbol *gkcc_symbol_table_get_symbol(
     struct gkcc_symbol_table *symbol_table, char *name);
 struct gkcc_symbol_table_set *gkcc_symbol_table_set_get_parent_symbol_table_set(
     struct gkcc_symbol_table_set *symbol_table_set);
+enum gkcc_error gkcc_symbol_table_set_add_symbol(
+    struct gkcc_symbol_table_set *symbol_table_set,
+    enum gkcc_namespace namespace, struct gkcc_symbol *symbol);
 #endif  // GKCC_SCOPE_H

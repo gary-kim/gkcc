@@ -31,6 +31,7 @@ set (INCLUDE_DIRS
         ${CMAKE_SOURCE_DIR}/src/ast
         ${CMAKE_SOURCE_DIR}/src/scope
         ${CMAKE_SOURCE_DIR}/src/misc
+        ${CMAKE_SOURCE_DIR}/src
         ${CMAKE_SOURCE_DIR}/3rdparty
         )
 
@@ -77,7 +78,7 @@ add_executable(parsetester
         ${CMAKE_SOURCE_DIR}/src/misc/misc.c
         ${CMAKE_SOURCE_DIR}/src/ast/types.c
         ${CMAKE_SOURCE_DIR}/3rdparty/dmezh/backtrace.c
-        src/ast/ast_constructors.c src/ast/ast_constructors.h)
+        src/ast/ast_constructors.c src/ast/ast_constructors.h src/scope/scope_helpers.c src/scope/scope_helpers.h)
 
 target_include_directories(parsetester PRIVATE ${INCLUDE_DIRS})
 if(DEFINED GKCC_UNDEFINED_BEHAVIOR_SANITIZER)

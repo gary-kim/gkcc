@@ -19,6 +19,8 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include "ast/types.h"
+
 struct gkcc_symbol_table_set *gkcc_symbol_table_set_new(
     struct gkcc_symbol_table_set *parent, enum gkcc_scope scope) {
   struct gkcc_symbol_table_set *table =
@@ -109,11 +111,14 @@ enum gkcc_error gkcc_symbol_table_set_add_symbol(
 // at creation.
 struct gkcc_symbol *gkcc_symbol_new(char *name,
                                     enum gkcc_storage_class storage_class,
+                                    enum gkcc_type_type *type,
                                     int line_number, char *filename) {
   struct gkcc_symbol *symbol = malloc(sizeof(struct gkcc_symbol));
 
   symbol->storage_class = storage_class;
   symbol->effective_line_number = line_number;
+  symbol->symbol_type = type;
+  
   symbol->next = NULL;
 
   symbol->symbol_name = malloc(strlen(name) + 1);

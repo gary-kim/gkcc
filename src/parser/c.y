@@ -18,6 +18,7 @@
 #include "ast.h"
 #include "ast_constructors.h"
 #include "scope.h"
+#include "scope_helpers.h"
 }
 
 %code {
@@ -454,6 +455,7 @@ declaration: declaration_specifiers ';' {
              }
            | declaration_specifiers init_declarator_list ';' {
                $$ = ast_node_new_declaration_node($1, $2);
+               gkcc_scope_add_variable_to_scope(current_symbol_table, $$, yylineno, YY_FILENAME);
            }
            //| static_assert_declaration // NOT IMPLEMENTED
            ;

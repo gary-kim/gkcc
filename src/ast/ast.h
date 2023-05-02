@@ -133,6 +133,7 @@ struct ast_declaration {
   struct ast_node* type;
   struct ast_node* identifier;
   struct ast_node* assignment;
+  struct gkcc_symbol* symbol_table_entry;
 };
 
 // =======================
