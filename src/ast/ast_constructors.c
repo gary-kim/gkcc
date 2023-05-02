@@ -187,6 +187,11 @@ struct ast_node *ast_node_new_list_node(struct ast_node *node) {
   return new_node;
 }
 
+struct ast_node *ast_node_new_gkcc_function_declarator_with_parameter_type_list(
+    struct ast_node *parameter_type_list) {
+  // TODO: CONTINUE HERE
+}
+
 struct ast_node *ast_node_new_function_call_node(struct ast_node *function_name,
                                                  struct ast_node *parameters) {
   struct ast_node *new_node = ast_node_new(AST_NODE_FUNCTION_CALL);

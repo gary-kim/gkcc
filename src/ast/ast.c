@@ -180,6 +180,7 @@ void ast_gkcc_type_string(struct gkcc_type *gkcc_type, int depth) {
     case GKCC_TYPE_FUNCTION:
       break;
     case GKCC_TYPE_ARRAY:
+      printf("%s", flbuf);
       ast_print(gkcc_type->array.size, depth + 1, "size: ");
       break;
     case GKCC_TYPE_QUALIFIER:

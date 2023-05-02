@@ -22,6 +22,10 @@
 #include "misc.h"
 #include "types.h"
 
+// =============================
+// === Function Declarations ===
+// =============================
+
 struct ast_node *ast_node_new_if_statement(struct ast_node *condition,
                                            struct ast_node *then_statement,
                                            struct ast_node *else_statement);
@@ -85,4 +89,7 @@ struct ast_node *ast_node_new_declaration_node_from_ident(
     struct ast_node *ident);
 
 struct ast_node *ast_node_new_gkcc_array_type_node(struct ast_node *size);
+
+struct ast_node *ast_node_new_gkcc_function_declarator_with_parameter_type_list(
+    struct ast_node *parameter_type_list);
 #endif  // GKCC_AST_CONSTRUCTORS_H

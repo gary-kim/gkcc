@@ -131,13 +131,13 @@ struct gkcc_symbol *gkcc_symbol_new(char *name,
 }
 
 void gkcc_symbol_print_string(struct gkcc_symbol *symbol, int depth) {
-  if (symbol == NULL)
-    return;
+  if (symbol == NULL) return;
 
-  for (int i = 0; i < 2 * depth; i++){
+  for (int i = 0; i < 2 * depth; i++) {
     printf(" ");
   }
-  printf("Symbol of type:\n");
+  printf("Symbol '%s' defined at %s:%d of type:\n", symbol->symbol_name,
+         symbol->filename, symbol->effective_line_number);
   ast_gkcc_type_string(symbol->symbol_type, depth + 1);
 }
 

@@ -105,6 +105,14 @@ struct gkcc_array {
   struct ast_node* size;
 };
 
+// ========================================
+// === struct gkcc_function_declaration ===
+// ========================================
+
+struct gkcc_function_declaration {
+  // TODO: CONTINUE HERE
+};
+
 // ========================
 // === struct gkcc_type ===
 // ========================
