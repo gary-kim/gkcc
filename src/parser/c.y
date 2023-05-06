@@ -28,6 +28,13 @@
 static void yyerror() {
   gkcc_error_fatal(GKCC_ERROR_YYERROR, "Got yyerror");
 }
+
+#define ENTER_SCOPE(TYPE) \
+  current_symbol_table = gkcc_symbol_table_set_new(current_symbol_table, TYPE)
+
+#define EXIT_SCOPE() \
+  current_symbol_table = gkcc_symbol_table_set_get_parent_symbol_table_set(current_symbol_table)
+
 }
 
 %parse-param { struct ast_node* top_ast_node }
@@ -205,7 +212,10 @@ identifier: IDENT {
   $$ = yylval2ast_node_ident(&$1);
 };
 
-primary_expression: identifier
+primary_expression: identifier {
+                      $$ = ast_node_identifier_set_symbol_if_exists(current_symbol_table, $identifier, GKCC_NAMESPACE_GENERAL);
+                      ast_node_identifier_verify_symbol_exists($$, YY_FILENAME, yylineno);
+                   }
                  | constant
                  | STRING {
                      $$ = yylval2ast_node(&$STRING);
@@ -235,11 +245,11 @@ postfix_expression: primary_expression
                       $$ = ast_node_new_function_call_node($1, $argument_expression_list);
                     }
                   | postfix_expression '.' identifier {
-                      $$ = ast_node_new_binop_node(AST_BINOP_MEMBER_ACCESS, $1, $identifier);
+                      $$ = ast_node_new_member_access_node(current_symbol_table, $1, $identifier);
                     }
                   | postfix_expression INDSEL identifier {
                       struct ast_node *deref = ast_node_new_unary_node(AST_UNARY_DEREFERENCE, $1);
-                      $$ = ast_node_new_binop_node(AST_BINOP_MEMBER_ACCESS, deref, $3);
+                      $$ = ast_node_new_member_access_node(current_symbol_table, deref, $identifier);
                     }
                   | postfix_expression PLUSPLUS {
                       $$ = ast_node_new_unary_node(AST_UNARY_POSTINC, $1);
@@ -247,8 +257,9 @@ postfix_expression: primary_expression
                   | postfix_expression MINUSMINUS {
                       $$ = ast_node_new_unary_node(AST_UNARY_POSTDEC, $1);
                     }
-                  | '(' type_name ')' '{' initializer_list '}'
-                  | '(' type_name ')' '{' initializer_list ',' '}'
+                  //| '(' type_name ')' '{' initializer_list '}'
+                  //| '(' type_name ')' '{' initializer_list ',' '}'
+                  // TODO: Figure out if it is important that these be implemented properly.
                   ;
 
 argument_expression_list: assignment_expression {
@@ -492,8 +503,6 @@ declaration_specifiers: storage_class_specifier {
                         }
                       ;
 
-// TODO: Must handle filippy flippy to not take pointers as another type.
-// Pointers are in fact part of the next symbol it will find.
 init_declarator_list: init_declarator {
                         $$ = ast_node_new_list_node($1);
                       }
@@ -528,7 +537,6 @@ storage_class_specifier: TYPEDEF {
                          }
                        ;
 
-// TODO: Fill these in. The enum types already exist for them
 type_specifier: VOID {
                   $$ = ast_node_new_gkcc_type_specifier_node(GKCC_TYPE_SPECIFIER_VOID);
                 }
@@ -565,22 +573,30 @@ type_specifier: VOID {
               //| typedef_name // NOT IMPLEMENTED
               //;
 
-struct_or_union_specifier: struct_or_union identifier '{' struct_declaration_list '}' {
-                             $$ = ast_node_update_struct_or_union_specifier_node($struct_or_union, $identifier, $struct_declaration_list);
+struct_or_union_specifier: struct_or_union identifier {
+                             ast_node_update_struct_or_union_specifier_node($struct_or_union, $identifier, NULL, current_symbol_table, YY_FILENAME, yylineno);
+                             current_symbol_table = gkcc_symbol_table_set_get_symbol_table_set_of_struct_or_union_node($struct_or_union);
+                           } '{' struct_declaration_list '}' {
+                             EXIT_SCOPE();
+                             $$ = ast_node_update_struct_or_union_specifier_node($struct_or_union, NULL, $struct_declaration_list, current_symbol_table, YY_FILENAME, yylineno);
                            }
-                         | struct_or_union '{' struct_declaration_list '}' {
-                             $$ = ast_node_update_struct_or_union_specifier_node($struct_or_union, NULL, $struct_declaration_list);
+                         | struct_or_union {
+                             current_symbol_table = gkcc_symbol_table_set_get_symbol_table_set_of_struct_or_union_node($struct_or_union);
+                         } '{' struct_declaration_list '}' {
+                             EXIT_SCOPE();
+                             current_symbol_table = gkcc_symbol_table_set_get_parent_symbol_table_set(current_symbol_table);
+                             $$ = ast_node_update_struct_or_union_specifier_node($struct_or_union, NULL, $struct_declaration_list, current_symbol_table, YY_FILENAME, yylineno);
                            }
                          | struct_or_union identifier {
-                             $$ = ast_node_update_struct_or_union_specifier_node($struct_or_union, $identifier, NULL);
+                             $$ = ast_node_update_struct_or_union_specifier_node($struct_or_union, $identifier, NULL, current_symbol_table, YY_FILENAME, yylineno);
                            }
                          ;
 
 struct_or_union: STRUCT {
-                   $$ = ast_node_new_struct_or_union_specifier_node(GKCC_TYPE_SPECIFIER_STRUCT, NULL, NULL);
+                   $$ = ast_node_new_struct_or_union_specifier_node(current_symbol_table, GKCC_TYPE_SPECIFIER_STRUCT, NULL);
                  }
                | UNION {
-                   $$ = ast_node_new_struct_or_union_specifier_node(GKCC_TYPE_SPECIFIER_UNION, NULL, NULL);
+                   $$ = ast_node_new_struct_or_union_specifier_node(current_symbol_table, GKCC_TYPE_SPECIFIER_UNION, NULL);
                  }
                ;
 
@@ -673,8 +689,14 @@ type_qualifier: CONST {
                 }
               ;
 
-function_specifier: INLINE
-                  | _NORETURN
+function_specifier: INLINE {
+                      // Not supported
+                      $$ = NULL;
+                    }
+                  | _NORETURN {
+                      // Not supported
+                      $$ = NULL;
+                    }
                   ;
 
 alignment_specifier: _ALIGNAS '(' type_name ')' {
@@ -710,9 +732,19 @@ direct_declarator: identifier {
                      struct ast_node *node = ast_node_new_gkcc_array_type_node($assignment_expression);
                      $$ = ast_node_append($1, node);
                    }
-                 | direct_declarator '(' parameter_type_list ')'
-                 | direct_declarator '(' identifier_list ')'
-                 | direct_declarator '(' ')'
+                 | direct_declarator '(' parameter_type_list ')' {
+                     struct ast_node *node = ast_node_new_gkcc_function_declarator_with_parameter_type_list($parameter_type_list, NULL);
+                     $$ = ast_node_append($1, node);
+                   }
+                 | direct_declarator '(' identifier_list ')' {
+                     // TODO: parse identifier_list properly
+                     struct ast_node *node = ast_node_new_gkcc_function_declarator_with_parameter_type_list(NULL, NULL);
+                     $$ = ast_node_append($1, node);
+                   }
+                 | direct_declarator '(' ')' {
+                     struct ast_node *node = ast_node_new_gkcc_function_declarator_with_parameter_type_list(NULL, NULL);
+                     $$ = ast_node_append($1, node);
+                   }
                  ;
 
 pointer: '*' {
@@ -758,9 +790,11 @@ parameter_list: parameter_declaration {
               ;
 
 parameter_declaration: declaration_specifiers {
+                         struct ast_node *node = ast_node_new_declaration_node($declaration_specifiers, NULL);
                          $$ = ast_node_new_list_node($1);
                        }
                      | declaration_specifiers declarator {
+                         struct ast_node *node = ast_node_new_declaration_node($declaration_specifiers, $declarator);
                          $$ = ast_node_append($1, $2);
                        }
                      //| declaration_specifiers abstract_declarator // NOT IMPLEMENTED
@@ -782,9 +816,15 @@ type_name: specifier_qualifier_list
 // direct_abstract_declarator not implemented
 // typedef_name not implemented
 
-initializer: assignment_expression
-           | '{' initializer_list '}'
-           | '{' initializer_list ',' '}'
+initializer: assignment_expression {
+               $$ = $assignment_expression;
+             }
+           | '{' initializer_list '}' {
+               $$ = $initializer_list;
+             }
+           | '{' initializer_list ',' '}' {
+               $$ = $initializer_list;
+              }
            ;
 
 initializer_list: initializer {
@@ -835,12 +875,24 @@ compound_statement: '{' '}' {
                   ;
 
 
-statement: labeled_statement
-         | compound_statement
-         | expression_statement
-         | selection_statement
-         | iteration_statement
-         | jump_statement
+statement: labeled_statement {
+             $$ = $1;
+           }
+         | compound_statement {
+             $$ = $1;
+           }
+         | expression_statement {
+             $$ = $1;
+           }
+         | selection_statement {
+             $$ = $1;
+           }
+         | iteration_statement {
+             $$ = $1;
+           }
+         | jump_statement {
+             $$ = $1;
+           }
          ;
 
 labeled_statement: IDENT ':' statement
@@ -856,8 +908,12 @@ block_item_list: block_item {
                  }
                ;
 
-block_item: declaration
-          | statement
+block_item: declaration {
+              $$ = $1;
+            }
+          | statement {
+              $$ = $1;
+            }
           ;
 
 expression_statement: ';' {
@@ -868,16 +924,21 @@ expression_statement: ';' {
                       }
                     ;
 
-selection_statement: IF '(' expression ')' statement %prec IF {
+selection_statement: IF '(' expression ')' enter_block_symbol_table_set statement %prec IF {
                        $$ = ast_node_new_if_statement($expression, $statement, NULL);
+                       EXIT_SCOPE();
                      }
-                   | IF '(' expression ')' statement[then_statement] ELSE statement[else_statement] %prec ELSE {
+                   | IF '(' expression ')' enter_block_symbol_table_set statement[then_statement] ELSE %prec ELSE {
+                       EXIT_SCOPE();
+                       ENTER_SCOPE(GKCC_SCOPE_BLOCK);
+                     } statement[else_statement] {
                        $$ = ast_node_new_if_statement($expression, $then_statement, $else_statement);
+                       EXIT_SCOPE();
                      }
                    | SWITCH '(' expression ')' statement
                    ;
 
-iteration_statement: WHILE '(' expression ')' statement {
+iteration_statement: WHILE '(' expression ')' enter_block_symbol_table_set statement {
                        $$ = ast_node_new_for_loop(NULL, $expression, NULL, $statement);
                      }
                    | DO statement WHILE '(' expression ')' ';' {
@@ -915,11 +976,11 @@ jump_statement: GOTO IDENT ';'
 
 // === BEGIN EXTERNAL DEFINITIONS ===
 
-function_definition: declaration_specifiers declarator compound_statement {
-                       // TODO: Figure out how to seperate what parts of the declaration-type applies to the
-                       // function and what defines to the returned type.
-                       // TODO: Also, merge in function_definition_node to use a gkcc_type for the function declaration.
+function_definition: declaration_specifiers declarator {
+                       current_symbol_table = gkcc_symbol_table_set_new(current_symbol_table, GKCC_SCOPE_FUNCTION);
+                     } compound_statement {
                        $$ = ast_node_new_function_definition_node($declaration_specifiers, $declarator, NULL, $compound_statement);
+                       EXIT_SCOPE();
                      }
                    //| declaration_specifiers declarator declaration_list compound_statement
                    // NO, I am not supporting this old syntax (actually, on second thought, maybe later)
@@ -933,4 +994,8 @@ declaration_list: declaration {
                     $$ = ast_node_append($1, $2);
                   }
                 ;
+
+enter_block_symbol_table_set: %empty {
+                                ENTER_SCOPE(GKCC_SCOPE_BLOCK);
+                              }
 

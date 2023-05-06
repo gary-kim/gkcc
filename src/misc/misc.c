@@ -31,12 +31,16 @@ void gkcc_report_error(enum gkcc_error error, char* reporter) {
   fprintf(stderr, "ERROR (%s): %s\n", reporter, GKCC_ERROR_STRING[error]);
 }
 
-inline void gkcc_assert(int to_assert, enum gkcc_error err, char* message) {
+void gkcc_assert(int to_assert, enum gkcc_error err, char* message) {
   if (to_assert)
     return;
 
   gkcc_report_error(err, "gkcc_assert");
   die(message);
+}
+
+void gkcc_assert_success(enum gkcc_error err, char* message) {
+    gkcc_assert(err == GKCC_ERROR_SUCCESS, err, message);
 }
 
 void gkcc_error_fatal(enum gkcc_error err, char* message) {

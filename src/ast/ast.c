@@ -21,8 +21,8 @@
 
 #include "ast_constructors.h"
 #include "lex_extras.h"
-#include "scope.h"
 #include "misc.h"
+#include "scope.h"
 
 char flbuf[(1 << 16) + 1];
 
@@ -61,6 +61,9 @@ void ast_print(struct ast_node *top, int depth, const char *prefix) {
       ast_print(top->binop.left, depth + 1, "expr 1: ");
       ast_print(top->binop.right, depth + 1, "expr 2: ");
       break;
+    case AST_NODE_MEMBER_ACCESS:
+      ast_print(top->member_access.struct_or_union, depth + 1, "in: ");
+      ast_print(top->member_access.identifier, depth + 1, "access: ");
     case AST_NODE_CONSTANT:
       break;
     case AST_NODE_IDENT:
@@ -75,8 +78,8 @@ void ast_print(struct ast_node *top, int depth, const char *prefix) {
       ast_print(top->ternary.false_expr, depth + 1, "false_expr: ");
       break;
     case AST_NODE_DECLARATION:
-      ast_print(top->declaration.type, depth + 1, "type: ");
       ast_print(top->declaration.identifier, depth + 1, "init_declarator: ");
+      ast_print(top->declaration.type, depth + 1, "type: ");
       ast_print(top->declaration.assignment, depth + 1, "assignment: ");
       break;
     case AST_NODE_LIST:
@@ -89,12 +92,6 @@ void ast_print(struct ast_node *top, int depth, const char *prefix) {
     case AST_NODE_FUNCTION_CALL:
       ast_print(top->function_call.name, depth + 1, "function_name: ");
       ast_print(top->function_call.parameters, depth + 1, "parameters: ");
-      break;
-    case AST_NODE_FUNCTION_DEFINITION:
-      ast_print(top->function_definition.returns, depth + 1, "returns: ");
-      ast_print(top->function_definition.name, depth + 1, "name: ");
-      ast_print(top->function_definition.parameters, depth + 1, "parameters: ");
-      ast_print(top->function_definition.statements, depth + 1, "statements: ");
       break;
     case AST_NODE_ENUM_DEFINITION:
       ast_print(top->enum_definition.enumerators, depth + 1, "enumerators: ");
@@ -113,6 +110,8 @@ void ast_print(struct ast_node *top, int depth, const char *prefix) {
       ast_print(top->for_loop.expr2, depth + 1, "expr2: ");
       ast_print(top->for_loop.expr3, depth + 1, "expr3: ");
       ast_print(top->for_loop.statements, depth + 1, "do: ");
+      break;
+    default:
       break;
   }
 }
@@ -140,7 +139,7 @@ void ast_node_string(char *buf, struct ast_node *node, int depth) {
     case AST_NODE_GKCC_TYPE:
       printf("\n");
       buf[0] = '\0';
-      ast_gkcc_type_string(node->gkcc_type.gkcc_type, depth);
+      ast_gkcc_type_string(node->gkcc_type.gkcc_type, depth, "");
       break;
     case AST_NODE_LIST:
       buf[0] = '\0';
@@ -157,6 +156,7 @@ void ast_node_string(char *buf, struct ast_node *node, int depth) {
         strcpy(extrabuf, "false");
       sprintf(buf, "%s (is_do_while=%s):", AST_NODE_TYPE_STRING[node->type],
               extrabuf);
+      break;
     default:
       sprintf(buf, "%s:", AST_NODE_TYPE_STRING[node->type]);
       break;
@@ -167,7 +167,14 @@ const char *ast_binop_type_string(struct ast_binop *binop) {
   return AST_BINOP_TYPE_STRING[binop->type];
 }
 
-void ast_gkcc_type_string(struct gkcc_type *gkcc_type, int depth) {
+void print_to_depth(int depth) {
+  for (int i = 0; i < depth; i++) {
+    printf("  ");
+  }
+}
+
+void ast_gkcc_type_string(struct gkcc_type *gkcc_type, int depth,
+                          char *prefix) {
   if (gkcc_type == NULL) return;
   const char *type_type = GKCC_TYPE_TYPE_STRING[gkcc_type->type];
   int start_of_line = 0;
@@ -175,33 +182,64 @@ void ast_gkcc_type_string(struct gkcc_type *gkcc_type, int depth) {
     flbuf[start_of_line++] = ' ';
   }
   char *writeloc = &flbuf[start_of_line];
-  sprintf(writeloc, "GKCC_TYPE (type=%s):\n", type_type);
+  if (gkcc_type->ident != NULL) {
+    writeloc += sprintf(
+        writeloc, "%sGKCC_TYPE (type=%s, scope=%s, stg_class=%s): ", prefix,
+        type_type,
+        GKCC_SCOPE_STRING[gkcc_type->ident->ident.symbol_table_entry
+                              ->symbol_table_set->scope],
+        GKCC_STORAGE_CLASS_STRING[gkcc_type->ident->ident.symbol_table_entry
+                                      ->storage_class]);
+  } else {
+    writeloc += sprintf(writeloc, "%sGKCC_TYPE (type=%s): ", prefix, type_type);
+  }
+
   switch (gkcc_type->type) {
     case GKCC_TYPE_FUNCTION:
+      printf("%s\n", flbuf);
+      ast_gkcc_type_string(gkcc_type->function_declaration.return_type,
+                           depth + 1, "returns: ");
+      ast_print(gkcc_type->function_declaration.statements, depth + 1,
+                "statements:");
       break;
     case GKCC_TYPE_ARRAY:
-      printf("%s", flbuf);
+      printf("%s\n", flbuf);
       ast_print(gkcc_type->array.size, depth + 1, "size: ");
       break;
     case GKCC_TYPE_QUALIFIER:
     case GKCC_TYPE_STORAGE_CLASS_SPECIFIER:
     case GKCC_TYPE_TYPE_SPECIFIER:
-      sprintf(writeloc, "GKCC_TYPE (type=%s): %s\n", type_type,
+      sprintf(writeloc, "%s\n",
               GKCC_TYPE_SPECIFIER_TYPE_STRING[gkcc_type->type_specifier.type]);
       printf("%s", flbuf);
       break;
     case GKCC_TYPE_STRUCT:
     case GKCC_TYPE_UNION:
-      sprintf(writeloc, "GKCC_TYPE (type=%s): %s\n", type_type,
-              gkcc_type->ident->ident.name);
+      if (gkcc_type->symbol_table_set->general_namespace->symbol_list == NULL) {
+        sprintf(
+            writeloc, "'%s' defined at %s:%d\n", gkcc_type->ident->ident.name,
+            gkcc_type->ident->ident.symbol_table_entry->filename,
+            gkcc_type->ident->ident.symbol_table_entry->effective_line_number);
+        printf("%s", flbuf);
+        break;
+      }
+      sprintf(
+          writeloc, "'%s' defined at %s:%d with members {\n",
+          gkcc_type->ident->ident.name,
+          gkcc_type->ident->ident.symbol_table_entry->filename,
+          gkcc_type->ident->ident.symbol_table_entry->effective_line_number);
       printf("%s", flbuf);
+      gkcc_symbol_table_print(gkcc_type->symbol_table_set->general_namespace,
+                              depth + 1);
+      print_to_depth(depth);
+      printf("}\n");
       break;
     default:
-      printf("%s", flbuf);
+      printf("%s\n", flbuf);
       break;
   }
 
-  ast_gkcc_type_string(gkcc_type->of, depth + 1);
+  ast_gkcc_type_string(gkcc_type->of, depth + 1, "");
 
   flbuf[0] = '\0';
   return flbuf;
@@ -395,6 +433,33 @@ struct ast_node *ast_node_direct_declarator_to_declarator(
   return original_node->list.node;
 }
 
+struct ast_node *ast_node_identifier_set_symbol_if_exists(
+    struct gkcc_symbol_table_set *symbol_table_set, struct ast_node *node,
+    enum gkcc_namespace namespace) {
+  gkcc_assert(node->type == AST_NODE_IDENT, GKCC_ERROR_INVALID_ARGUMENTS,
+              "ast_node_identifier_set_symbol_if_exists() got a node that is "
+              "not of type AST_NODE_IDENT");
+
+  node->ident.symbol_table_entry = gkcc_symbol_table_set_get_symbol(
+      symbol_table_set, node->ident.name, namespace, true);
+
+  return node;
+}
+
+enum gkcc_error ast_node_identifier_verify_symbol_exists(struct ast_node *node,
+                                                         char *filename,
+                                                         int line_number) {
+  gkcc_assert(node->type == AST_NODE_IDENT, GKCC_ERROR_INVALID_ARGUMENTS,
+              "ast_node_identifier_verify_symbol_exists() got a node that is "
+              "not of type AST_NODE_IDENT");
+
+  char buf[(1 << 12) + 1];
+  sprintf(buf, "Attempt to use an identifier '%s' that cannot be found at %s:%d", node->ident.name,
+          filename, line_number);
+
+  gkcc_assert(node->ident.symbol_table_entry != NULL, GKCC_ERROR_CANNOT_FIND_SYMBOL, buf);
+}
+
 struct gkcc_type *ast_node_declaration_specifiers_to_gkcc_data_type(
     struct ast_node *declaration_specifiers) {
   // Figure out the signedness
@@ -428,7 +493,7 @@ struct gkcc_type *ast_node_declaration_specifiers_to_gkcc_data_type(
   struct gkcc_type *type = is_signed ? gkcc_type_new(GKCC_TYPE_SIGNED)
                                      : gkcc_type_new(GKCC_TYPE_UNSIGNED);
 
-  struct ast_node *ident = NULL;
+  struct gkcc_type *complex_type = NULL;
 
   // Figure out data type
   // This part is sort of a disaster because it's basically an entire state
@@ -448,10 +513,13 @@ struct gkcc_type *ast_node_declaration_specifiers_to_gkcc_data_type(
     switch (current_type->type_specifier.type) {
       case GKCC_TYPE_SPECIFIER_VOID:
         CHECK_AND_SET_TYPE(GKCC_TYPE_SCALAR_VOID);
+        break;
       case GKCC_TYPE_SPECIFIER_CHAR:
         CHECK_AND_SET_TYPE(GKCC_TYPE_SCALAR_CHAR);
+        break;
       case GKCC_TYPE_SPECIFIER_SHORT:
         CHECK_AND_SET_TYPE(GKCC_TYPE_SCALAR_SHORT);
+        break;
       case GKCC_TYPE_SPECIFIER_INT:
         if (gkcc_type_type == GKCC_TYPE_UNKNOWN) {
           gkcc_type_type = GKCC_TYPE_SCALAR_INT;
@@ -491,11 +559,11 @@ struct gkcc_type *ast_node_declaration_specifiers_to_gkcc_data_type(
         break;
       case GKCC_TYPE_SPECIFIER_STRUCT:
         CHECK_AND_SET_TYPE(GKCC_TYPE_STRUCT);
-        ident = current_type->type_specifier.ident;
+        complex_type = current_type;
         break;
       case GKCC_TYPE_SPECIFIER_UNION:
         CHECK_AND_SET_TYPE(GKCC_TYPE_UNION);
-        ident = current_type->type_specifier.ident;
+        complex_type = current_type;
         break;
       case GKCC_TYPE_SPECIFIER_ENUM:
         CHECK_AND_SET_TYPE(GKCC_TYPE_ENUM);
@@ -506,12 +574,15 @@ struct gkcc_type *ast_node_declaration_specifiers_to_gkcc_data_type(
   }
 
   struct gkcc_type *new_type = gkcc_type_new(gkcc_type_type);
-  new_type->ident = ident;
+  new_type->symbol_table_set =
+      (complex_type != NULL) ? complex_type->symbol_table_set : NULL;
+  new_type->ident = (complex_type != NULL) ? complex_type->ident : NULL;
   if (gkcc_is_gkcc_type_scalar(new_type)) {
     type = gkcc_type_append(type, new_type);
   } else {
     type = new_type;
   }
+
   return type;
 }
 

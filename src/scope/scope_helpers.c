@@ -51,8 +51,71 @@ enum gkcc_error gkcc_scope_add_variable_to_scope(
     enum gkcc_error error = gkcc_symbol_table_set_add_symbol(
         symbol_table_set, GKCC_NAMESPACE_GENERAL, symbol);
     if (error != GKCC_ERROR_SUCCESS) {
+      if (error != GKCC_ERROR_REDECLARATION) {
+        gkcc_error_fatal(GKCC_ERROR_REDECLARATION,
+                         "Attempt to redeclare a variable. Dying");
+      }
       return error;
     }
   }
   return GKCC_ERROR_SUCCESS;
+}
+
+enum gkcc_error gkcc_scope_add_tag_to_scope(
+    struct gkcc_symbol_table_set *symbol_table_set,
+    struct ast_node *struct_or_union_gkcc_type, char *filename,
+    int line_number) {
+  gkcc_assert(struct_or_union_gkcc_type->type == AST_NODE_GKCC_TYPE,
+              GKCC_ERROR_INVALID_ARGUMENTS,
+              "gkcc_scope_add_tag_to_scope() got a struct_or_union_declaration "
+              "that is not of type AST_NODE_GKCC_TYPE");
+
+  // Declaration does not have an identifier. We do not add it to the symbol
+  // table in this case
+  if (struct_or_union_gkcc_type->gkcc_type.gkcc_type->ident == NULL) {
+    return GKCC_ERROR_SUCCESS;
+  }
+
+  struct gkcc_symbol *symbol = gkcc_symbol_new(
+      struct_or_union_gkcc_type->gkcc_type.gkcc_type->ident->ident.name,
+      GKCC_STORAGE_CLASS_INVALID,
+      struct_or_union_gkcc_type->gkcc_type.gkcc_type, line_number, filename);
+
+  struct_or_union_gkcc_type->gkcc_type.gkcc_type->ident->ident
+      .symbol_table_entry = symbol;
+
+  enum gkcc_error error = gkcc_symbol_table_set_add_symbol(
+      symbol_table_set, GKCC_NAMESPACE_TAG, symbol);
+
+  if (error == GKCC_ERROR_REDEFINITION) {
+    gkcc_error_fatal(GKCC_ERROR_REDECLARATION,
+                     "Attempt to redeclare a variable. Dying");
+  }
+  return error;
+}
+
+struct gkcc_symbol_table_set *gkcc_symbol_table_set_get_parent_symbol_table_set(
+    struct gkcc_symbol_table_set *symbol_table_set) {
+  gkcc_assert(symbol_table_set->parent_scope != NULL,
+              GKCC_ERROR_INVALID_ARGUMENTS,
+              "gkcc_symbol_table_set_get_parent_symbol_table_set() detected an "
+              "attempt to get the parent symbol table set of a symbol table "
+              "set that does not have a parent.");
+  return symbol_table_set->parent_scope;
+}
+struct gkcc_symbol_table_set *
+gkcc_symbol_table_set_get_symbol_table_set_of_struct_or_union_node(
+    struct ast_node *node) {
+  gkcc_assert(node->type == AST_NODE_GKCC_TYPE &&
+              node->gkcc_type.gkcc_type->type == GKCC_TYPE_TYPE_SPECIFIER &&
+              (node->gkcc_type.gkcc_type->type_specifier.type ==
+               GKCC_TYPE_SPECIFIER_STRUCT ||
+               node->gkcc_type.gkcc_type->type_specifier.type ==
+               GKCC_TYPE_SPECIFIER_UNION),
+              GKCC_ERROR_INVALID_ARGUMENTS,
+              "gkcc_symbol_table_set_get_symbol_table_set_of_struct_or_union_"
+              "node() got node that "
+              "is not AST_NODE_STRUCT_OR_UNION_SPECIFIER");
+
+  return node->gkcc_type.gkcc_type->symbol_table_set;
 }

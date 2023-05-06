@@ -31,7 +31,11 @@
   GEN(GKCC_ERROR_UNEXPECTED_NULL_VALUE) \
   GEN(GKCC_ERROR_UNEXPECTED_VALUE)      \
   GEN(GKCC_ERROR_REDECLARATION)         \
-  GEN(GKCC_ERROR_CONFLICT)
+  GEN(GKCC_ERROR_CONFLICT)              \
+  GEN(GKCC_ERROR_NOT_YET_IMPLEMENTED)   \
+  GEN(GKCC_ERROR_NOT_IMPLEMENTED)       \
+  GEN(GKCC_ERROR_REDEFINITION)          \
+  GEN(GKCC_ERROR_CANNOT_FIND_SYMBOL)
 
 enum gkcc_error { ENUM_GKCC_ERROR(ENUM_VALUES) };
 
@@ -45,5 +49,6 @@ void print_escaped_char(char toprint);
 void print_escaped_string(char* str, size_t len);
 int sprint_escaped_char(char* buf, char toprint);
 void sprint_escaped_string(char* buf, char* str, size_t len);
+void gkcc_assert_success(enum gkcc_error err, char* message);
 
 #endif  // GKCC_MISC_H

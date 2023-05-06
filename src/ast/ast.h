@@ -194,17 +194,6 @@ struct ast_function_call {
   struct ast_node* parameters;
 };
 
-// ======================================
-// === struct ast_function_definition ===
-// ======================================
-
-struct ast_function_definition {
-  struct ast_node* name;
-  struct ast_node* parameters;
-  struct ast_node* returns;
-  struct ast_node* statements;
-};
-
 // ===============================
 // === struct ast_if_statement ===
 // ===============================
@@ -225,6 +214,15 @@ struct ast_for_loop {
   struct ast_node* expr2;
   struct ast_node* expr3;
   struct ast_node* statements;
+};
+
+// =====================================
+// === struct ast_node_member_access ===
+// =====================================
+
+struct ast_node_member_access {
+  struct ast_node *struct_or_union;
+  struct ast_node *identifier;
 };
 
 // ===========================
@@ -276,11 +274,11 @@ struct ast_constant {
   GEN(AST_NODE_LIST)                       \
   GEN(AST_NODE_TOP_LEVEL)                  \
   GEN(AST_NODE_FUNCTION_CALL)              \
-  GEN(AST_NODE_FUNCTION_DEFINITION)        \
   GEN(AST_NODE_ENUM_DEFINITION)            \
   GEN(AST_NODE_STRUCT_OR_UNION_SPECIFIER) \
   GEN(AST_NODE_FOR_LOOP)                   \
-  GEN(AST_NODE_IF_STATEMENT)
+  GEN(AST_NODE_IF_STATEMENT)               \
+  GEN(AST_NODE_MEMBER_ACCESS)
 
 enum ast_node_type { ENUM_AST_NODE_TYPE(ENUM_VALUES) };
 
@@ -300,35 +298,59 @@ struct ast_node {
     struct ast_list list;
     struct ast_top_level top_level;
     struct ast_function_call function_call;
-    struct ast_function_definition function_definition;
     struct ast_enum_definition enum_definition;
     struct ast_struct_or_union_specifier struct_or_union_specifier;
     struct ast_if_statement if_statement;
     struct ast_for_loop for_loop;
+    struct ast_node_member_access member_access;
   };
 };
 
-// =================
-// === Functions ===
-// =================
+// =============================
+// === Function Declarations ===
+// =============================
 
 void ast_print(struct ast_node* top, int depth, const char* prefix);
+
 void ast_node_string(char* buf, struct ast_node* node, int depth);
+
 void yynum2ast_node(struct ast_node* node, struct _yynum* yynum);
+
 const char* ast_binop_type_string(struct ast_binop* binop);
+
 char* ast_constant_string(struct ast_constant*);
+
 char* ast_unary_string(struct ast_unary* node);
+
 char* ast_ternary_string(struct ast_ternary* node);
+
 struct ast_node* ast_node_new_constant_int_node(int val);
+
 struct ast_node* yylval2ast_node(struct _yylval* yylval);
+
 struct ast_node* ast_node_new_gkcc_type_specifier_node(
     enum gkcc_type_specifier_type type);
+
 struct ast_node* yylval2ast_node_ident(struct _yylval* yylval);
-void ast_gkcc_type_string(struct gkcc_type* gkcc_type, int depth);
+
+void ast_gkcc_type_string(struct gkcc_type* gkcc_type, int depth, char* prefix);
+
 struct ast_node* ast_node_append(struct ast_node* parent,
                                  struct ast_node* child);
+
 struct ast_node *ast_node_direct_declarator_to_declarator(
     struct ast_node *original_node);
+
 struct gkcc_type *ast_node_declaration_specifiers_to_gkcc_data_type(
     struct ast_node *declaration_specifiers);
+
+void print_to_depth(int depth);
+
+struct ast_node *ast_node_identifier_set_symbol_if_exists(
+    struct gkcc_symbol_table_set *symbol_table_set, struct ast_node *node,
+    enum gkcc_namespace namespace);
+
+enum gkcc_error ast_node_identifier_verify_symbol_exists(struct ast_node *node,
+                                                         char *filename,
+                                                         int line_number);
 #endif

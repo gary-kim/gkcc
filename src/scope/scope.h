@@ -66,22 +66,17 @@ static const char *const GKCC_STORAGE_CLASS_STRING[] = {
 
 #undef ENUM_GKCC_STORAGE_CLASS
 
-// === gkcc_symbol ===
-
-struct gkcc_symbol {
-  char *symbol_name;
-  enum gkcc_storage_class storage_class;
-  struct gkcc_type *symbol_type;
-  bool fully_defined;
-  int effective_line_number;
-  char *filename;
-
-  struct gkcc_symbol *next;
-};
+// ================================
+// === struct gkcc_symbol_table ===
+// ================================
 
 struct gkcc_symbol_table {
   struct gkcc_symbol *symbol_list;
 };
+
+// ====================================
+// === struct gkcc_symbol_table_set ===
+// ====================================
 
 struct gkcc_symbol_table_set {
   enum gkcc_scope scope;
@@ -92,25 +87,49 @@ struct gkcc_symbol_table_set {
   struct gkcc_symbol_table_set *parent_scope;
 };
 
+// ===================
+// === gkcc_symbol ===
+// ===================
+
+struct gkcc_symbol {
+  char *symbol_name;
+  enum gkcc_storage_class storage_class;
+  struct gkcc_type *symbol_type;
+  bool fully_defined;
+  int effective_line_number;
+  char *filename;
+
+  struct gkcc_symbol *next;
+  struct gkcc_symbol_table_set *symbol_table_set;
+};
+
 struct gkcc_symbol_table_set *gkcc_symbol_table_set_new(
     struct gkcc_symbol_table_set *parent, enum gkcc_scope scope);
+
 struct gkcc_symbol *gkcc_symbol_new(char *name,
                                     enum gkcc_storage_class storage_class,
                                     struct gkcc_type *type, int line_number,
                                     char *filename);
+
 struct gkcc_symbol_table *gkcc_symbol_table_set_get_symbol_table(
     struct gkcc_symbol_table_set *table_set, enum gkcc_namespace namespace);
+
 enum gkcc_error gkcc_symbol_table_add_symbol(struct gkcc_symbol_table *table,
                                              struct gkcc_symbol *symbol);
+
 struct gkcc_symbol *gkcc_symbol_table_set_get_symbol(
     struct gkcc_symbol_table_set *symbol_table_set, char *name,
     enum gkcc_namespace namespace, bool recurse);
+
 struct gkcc_symbol *gkcc_symbol_table_get_symbol(
     struct gkcc_symbol_table *symbol_table, char *name);
-struct gkcc_symbol_table_set *gkcc_symbol_table_set_get_parent_symbol_table_set(
-    struct gkcc_symbol_table_set *symbol_table_set);
+
 enum gkcc_error gkcc_symbol_table_set_add_symbol(
     struct gkcc_symbol_table_set *symbol_table_set,
     enum gkcc_namespace namespace, struct gkcc_symbol *symbol);
+
 void gkcc_symbol_print_string(struct gkcc_symbol *symbol, int depth);
+
+void gkcc_symbol_table_print(struct gkcc_symbol_table *symbol_table,
+                             int depth);
 #endif  // GKCC_SCOPE_H

@@ -22,6 +22,8 @@
 #include "ast.h"
 #include "lex_extras.h"
 #include "misc.h"
+#include "scope.h"
+#include "scope_helpers.h"
 
 struct ast_node *ast_node_new_if_statement(struct ast_node *condition,
                                            struct ast_node *then_statement,
@@ -121,14 +123,27 @@ struct ast_node *ast_node_new_gkcc_storage_class_specifier_node(
 }
 
 struct ast_node *ast_node_new_function_definition_node(
-    struct ast_node *returns, struct ast_node *function_name,
+    struct ast_node *returns, struct ast_node *function_declaration,
     struct ast_node *parameters, struct ast_node *statements) {
-  struct ast_node *node = ast_node_new(AST_NODE_FUNCTION_DEFINITION);
-  node->function_definition.returns = returns;
-  node->function_definition.name = function_name;
-  node->function_definition.parameters = parameters;
-  node->function_definition.statements = statements;
-  return node;
+  gkcc_assert(
+      function_declaration->type == AST_NODE_DECLARATION,
+      GKCC_ERROR_INVALID_ARGUMENTS,
+      "ast_node_new_function_declaration_node() got a function_declaration "
+      "that is not of type AST_NODE DECLARATION");
+  gkcc_assert(
+      function_declaration->declaration.type->gkcc_type.gkcc_type->type ==
+          GKCC_TYPE_FUNCTION,
+      GKCC_ERROR_INVALID_ARGUMENTS,
+      "ast_node_new_function_declaration_node() got function_declaration with "
+      "a type that is not GKCC_TYPE_FUNCTION");
+
+  // TODO: Deal with parameters
+  function_declaration->declaration.type->gkcc_type.gkcc_type
+      ->function_declaration.return_type =
+      ast_node_declaration_specifiers_to_gkcc_data_type(returns);
+  function_declaration->declaration.type->gkcc_type.gkcc_type
+      ->function_declaration.statements = statements;
+  return function_declaration;
 }
 
 struct ast_node *ast_node_new_declaration_node_from_ident(
@@ -152,7 +167,12 @@ struct ast_node *ast_node_new_declaration_node(
   // This is some kind of enum or struct definition
   if (init_declarator_list == NULL) {
     struct ast_node *node = ast_node_new(AST_NODE_DECLARATION);
-    node->declaration.type = declaration_specifiers;
+    struct gkcc_type *gkcc_type =
+        ast_node_declaration_specifiers_to_gkcc_data_type(
+            declaration_specifiers);
+    node->declaration.type = ast_node_new_gkcc_type_node(0);
+    node->declaration.type->gkcc_type.gkcc_type = gkcc_type;
+    //    node->declaration.type = declaration_specifiers;
     return node;
   }
 
@@ -168,8 +188,21 @@ struct ast_node *ast_node_new_declaration_node(
     struct gkcc_type *gkcc_type =
         ast_node_declaration_specifiers_to_gkcc_data_type(
             declaration_specifiers);
-    referenced_node->declaration.type->gkcc_type.gkcc_type = gkcc_type_append(
-        referenced_node->declaration.type->gkcc_type.gkcc_type, gkcc_type);
+
+    // If it is a function, add it as part of the returns rather than on the
+    if (referenced_node->declaration.type != NULL &&
+        referenced_node->declaration.type->gkcc_type.gkcc_type != NULL &&
+        referenced_node->declaration.type->gkcc_type.gkcc_type->type ==
+            GKCC_TYPE_FUNCTION) {
+      referenced_node->declaration.type->gkcc_type.gkcc_type
+          ->function_declaration.return_type =
+          gkcc_type_append(referenced_node->declaration.type->gkcc_type
+                               .gkcc_type->function_declaration.return_type,
+                           gkcc_type);
+    } else {
+      referenced_node->declaration.type->gkcc_type.gkcc_type = gkcc_type_append(
+          referenced_node->declaration.type->gkcc_type.gkcc_type, gkcc_type);
+    }
 
     list_node = ast_node_append(list_node, referenced_node);
   }
@@ -188,8 +221,34 @@ struct ast_node *ast_node_new_list_node(struct ast_node *node) {
 }
 
 struct ast_node *ast_node_new_gkcc_function_declarator_with_parameter_type_list(
-    struct ast_node *parameter_type_list) {
-  // TODO: CONTINUE HERE
+    struct ast_node *parameter_type_list, struct ast_node *return_type_node) {
+  struct ast_node *node = ast_node_new_gkcc_type_node(GKCC_TYPE_FUNCTION);
+
+  node->gkcc_type.gkcc_type->function_declaration.parameters =
+      parameter_type_list;
+
+  struct gkcc_type *return_type = NULL;
+  if (return_type_node == NULL) {
+    return_type = NULL;
+  } else {
+    // TODO: Implement this
+    // For now, all functions return ints
+    gkcc_assert(false, GKCC_ERROR_NOT_YET_IMPLEMENTED,
+                "ast_node_new_gkcc_function_declarator_with_parameter_type_"
+                "list() given a return type. This is not yet implemented.");
+  }
+  node->gkcc_type.gkcc_type->function_declaration.return_type = return_type;
+  return node;
+}
+
+struct ast_node *ast_node_new_member_access_node(
+    struct gkcc_symbol_table_set *symbol_table_set,
+    struct ast_node *struct_or_union, struct ast_node *member_identifier) {
+  struct ast_node *node = ast_node_new(AST_NODE_MEMBER_ACCESS);
+  node->member_access.struct_or_union = struct_or_union;
+  node->member_access.identifier = member_identifier;
+  // TODO: Find member in symbol table
+  return node;
 }
 
 struct ast_node *ast_node_new_function_call_node(struct ast_node *function_name,
@@ -220,18 +279,21 @@ struct ast_node *ast_node_new_enum_definition_node(
 }
 
 struct ast_node *ast_node_new_struct_or_union_specifier_node(
-    enum ast_struct_or_union_specifier_type type, struct ast_node *ident,
-    struct ast_node *members) {
+    struct gkcc_symbol_table_set *current_symbol_table,
+    enum gkcc_type_specifier_type type, struct ast_node *ident) {
   struct ast_node *node = ast_node_new(AST_NODE_GKCC_TYPE);
   node->gkcc_type.gkcc_type = gkcc_type_new(GKCC_TYPE_TYPE_SPECIFIER);
   node->gkcc_type.gkcc_type->type_specifier.type = type;
   node->gkcc_type.gkcc_type->type_specifier.ident = ident;
-  // TODO: Put members in symbol table
+  node->gkcc_type.gkcc_type->symbol_table_set = gkcc_symbol_table_set_new(
+      current_symbol_table, GKCC_SCOPE_STRUCT_OR_UNION);
   return node;
 }
 
 struct ast_node *ast_node_update_struct_or_union_specifier_node(
-    struct ast_node *node, struct ast_node *ident, struct ast_node *members) {
+    struct ast_node *node, struct ast_node *ident, struct ast_node *members,
+    struct gkcc_symbol_table_set *current_symbol_table, char *filename,
+    int line_number) {
   gkcc_assert(node->type == AST_NODE_GKCC_TYPE &&
                   node->gkcc_type.gkcc_type->type == GKCC_TYPE_TYPE_SPECIFIER &&
                   (node->gkcc_type.gkcc_type->type_specifier.type ==
@@ -242,7 +304,72 @@ struct ast_node *ast_node_update_struct_or_union_specifier_node(
               "ast_node_update_struct_or_union_specifier_node() got node that "
               "is not AST_NODE_STRUCT_OR_UNION_SPECIFIER");
 
-  node->gkcc_type.gkcc_type->type_specifier.ident = ident;
-  // TODO: Put members in scope table
+  if (ident != NULL) {
+    gkcc_assert(node->gkcc_type.gkcc_type->type_specifier.ident == NULL,
+                GKCC_ERROR_REDEFINITION,
+                "An already named struct or union is being given another name. "
+                "This is not allowed.");
+    node->gkcc_type.gkcc_type->type_specifier.ident = ident;
+    node->gkcc_type.gkcc_type->ident = ident;
+
+    struct gkcc_symbol *already_defined = gkcc_symbol_table_set_get_symbol(
+        current_symbol_table, ident->ident.name, GKCC_NAMESPACE_TAG, true);
+    if (already_defined != NULL) {
+      node->gkcc_type.gkcc_type->symbol_table_set =
+          already_defined->symbol_type->symbol_table_set;
+      node->gkcc_type.gkcc_type->ident->ident.symbol_table_entry =
+          already_defined;
+    } else {
+      gkcc_assert_success(
+          gkcc_scope_add_tag_to_scope(current_symbol_table, node, filename,
+                                      line_number),
+          "Failed to add struct to tag namespace");
+    }
+  }
+
+  if (members != NULL) {
+    gkcc_assert(node->gkcc_type.gkcc_type->ident->ident.symbol_table_entry
+                        ->fully_defined == false,
+                GKCC_ERROR_REDEFINITION,
+                "An already defined struct or union is being redefined. This "
+                "is not allowed");
+
+    node->gkcc_type.gkcc_type->ident->ident.symbol_table_entry->fully_defined =
+        true;
+    if (node->gkcc_type.gkcc_type->ident != NULL) {
+      // Make sure node says it is fully defined
+      node->gkcc_type.gkcc_type->ident->ident.symbol_table_entry
+          ->fully_defined = true;
+      node->gkcc_type.gkcc_type->ident->ident.symbol_table_entry
+          ->effective_line_number = line_number;
+      node->gkcc_type.gkcc_type->ident->ident.symbol_table_entry->filename =
+          filename;
+    }
+    node->gkcc_type.gkcc_type->symbol_table_set = gkcc_symbol_table_set_new(
+        current_symbol_table, GKCC_SCOPE_STRUCT_OR_UNION);
+    for (struct ast_node *ln = members; ln != NULL; ln = ln->list.next) {
+      struct ast_node *current_node = ln->list.node;
+      gkcc_assert(current_node->type == AST_NODE_DECLARATION,
+                  GKCC_ERROR_INVALID_ARGUMENTS,
+                  "ast_node_new_struct_or_union_specifier_node() got a members "
+                  "that contains a AST_NODE_LIST with a node that is not "
+                  "AST_NODE_DECLARATION");
+
+      if (current_node->declaration.identifier == NULL) {
+        // For some reason, the user decided to make a declaration in a struct
+        // which does not declare anything. It has some uses, I suppose.
+        continue;
+      }
+      struct gkcc_symbol *symbol =
+          gkcc_symbol_new(current_node->declaration.identifier->ident.name,
+                          GKCC_STORAGE_CLASS_INVALID,
+                          current_node->declaration.type->gkcc_type.gkcc_type,
+                          line_number, filename);
+      gkcc_symbol_table_set_add_symbol(
+          node->gkcc_type.gkcc_type->symbol_table_set, GKCC_NAMESPACE_GENERAL,
+          symbol);
+    }
+  }
+
   return node;
 }

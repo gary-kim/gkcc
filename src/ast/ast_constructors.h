@@ -62,11 +62,13 @@ struct ast_node *ast_node_new_for_loop(struct ast_node *expr1,
 struct ast_node *ast_node_new(enum ast_node_type node_type);
 
 struct ast_node *ast_node_update_struct_or_union_specifier_node(
-    struct ast_node *node, struct ast_node *ident, struct ast_node *members);
+    struct ast_node *node, struct ast_node *ident, struct ast_node *members,
+    struct gkcc_symbol_table_set *current_symbol_table, char *filename,
+    int line_number);
 
 struct ast_node *ast_node_new_struct_or_union_specifier_node(
-    enum ast_struct_or_union_specifier_type type, struct ast_node *ident,
-    struct ast_node *members);
+    struct gkcc_symbol_table_set *current_symbol_table,
+    enum gkcc_type_specifier_type type, struct ast_node *ident);
 
 struct ast_node *ast_node_new_enum_definition_node(
     struct ast_node *ident, struct ast_node *enumerators);
@@ -91,5 +93,10 @@ struct ast_node *ast_node_new_declaration_node_from_ident(
 struct ast_node *ast_node_new_gkcc_array_type_node(struct ast_node *size);
 
 struct ast_node *ast_node_new_gkcc_function_declarator_with_parameter_type_list(
-    struct ast_node *parameter_type_list);
+    struct ast_node *parameter_type_list, struct ast_node *return_type);
+
+struct ast_node *ast_node_new_member_access_node(
+    struct gkcc_symbol_table_set *symbol_table_set,
+    struct ast_node *struct_or_union, struct ast_node *member_identifier);
+
 #endif  // GKCC_AST_CONSTRUCTORS_H

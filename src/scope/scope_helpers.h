@@ -26,4 +26,16 @@ enum gkcc_error gkcc_scope_add_variable_to_scope(
     struct gkcc_symbol_table_set *symbol_table_set,
     struct ast_node *declaration_list, int line_number, char *file_name);
 
+enum gkcc_error gkcc_scope_add_tag_to_scope(
+    struct gkcc_symbol_table_set *symbol_table_set,
+    struct ast_node *struct_or_union_gkcc_type, char *filename,
+    int line_number);
+
+struct gkcc_symbol_table_set *
+gkcc_symbol_table_set_get_symbol_table_set_of_struct_or_union_node(
+    struct ast_node *node);
+
+struct gkcc_symbol_table_set *gkcc_symbol_table_set_get_parent_symbol_table_set(
+    struct gkcc_symbol_table_set *symbol_table_set);
+
 #endif  // GKCC_SCOPE_HELPERS_H

@@ -38,11 +38,6 @@ struct gkcc_symbol_table_set *gkcc_symbol_table_set_new(
   return table;
 }
 
-struct gkcc_symbol_table_set *gkcc_symbol_table_set_get_parent_symbol_table_set(
-    struct gkcc_symbol_table_set *symbol_table_set) {
-  return symbol_table_set->parent_scope;
-}
-
 struct gkcc_symbol_table *gkcc_symbol_table_set_get_symbol_table(
     struct gkcc_symbol_table_set *table_set, enum gkcc_namespace namespace) {
   switch (namespace) {
@@ -102,7 +97,13 @@ enum gkcc_error gkcc_symbol_table_set_add_symbol(
   struct gkcc_symbol_table *st =
       gkcc_symbol_table_set_get_symbol_table(symbol_table_set, namespace);
 
-  return gkcc_symbol_table_add_symbol(st, symbol);
+  enum gkcc_error err = gkcc_symbol_table_add_symbol(st, symbol);
+  if (err != GKCC_ERROR_SUCCESS) {
+    return err;
+  }
+
+  symbol->symbol_table_set = symbol_table_set;
+  return GKCC_ERROR_SUCCESS;
 }
 
 // gkcc_symbol_new returns a new gkcc_symbol
@@ -136,9 +137,31 @@ void gkcc_symbol_print_string(struct gkcc_symbol *symbol, int depth) {
   for (int i = 0; i < 2 * depth; i++) {
     printf(" ");
   }
-  printf("Symbol '%s' defined at %s:%d of type:\n", symbol->symbol_name,
-         symbol->filename, symbol->effective_line_number);
-  ast_gkcc_type_string(symbol->symbol_type, depth + 1);
+  if (symbol->symbol_table_set != NULL) {
+    printf("Symbol '%s' defined at %s:%d (scope=%s, stg_class=%s) of type:\n",
+           symbol->symbol_name, symbol->filename, symbol->effective_line_number,
+           GKCC_SCOPE_STRING[symbol->symbol_table_set->scope],
+           GKCC_STORAGE_CLASS_STRING[symbol->storage_class]);
+  } else {
+    printf("Symbol '%s' defined at %s:%d of type:\n", symbol->symbol_name,
+           symbol->filename, symbol->effective_line_number);
+  }
+
+  ast_gkcc_type_string(symbol->symbol_type, depth + 1, "");
+}
+
+void gkcc_symbol_table_print(struct gkcc_symbol_table *symbol_table,
+                             int depth) {
+  for (struct gkcc_symbol *sl = symbol_table->symbol_list; sl != NULL;
+       sl = sl->next) {
+    for (int i = 0; i < 2 * depth; i++) {
+      printf(" ");
+    }
+
+    printf("Symbol '%s' defined at %s:%d of type:\n", sl->symbol_name,
+           sl->filename, sl->effective_line_number);
+    ast_gkcc_type_string(sl->symbol_type, depth + 1, "");
+  }
 }
 
 // Gets a struct gkcc_symbol from the symbol table.
@@ -160,6 +183,7 @@ struct gkcc_symbol *gkcc_symbol_table_get_symbol(
 
 // Gets a struct gkcc_symbol from the symbol table set in the given namespace.
 // Will return null if symbol could not be found.
+// NOLINTNEXTLINE(misc-no-recursion)
 struct gkcc_symbol *gkcc_symbol_table_set_get_symbol(
     struct gkcc_symbol_table_set *symbol_table_set, char *name,
     enum gkcc_namespace namespace, bool recurse) {

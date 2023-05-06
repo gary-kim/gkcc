@@ -18,6 +18,7 @@
 
 #include "ast.h"
 #include "misc.h"
+#include "scope.h"
 
 // =============================
 // === struct gkcc_qualifier ===
@@ -105,12 +106,23 @@ struct gkcc_array {
   struct ast_node* size;
 };
 
+// =============================
+// === struct gkcc_type_list ===
+// =============================
+
+struct gkcc_type_list {
+  struct gkcc_type *type;
+  struct gkcc_type_list *next;
+};
+
 // ========================================
 // === struct gkcc_function_declaration ===
 // ========================================
 
 struct gkcc_function_declaration {
-  // TODO: CONTINUE HERE
+  struct ast_node *parameters;
+  struct gkcc_type *return_type;
+  struct ast_node *statements;
 };
 
 // ========================
@@ -154,9 +166,11 @@ struct gkcc_type {
     struct gkcc_storage_class_specifier storage_class_specifier;
     struct gkcc_type_specifier type_specifier;
     struct gkcc_array array;
+    struct gkcc_function_declaration function_declaration;
   };
   struct gkcc_type* of;
   struct ast_node* ident;
+  struct gkcc_symbol_table_set *symbol_table_set;
 };
 
 // =============================
