@@ -123,15 +123,14 @@ gkcc_symbol_table_set_get_symbol_table_set_of_struct_or_union_node(
 enum gkcc_error gkcc_scope_add_label_to_scope(
     struct gkcc_symbol_table_set *symbol_table_set, struct ast_node *goto_node,
     struct ast_node *pointing_at, char *filename, int line_number) {
-
-
   char *label_name = goto_node->goto_node.ident->ident.name;
   // Does the symbol already exist can we point to it?
   struct gkcc_symbol *symbol = gkcc_symbol_table_set_get_symbol(
       symbol_table_set, label_name, GKCC_NAMESPACE_LABEL, true);
 
   if (symbol != NULL) {
-    gkcc_assert(pointing_at == NULL || !symbol->fully_defined, GKCC_ERROR_REDEFINITION,
+    gkcc_assert(pointing_at == NULL || !symbol->fully_defined,
+                GKCC_ERROR_REDEFINITION,
                 "Attempt to put the same label twice in the same function. "
                 "This is illegal. I am dying.");
     goto_node->goto_node.ident->ident.symbol_table_entry = symbol;

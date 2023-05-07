@@ -111,8 +111,8 @@ struct gkcc_array {
 // =============================
 
 struct gkcc_type_list {
-  struct gkcc_type *type;
-  struct gkcc_type_list *next;
+  struct gkcc_type* type;
+  struct gkcc_type_list* next;
 };
 
 // ========================================
@@ -120,9 +120,9 @@ struct gkcc_type_list {
 // ========================================
 
 struct gkcc_function_declaration {
-  struct ast_node *parameters;
-  struct gkcc_type *return_type;
-  struct ast_node *statements;
+  struct ast_node* parameters;
+  struct gkcc_type* return_type;
+  struct ast_node* statements;
 };
 
 // ========================
@@ -170,7 +170,7 @@ struct gkcc_type {
   };
   struct gkcc_type* of;
   struct ast_node* ident;
-  struct gkcc_symbol_table_set *symbol_table_set;
+  struct gkcc_symbol_table_set* symbol_table_set;
 };
 
 // =============================
@@ -180,5 +180,5 @@ struct gkcc_type {
 struct gkcc_type* gkcc_type_new(enum gkcc_type_type type);
 struct gkcc_type* gkcc_type_append(struct gkcc_type* parent,
                                    struct gkcc_type* child);
-bool gkcc_is_gkcc_type_scalar(struct gkcc_type *gkcc_type);
+bool gkcc_is_gkcc_type_scalar(struct gkcc_type* gkcc_type);
 #endif  // GKCC_TYPES_H

@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
 
   yyparse(&ast_node, global_symbol_table);
 
-  struct ast_node *top_level = ast_node_new(AST_NODE_TOP_LEVEL);
+  struct ast_node* top_level = ast_node_new(AST_NODE_TOP_LEVEL);
   top_level->top_level.list = &ast_node;
 
   ast_print(top_level, 0, "");

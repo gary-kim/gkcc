@@ -258,7 +258,6 @@ void ast_gkcc_type_string(struct gkcc_type *gkcc_type, int depth,
   ast_gkcc_type_string(gkcc_type->of, depth + 1, "");
 
   flbuf[0] = '\0';
-  return flbuf;
 }
 
 char *ast_constant_string(struct ast_constant *constant) {
@@ -398,16 +397,6 @@ struct ast_node *ast_node_new_gkcc_type_specifier_node(
   return node;
 }
 
-struct ast_node *ast_node_gkcc_type_append(struct ast_node *parent,
-                                           struct ast_node *child) {
-  gkcc_assert(parent->type != AST_NODE_GKCC_TYPE, GKCC_ERROR_INVALID_ARGUMENTS,
-              "ast_node_gkcc_type_append got a parent that is not a "
-              "AST_NODE_GKCC_TYPE");
-  gkcc_assert(
-      child->type != AST_NODE_GKCC_TYPE, GKCC_ERROR_INVALID_ARGUMENTS,
-      "ast_node_gkcc_type_append got a child that is not a AST_NODE_GKCC_TYPE");
-}
-
 struct ast_node *ast_node_direct_declarator_to_declarator(
     struct ast_node *original_node) {
   if (original_node->type != AST_NODE_LIST) {
@@ -476,6 +465,8 @@ enum gkcc_error ast_node_identifier_verify_symbol_exists(struct ast_node *node,
 
   gkcc_assert(node->ident.symbol_table_entry != NULL,
               GKCC_ERROR_CANNOT_FIND_SYMBOL, buf);
+
+  return GKCC_ERROR_SUCCESS;
 }
 
 struct gkcc_type *ast_node_declaration_specifiers_to_gkcc_data_type(

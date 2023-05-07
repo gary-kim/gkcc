@@ -247,8 +247,8 @@ struct ast_function_return {
 // ===================================
 
 struct ast_switch_case_case {
-  struct ast_node *expression;
-  struct ast_node *statement;
+  struct ast_node* expression;
+  struct ast_node* statement;
 };
 
 // =====================================
@@ -256,8 +256,8 @@ struct ast_switch_case_case {
 // =====================================
 
 struct ast_switch_case_switch {
-  struct ast_node *expression;
-  struct ast_node *statements;
+  struct ast_node* expression;
+  struct ast_node* statements;
 };
 
 // ===========================

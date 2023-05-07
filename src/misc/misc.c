@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+// clang-format off
 #include "misc.h"
 #include <stdio.h>
 #include <sys/signal.h>
@@ -32,15 +33,14 @@ void gkcc_report_error(enum gkcc_error error, char* reporter) {
 }
 
 void gkcc_assert(int to_assert, enum gkcc_error err, char* message) {
-  if (to_assert)
-    return;
+  if (to_assert) return;
 
   gkcc_report_error(err, "gkcc_assert");
   die(message);
 }
 
 void gkcc_assert_success(enum gkcc_error err, char* message) {
-    gkcc_assert(err == GKCC_ERROR_SUCCESS, err, message);
+  gkcc_assert(err == GKCC_ERROR_SUCCESS, err, message);
 }
 
 void gkcc_error_fatal(enum gkcc_error err, char* message) {
@@ -49,15 +49,11 @@ void gkcc_error_fatal(enum gkcc_error err, char* message) {
   die(error_message);
 }
 
-void segfault_handler(void) {
-  die("Caught segfault");
-}
+void segfault_handler(void) { die("Caught segfault"); }
 
 // Disable ASAN leak checker
 #ifdef __SANITIZE_ADDRESS__
-const char *__asan_default_options(void) {
-  return "detect_leaks=0";
-}
+const char* __asan_default_options(void) { return "detect_leaks=0"; }
 #endif
 
 void setup_segfault_stack_trace(void) {
@@ -74,7 +70,7 @@ void print_escaped_char(char toprint) {
   printf("'%s'", buf);
 }
 
-void print_escaped_string(char *str, size_t len) {
+void print_escaped_string(char* str, size_t len) {
   char buf[8193];
   sprint_escaped_string(buf, str, len);
   printf("\"%s\"", buf);
@@ -133,6 +129,6 @@ int sprint_escaped_char(char* buf, char toprint) {
       strcpy(buf, "\\v");
       return sizeof("\\v");
     default:
-      return sprintf(buf, "\\%03o", (unsigned char) toprint);
+      return sprintf(buf, "\\%03o", (unsigned char)toprint);
   }
 }
