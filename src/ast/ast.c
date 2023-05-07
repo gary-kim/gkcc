@@ -111,6 +111,18 @@ void ast_print(struct ast_node *top, int depth, const char *prefix) {
       ast_print(top->for_loop.expr3, depth + 1, "expr3: ");
       ast_print(top->for_loop.statements, depth + 1, "do: ");
       break;
+    case AST_NODE_FUNCTION_RETURN:
+      ast_print(top->function_return.to_return, depth + 1, "returning: ");
+      break;
+    case AST_NODE_SWITCH_CASE_CASE:
+      ast_print(top->switch_case_case.expression, depth + 1, "expression: ");
+      ast_print(top->switch_case_case.statement, depth + 1, "statements: ");
+      break;
+    case AST_NODE_SWITCH_CASE_SWITCH:
+      ast_print(top->switch_case_switch.expression, depth + 1,
+                "constant_expression: ");
+      ast_print(top->switch_case_switch.statements, depth + 1, "statements: ");
+      break;
     default:
       break;
   }
@@ -156,6 +168,10 @@ void ast_node_string(char *buf, struct ast_node *node, int depth) {
         strcpy(extrabuf, "false");
       sprintf(buf, "%s (is_do_while=%s):", AST_NODE_TYPE_STRING[node->type],
               extrabuf);
+      break;
+    case AST_NODE_GOTO_NODE:
+      sprintf(buf, "%s: %s", AST_NODE_TYPE_STRING[node->type],
+              node->goto_node.ident->ident.name);
       break;
     default:
       sprintf(buf, "%s:", AST_NODE_TYPE_STRING[node->type]);
@@ -454,10 +470,12 @@ enum gkcc_error ast_node_identifier_verify_symbol_exists(struct ast_node *node,
               "not of type AST_NODE_IDENT");
 
   char buf[(1 << 12) + 1];
-  sprintf(buf, "Attempt to use an identifier '%s' that cannot be found at %s:%d", node->ident.name,
-          filename, line_number);
+  sprintf(buf,
+          "Attempt to use an identifier '%s' that cannot be found at %s:%d",
+          node->ident.name, filename, line_number);
 
-  gkcc_assert(node->ident.symbol_table_entry != NULL, GKCC_ERROR_CANNOT_FIND_SYMBOL, buf);
+  gkcc_assert(node->ident.symbol_table_entry != NULL,
+              GKCC_ERROR_CANNOT_FIND_SYMBOL, buf);
 }
 
 struct gkcc_type *ast_node_declaration_specifiers_to_gkcc_data_type(

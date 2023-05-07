@@ -21,7 +21,9 @@
 #include "misc.h"
 #include "types.h"
 
-// === gkcc_namespace ===
+// ===========================
+// === enum gkcc_namespace ===
+// ===========================
 
 #define ENUM_GKCC_NAMESPACE(GEN) \
   GEN(GKCC_NAMESPACE_GENERAL)    \
@@ -36,7 +38,10 @@ static const char *const GKCC_NAMESPACE_STRING[] = {
 
 #undef ENUM_GKCC_NAMESPACE
 
-// === gkcc_scope ===
+// =======================
+// === enum gkcc_scope ===
+// =======================
+
 #define ENUM_GKCC_SCOPE(GEN) \
   GEN(GKCC_SCOPE_FUNCTION)   \
   GEN(GKCC_SCOPE_PROTOTYPE)  \
@@ -87,6 +92,29 @@ struct gkcc_symbol_table_set {
   struct gkcc_symbol_table_set *parent_scope;
 };
 
+// =====================================
+// === struct gkcc_symbol_identifier ===
+// =====================================
+
+#define ENUM_GKCC_SYMBOL_IDENTIFIER(GEN) \
+  GEN(GKCC_SYMBOL_IDENTIFIER_STRING)     \
+  GEN(GKCC_SYMBOL_IDENTIFIER_INTEGER)
+
+enum gkcc_symbol_identifier_type { ENUM_GKCC_SYMBOL_IDENTIFIER(ENUM_VALUES) };
+
+static const char *const GKCC_SYMBOL_IDENTIFIER[] = {
+    ENUM_GKCC_SYMBOL_IDENTIFIER(ENUM_STRINGS)};
+
+#undef ENUM_GKCC_SYMBOL_IDENTIFIER
+
+struct gkcc_symbol_identifier {
+  enum gkcc_symbol_identifier_type type;
+  union {
+    char *string;
+    int integer;
+  };
+};
+
 // ===================
 // === gkcc_symbol ===
 // ===================
@@ -95,6 +123,9 @@ struct gkcc_symbol {
   char *symbol_name;
   enum gkcc_storage_class storage_class;
   struct gkcc_type *symbol_type;
+
+  // location_ast is a pointer to the ast that is labeled for gotos.
+  struct ast_node *location_ast;
   bool fully_defined;
   int effective_line_number;
   char *filename;
@@ -130,6 +161,5 @@ enum gkcc_error gkcc_symbol_table_set_add_symbol(
 
 void gkcc_symbol_print_string(struct gkcc_symbol *symbol, int depth);
 
-void gkcc_symbol_table_print(struct gkcc_symbol_table *symbol_table,
-                             int depth);
+void gkcc_symbol_table_print(struct gkcc_symbol_table *symbol_table, int depth);
 #endif  // GKCC_SCOPE_H

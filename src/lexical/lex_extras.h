@@ -65,7 +65,4 @@ struct _yylval {
     enum _yylval_type type;
 };
 
-// TODO: NOT THIS
-#include "ast.h"
-
 #endif

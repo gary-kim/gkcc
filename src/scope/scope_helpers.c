@@ -107,15 +107,46 @@ struct gkcc_symbol_table_set *
 gkcc_symbol_table_set_get_symbol_table_set_of_struct_or_union_node(
     struct ast_node *node) {
   gkcc_assert(node->type == AST_NODE_GKCC_TYPE &&
-              node->gkcc_type.gkcc_type->type == GKCC_TYPE_TYPE_SPECIFIER &&
-              (node->gkcc_type.gkcc_type->type_specifier.type ==
-               GKCC_TYPE_SPECIFIER_STRUCT ||
-               node->gkcc_type.gkcc_type->type_specifier.type ==
-               GKCC_TYPE_SPECIFIER_UNION),
+                  node->gkcc_type.gkcc_type->type == GKCC_TYPE_TYPE_SPECIFIER &&
+                  (node->gkcc_type.gkcc_type->type_specifier.type ==
+                       GKCC_TYPE_SPECIFIER_STRUCT ||
+                   node->gkcc_type.gkcc_type->type_specifier.type ==
+                       GKCC_TYPE_SPECIFIER_UNION),
               GKCC_ERROR_INVALID_ARGUMENTS,
               "gkcc_symbol_table_set_get_symbol_table_set_of_struct_or_union_"
               "node() got node that "
               "is not AST_NODE_STRUCT_OR_UNION_SPECIFIER");
 
   return node->gkcc_type.gkcc_type->symbol_table_set;
+}
+
+enum gkcc_error gkcc_scope_add_label_to_scope(
+    struct gkcc_symbol_table_set *symbol_table_set, struct ast_node *goto_node,
+    struct ast_node *pointing_at, char *filename, int line_number) {
+
+
+  char *label_name = goto_node->goto_node.ident->ident.name;
+  // Does the symbol already exist can we point to it?
+  struct gkcc_symbol *symbol = gkcc_symbol_table_set_get_symbol(
+      symbol_table_set, label_name, GKCC_NAMESPACE_LABEL, true);
+
+  if (symbol != NULL) {
+    gkcc_assert(pointing_at == NULL || !symbol->fully_defined, GKCC_ERROR_REDEFINITION,
+                "Attempt to put the same label twice in the same function. "
+                "This is illegal. I am dying.");
+    goto_node->goto_node.ident->ident.symbol_table_entry = symbol;
+    goto_node->goto_node.symbol = symbol;
+    return GKCC_ERROR_SUCCESS;
+  }
+
+  symbol = gkcc_symbol_new(label_name, GKCC_STORAGE_CLASS_INVALID, NULL,
+                           line_number, filename);
+
+  if (pointing_at != NULL) {
+    symbol->fully_defined = true;
+    symbol->location_ast = pointing_at;
+  }
+
+  return gkcc_symbol_table_set_add_symbol(symbol_table_set,
+                                          GKCC_NAMESPACE_LABEL, symbol);
 }

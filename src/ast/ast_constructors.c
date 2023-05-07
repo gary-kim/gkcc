@@ -146,6 +146,17 @@ struct ast_node *ast_node_new_function_definition_node(
   return function_declaration;
 }
 
+struct ast_node *ast_node_new_goto_node(struct ast_node *ident) {
+  struct ast_node *node = ast_node_new(AST_NODE_GOTO_NODE);
+  node->goto_node.ident = ident;
+}
+
+struct ast_node *ast_node_new_function_return(struct ast_node *to_return) {
+  struct ast_node *node = ast_node_new(AST_NODE_FUNCTION_RETURN);
+  node->function_return.to_return = to_return;
+  return node;
+}
+
 struct ast_node *ast_node_new_declaration_node_from_ident(
     struct ast_node *ident) {
   struct ast_node *node = ast_node_new(AST_NODE_DECLARATION);
@@ -270,6 +281,22 @@ struct ast_node *ast_node_apply_designator_to_all(
   return tr_node;
 }
 
+struct ast_node *ast_node_new_switch_case_case_node(
+    struct ast_node *constant_expression, struct ast_node *statement) {
+  struct ast_node *node = ast_node_new(AST_NODE_SWITCH_CASE_CASE);
+  node->switch_case_case.expression = constant_expression;
+  node->switch_case_case.statement = statement;
+  return node;
+}
+
+struct ast_node *ast_node_new_switch_case_switch_node(
+    struct ast_node *expression, struct ast_node *statements) {
+  struct ast_node *node = ast_node_new(AST_NODE_SWITCH_CASE_SWITCH);
+  node->switch_case_switch.statements = statements;
+  node->switch_case_switch.expression = expression;
+  return node;
+}
+
 struct ast_node *ast_node_new_enum_definition_node(
     struct ast_node *ident, struct ast_node *enumerators) {
   struct ast_node *enum_node = ast_node_new(AST_NODE_ENUM_DEFINITION);
@@ -334,8 +361,6 @@ struct ast_node *ast_node_update_struct_or_union_specifier_node(
                 "An already defined struct or union is being redefined. This "
                 "is not allowed");
 
-    node->gkcc_type.gkcc_type->ident->ident.symbol_table_entry->fully_defined =
-        true;
     if (node->gkcc_type.gkcc_type->ident != NULL) {
       // Make sure node says it is fully defined
       node->gkcc_type.gkcc_type->ident->ident.symbol_table_entry
@@ -345,6 +370,7 @@ struct ast_node *ast_node_update_struct_or_union_specifier_node(
       node->gkcc_type.gkcc_type->ident->ident.symbol_table_entry->filename =
           filename;
     }
+
     node->gkcc_type.gkcc_type->symbol_table_set = gkcc_symbol_table_set_new(
         current_symbol_table, GKCC_SCOPE_STRUCT_OR_UNION);
     for (struct ast_node *ln = members; ln != NULL; ln = ln->list.next) {
@@ -360,6 +386,21 @@ struct ast_node *ast_node_update_struct_or_union_specifier_node(
         // which does not declare anything. It has some uses, I suppose.
         continue;
       }
+
+      char buf[(1 << 12) + 1];
+      sprintf(buf,
+              "Attempt to declare a field '%s' an incomplete type in a struct "
+              "or union defined at %s:%d",
+              current_node->declaration.identifier->ident.name, filename,
+              line_number);
+
+      gkcc_assert((current_node->declaration.type->gkcc_type.gkcc_type->type !=
+                       GKCC_TYPE_STRUCT &&
+                   current_node->declaration.type->gkcc_type.gkcc_type->type !=
+                       GKCC_TYPE_UNION) ||
+                      current_node->declaration.type->gkcc_type.gkcc_type->ident
+                          ->ident.symbol_table_entry->fully_defined,
+                  GKCC_ERROR_INCOMPLETE_TYPE, buf);
       struct gkcc_symbol *symbol =
           gkcc_symbol_new(current_node->declaration.identifier->ident.name,
                           GKCC_STORAGE_CLASS_INVALID,

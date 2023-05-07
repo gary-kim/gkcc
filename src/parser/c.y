@@ -790,12 +790,10 @@ parameter_list: parameter_declaration {
               ;
 
 parameter_declaration: declaration_specifiers {
-                         struct ast_node *node = ast_node_new_declaration_node($declaration_specifiers, NULL);
-                         $$ = ast_node_new_list_node($1);
+                         $$ = ast_node_new_list_node($declaration_specifiers);
                        }
                      | declaration_specifiers declarator {
-                         struct ast_node *node = ast_node_new_declaration_node($declaration_specifiers, $declarator);
-                         $$ = ast_node_append($1, $2);
+                         $$ = ast_node_append($declaration_specifiers, $declarator);
                        }
                      //| declaration_specifiers abstract_declarator // NOT IMPLEMENTED
                      ;
@@ -895,9 +893,17 @@ statement: labeled_statement {
            }
          ;
 
-labeled_statement: IDENT ':' statement
-                 | CASE constant_expression ':' statement
-                 | DEFAULT ':' statement
+labeled_statement: IDENT ':' statement {
+                     struct ast_node *ident_node = yylval2ast_node_ident(&$IDENT);
+                     $$ = ast_node_new_goto_node(ident_node);
+                     gkcc_scope_add_label_to_scope(current_symbol_table, $$, $statement, YY_FILENAME, yylineno);
+                   }
+                 | CASE constant_expression ':' statement {
+                     $$ = ast_node_new_switch_case_case_node($constant_expression, $statement);
+                   }
+                 | DEFAULT ':' statement {
+                     $$ = ast_node_new_switch_case_case_node(NULL, $statement);
+                   }
                  ;
 
 block_item_list: block_item {
@@ -935,7 +941,9 @@ selection_statement: IF '(' expression ')' enter_block_symbol_table_set statemen
                        $$ = ast_node_new_if_statement($expression, $then_statement, $else_statement);
                        EXIT_SCOPE();
                      }
-                   | SWITCH '(' expression ')' statement
+                   | SWITCH '(' expression ')' statement {
+                       $$ = ast_node_new_switch_case_switch_node($expression, $statement);
+                     }
                    ;
 
 iteration_statement: WHILE '(' expression ')' enter_block_symbol_table_set statement {
@@ -967,11 +975,23 @@ iteration_statement: WHILE '(' expression ')' enter_block_symbol_table_set state
                      }
                    ;
 
-jump_statement: GOTO IDENT ';'
-              | CONTINUE ';'
-              | BREAK ';'
-              | RETURN ';'
-              | RETURN expression ';'
+jump_statement: GOTO IDENT ';' {
+                  struct ast_node *ident_node = yylval2ast_node_ident(&$IDENT);
+                  $$ = ast_node_new_goto_node(ident_node);
+                  gkcc_scope_add_label_to_scope(current_symbol_table, $$, NULL, YY_FILENAME, yylineno);
+                }
+              | CONTINUE ';' {
+                  $$ = ast_node_new(AST_NODE_JUMP_CONTINUE);
+                }
+              | BREAK ';' {
+                  $$ = ast_node_new(AST_NODE_JUMP_BREAK);
+                }
+              | RETURN ';' {
+                  $$ = ast_node_new_function_return(NULL);
+                }
+              | RETURN expression ';' {
+                  $$ = ast_node_new_function_return($expression);
+                }
               ;
 
 // === BEGIN EXTERNAL DEFINITIONS ===

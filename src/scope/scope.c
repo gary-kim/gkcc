@@ -57,10 +57,10 @@ struct gkcc_symbol_table *gkcc_symbol_table_set_get_symbol_table(
 // gkcc_symbol_table_add_symbol adds the given symbol to the given symbol_table
 enum gkcc_error gkcc_symbol_table_add_symbol(struct gkcc_symbol_table *table,
                                              struct gkcc_symbol *symbol) {
-  struct gkcc_symbol *last_symbol = table->symbol_list;
+  struct gkcc_symbol *first_symbol = table->symbol_list;
 
   // Shortcut for the first symbol in the symbol table
-  if (last_symbol == NULL) {
+  if (first_symbol == NULL) {
     table->symbol_list = symbol;
     return GKCC_ERROR_SUCCESS;
   }
@@ -69,13 +69,9 @@ enum gkcc_error gkcc_symbol_table_add_symbol(struct gkcc_symbol_table *table,
   if (gkcc_symbol_table_get_symbol(table, symbol->symbol_name) != NULL)
     return GKCC_ERROR_SYMBOL_ALREADY_EXISTS;
 
-  // Go to last symbol in list
-  // TODO: Keep pointer to last instead of this
-  for (; last_symbol->next != NULL; last_symbol = last_symbol->next)
-    ;
-
-  // Set the next symbol as our desired symbol
-  last_symbol->next = symbol;
+  // Add symbol onto symbols list
+  symbol->next = first_symbol;
+  table->symbol_list = symbol;
 
   return GKCC_ERROR_SUCCESS;
 }

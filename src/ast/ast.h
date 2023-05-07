@@ -115,7 +115,7 @@ struct ast_unary {
 struct ast_ident {
   char* name;
   int length;
-  struct gkcc_symbol *symbol_table_entry;
+  struct gkcc_symbol* symbol_table_entry;
 };
 
 // ============================
@@ -168,7 +168,7 @@ struct ast_enum_definition {
 // ============================================
 
 #define ENUM_AST_STRUCT_OR_UNION_SPECIFIER_TYPE(GEN) \
-  GEN(AST_STRUCT_OR_UNION_DEFINITION_STRUCT)          \
+  GEN(AST_STRUCT_OR_UNION_DEFINITION_STRUCT)         \
   GEN(AST_STRUCT_OR_UNION_DEFINITION_UNION)
 
 enum ast_struct_or_union_specifier_type {
@@ -221,8 +221,43 @@ struct ast_for_loop {
 // =====================================
 
 struct ast_node_member_access {
-  struct ast_node *struct_or_union;
-  struct ast_node *identifier;
+  struct ast_node* struct_or_union;
+  struct ast_node* identifier;
+};
+
+// =======================
+// === struct ast_goto ===
+// =======================
+
+struct ast_goto {
+  struct gkcc_symbol* symbol;
+  struct ast_node* ident;
+};
+
+// ==================================
+// === struct ast_function_return ===
+// ==================================
+
+struct ast_function_return {
+  struct ast_node* to_return;
+};
+
+// ===================================
+// === struct ast_switch_case_case ===
+// ===================================
+
+struct ast_switch_case_case {
+  struct ast_node *expression;
+  struct ast_node *statement;
+};
+
+// =====================================
+// === struct ast_switch_case_switch ===
+// =====================================
+
+struct ast_switch_case_switch {
+  struct ast_node *expression;
+  struct ast_node *statements;
 };
 
 // ===========================
@@ -262,23 +297,29 @@ struct ast_constant {
 // === struct ast_node ===
 // =======================
 
-#define ENUM_AST_NODE_TYPE(GEN)            \
-  GEN(AST_NODE_UNKNOWN)                    \
-  GEN(AST_NODE_BINOP)                      \
-  GEN(AST_NODE_CONSTANT)                   \
-  GEN(AST_NODE_IDENT)                      \
-  GEN(AST_NODE_UNARY)                      \
-  GEN(AST_NODE_TERNARY)                    \
-  GEN(AST_NODE_GKCC_TYPE)                  \
-  GEN(AST_NODE_DECLARATION)                \
-  GEN(AST_NODE_LIST)                       \
-  GEN(AST_NODE_TOP_LEVEL)                  \
-  GEN(AST_NODE_FUNCTION_CALL)              \
-  GEN(AST_NODE_ENUM_DEFINITION)            \
+#define ENUM_AST_NODE_TYPE(GEN)           \
+  GEN(AST_NODE_UNKNOWN)                   \
+  GEN(AST_NODE_BINOP)                     \
+  GEN(AST_NODE_CONSTANT)                  \
+  GEN(AST_NODE_IDENT)                     \
+  GEN(AST_NODE_UNARY)                     \
+  GEN(AST_NODE_TERNARY)                   \
+  GEN(AST_NODE_GKCC_TYPE)                 \
+  GEN(AST_NODE_DECLARATION)               \
+  GEN(AST_NODE_LIST)                      \
+  GEN(AST_NODE_TOP_LEVEL)                 \
+  GEN(AST_NODE_FUNCTION_CALL)             \
+  GEN(AST_NODE_ENUM_DEFINITION)           \
   GEN(AST_NODE_STRUCT_OR_UNION_SPECIFIER) \
-  GEN(AST_NODE_FOR_LOOP)                   \
-  GEN(AST_NODE_IF_STATEMENT)               \
-  GEN(AST_NODE_MEMBER_ACCESS)
+  GEN(AST_NODE_FOR_LOOP)                  \
+  GEN(AST_NODE_IF_STATEMENT)              \
+  GEN(AST_NODE_MEMBER_ACCESS)             \
+  GEN(AST_NODE_GOTO_NODE)                 \
+  GEN(AST_NODE_FUNCTION_RETURN)           \
+  GEN(AST_NODE_JUMP_CONTINUE)             \
+  GEN(AST_NODE_JUMP_BREAK)                \
+  GEN(AST_NODE_SWITCH_CASE_CASE)          \
+  GEN(AST_NODE_SWITCH_CASE_SWITCH)
 
 enum ast_node_type { ENUM_AST_NODE_TYPE(ENUM_VALUES) };
 
@@ -303,6 +344,10 @@ struct ast_node {
     struct ast_if_statement if_statement;
     struct ast_for_loop for_loop;
     struct ast_node_member_access member_access;
+    struct ast_goto goto_node;
+    struct ast_function_return function_return;
+    struct ast_switch_case_case switch_case_case;
+    struct ast_switch_case_switch switch_case_switch;
   };
 };
 
@@ -338,19 +383,19 @@ void ast_gkcc_type_string(struct gkcc_type* gkcc_type, int depth, char* prefix);
 struct ast_node* ast_node_append(struct ast_node* parent,
                                  struct ast_node* child);
 
-struct ast_node *ast_node_direct_declarator_to_declarator(
-    struct ast_node *original_node);
+struct ast_node* ast_node_direct_declarator_to_declarator(
+    struct ast_node* original_node);
 
-struct gkcc_type *ast_node_declaration_specifiers_to_gkcc_data_type(
-    struct ast_node *declaration_specifiers);
+struct gkcc_type* ast_node_declaration_specifiers_to_gkcc_data_type(
+    struct ast_node* declaration_specifiers);
 
 void print_to_depth(int depth);
 
-struct ast_node *ast_node_identifier_set_symbol_if_exists(
-    struct gkcc_symbol_table_set *symbol_table_set, struct ast_node *node,
+struct ast_node* ast_node_identifier_set_symbol_if_exists(
+    struct gkcc_symbol_table_set* symbol_table_set, struct ast_node* node,
     enum gkcc_namespace namespace);
 
-enum gkcc_error ast_node_identifier_verify_symbol_exists(struct ast_node *node,
-                                                         char *filename,
+enum gkcc_error ast_node_identifier_verify_symbol_exists(struct ast_node* node,
+                                                         char* filename,
                                                          int line_number);
 #endif

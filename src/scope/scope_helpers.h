@@ -38,4 +38,8 @@ gkcc_symbol_table_set_get_symbol_table_set_of_struct_or_union_node(
 struct gkcc_symbol_table_set *gkcc_symbol_table_set_get_parent_symbol_table_set(
     struct gkcc_symbol_table_set *symbol_table_set);
 
+enum gkcc_error gkcc_scope_add_label_to_scope(
+    struct gkcc_symbol_table_set *symbol_table_set, struct ast_node *goto_node,
+    struct ast_node *pointing_at, char *filename, int line_number);
+
 #endif  // GKCC_SCOPE_HELPERS_H

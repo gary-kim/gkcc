@@ -99,4 +99,13 @@ struct ast_node *ast_node_new_member_access_node(
     struct gkcc_symbol_table_set *symbol_table_set,
     struct ast_node *struct_or_union, struct ast_node *member_identifier);
 
+struct ast_node *ast_node_new_goto_node(struct ast_node *ident);
+
+struct ast_node *ast_node_new_function_return(struct ast_node *to_return);
+
+struct ast_node *ast_node_new_switch_case_case_node(
+    struct ast_node *constant_expression, struct ast_node *statement);
+
+struct ast_node *ast_node_new_switch_case_switch_node(
+    struct ast_node *expression, struct ast_node *statements);
 #endif  // GKCC_AST_CONSTRUCTORS_H
