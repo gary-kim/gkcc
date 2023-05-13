@@ -123,6 +123,7 @@ struct gkcc_function_declaration {
   struct ast_node* parameters;
   struct gkcc_type* return_type;
   struct ast_node* statements;
+  struct
 };
 
 // ========================

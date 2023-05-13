@@ -43,4 +43,8 @@ int main(int argc, char** argv) {
   top_level->top_level.list = &ast_node;
 
   ast_print(top_level, 0, "");
+
+  if (argc > 2 && strcmp(argv[2], "ir") == 0) {
+    // TODO: Do IR gen here
+  }
 }

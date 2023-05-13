@@ -19,8 +19,8 @@
 #include <stdbool.h>
 
 #include "lex_extras.h"
-#include "misc.h"
-#include "types.h"
+#include "misc/misc.h"
+#include "ast/types.h"
 
 // ========================
 // === struct ast_binop ===

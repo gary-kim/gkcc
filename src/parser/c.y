@@ -205,7 +205,6 @@ top_list: declaration_or_fndef {
 
 declaration_or_fndef: declaration
                     | function_definition
-                    //| expression_statement
                     ;
 
 identifier: IDENT {
@@ -778,7 +777,10 @@ type_qualifier_list: type_qualifier {
 parameter_type_list: parameter_list {
                        $$ = ast_node_new_list_node($1);
                      }
-                   | parameter_list ',' ELLIPSIS
+                   | parameter_list ',' ELLIPSIS {
+                       // Not implemented
+                       $$ = $parameter_list;
+                     }
                    ;
 
 parameter_list: parameter_declaration {
@@ -994,9 +996,12 @@ jump_statement: GOTO IDENT ';' {
                 }
               ;
 
+// ==================================
 // === BEGIN EXTERNAL DEFINITIONS ===
+// ==================================
 
 function_definition: declaration_specifiers declarator {
+                       gkcc_scope_add_variable_to_scope(current_symbol_table, ast_node_new_list_node($declarator), yylineno, YY_FILENAME);
                        current_symbol_table = gkcc_symbol_table_set_new(current_symbol_table, GKCC_SCOPE_FUNCTION);
                      } compound_statement {
                        $$ = ast_node_new_function_definition_node($declaration_specifiers, $declarator, NULL, $compound_statement);

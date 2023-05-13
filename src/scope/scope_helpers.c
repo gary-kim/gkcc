@@ -25,7 +25,7 @@ enum gkcc_error gkcc_scope_add_variable_to_scope(
   gkcc_assert(declaration_list->type == AST_NODE_LIST,
               GKCC_ERROR_INVALID_ARGUMENTS,
               "gkcc_scope_add_variable_to_scope got a declaration_list that is "
-              "not of typpe AST_NODE_LIST");
+              "not of type AST_NODE_LIST");
 
   for (struct ast_node *l = declaration_list; l != NULL; l = l->list.next) {
     struct ast_node *decl = l->list.node;

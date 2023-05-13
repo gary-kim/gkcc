@@ -78,9 +78,42 @@ add_executable(parsetester
         ${CMAKE_SOURCE_DIR}/src/misc/misc.c
         ${CMAKE_SOURCE_DIR}/src/ast/types.c
         ${CMAKE_SOURCE_DIR}/3rdparty/dmezh/backtrace.c
-        src/ast/ast_constructors.c src/ast/ast_constructors.h src/scope/scope_helpers.c src/scope/scope_helpers.h)
+        ${CMAKE_SOURCE_DIR}/src/ast/ast_constructors.c
+        ${CMAKE_SOURCE_DIR}/src/ast/ast_constructors.h
+        ${CMAKE_SOURCE_DIR}/src/scope/scope_helpers.c
+        ${CMAKE_SOURCE_DIR}/src/scope/scope_helpers.h
+        ${CMAKE_SOURCE_DIR}/src/ir/quads.c
+        ${CMAKE_SOURCE_DIR}/src/ir/quads.h
+        ${CMAKE_SOURCE_DIR}/src/ir/basic_block.c
+        ${CMAKE_SOURCE_DIR}/src/ir/basic_block.h
+        )
 
 target_include_directories(parsetester PRIVATE ${INCLUDE_DIRS})
 if(DEFINED GKCC_UNDEFINED_BEHAVIOR_SANITIZER)
         target_compile_definitions(parsetester PRIVATE GKCC_UNDEFINED_BEHAVIOR_SANITIZER=1)
 endif()
+
+add_executable(gkcc
+        ${CMAKE_SOURCE_DIR}/src/gkcc.c
+        ${GENERATED_DIR}/lex.yy.c
+        ${GENERATED_DIR}/c.tab.c
+        ${CMAKE_SOURCE_DIR}/src/ast/ast.c
+        ${CMAKE_SOURCE_DIR}/src/scope/scope.c
+        ${CMAKE_SOURCE_DIR}/src/misc/misc.c
+        ${CMAKE_SOURCE_DIR}/src/ast/types.c
+        ${CMAKE_SOURCE_DIR}/3rdparty/dmezh/backtrace.c
+        ${CMAKE_SOURCE_DIR}/src/ast/ast_constructors.c
+        ${CMAKE_SOURCE_DIR}/src/ast/ast_constructors.h
+        ${CMAKE_SOURCE_DIR}/src/scope/scope_helpers.c
+        ${CMAKE_SOURCE_DIR}/src/scope/scope_helpers.h
+        ${CMAKE_SOURCE_DIR}/src/ir/quads.c
+        ${CMAKE_SOURCE_DIR}/src/ir/quads.h
+        ${CMAKE_SOURCE_DIR}/src/ir/basic_block.c
+        ${CMAKE_SOURCE_DIR}/src/ir/basic_block.h
+        )
+
+target_include_directories(gkcc PRIVATE ${INCLUDE_DIRS})
+if(DEFINED GKCC_UNDEFINED_BEHAVIOR_SANITIZER)
+    target_compile_definitions(gkcc PRIVATE GKCC_UNDEFINED_BEHAVIOR_SANITIZER=1)
+endif()
+
