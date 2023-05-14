@@ -355,7 +355,7 @@ struct ast_node *ast_node_update_struct_or_union_specifier_node(
   }
 
   if (members != NULL) {
-    gkcc_assert(node->gkcc_type.gkcc_type->ident->ident.symbol_table_entry
+    gkcc_assert(node->gkcc_type.gkcc_type->ident == NULL || node->gkcc_type.gkcc_type->ident->ident.symbol_table_entry
                         ->fully_defined == false,
                 GKCC_ERROR_REDEFINITION,
                 "An already defined struct or union is being redefined. This "

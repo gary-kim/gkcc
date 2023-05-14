@@ -239,11 +239,15 @@ void ast_gkcc_type_string(struct gkcc_type *gkcc_type, int depth,
         printf("%s", flbuf);
         break;
       }
-      sprintf(
+      if (gkcc_type->ident == NULL) {
+          sprintf(writeloc, "unamed struct with members {\n");
+      } else {
+        sprintf(
           writeloc, "'%s' defined at %s:%d with members {\n",
           gkcc_type->ident->ident.name,
           gkcc_type->ident->ident.symbol_table_entry->filename,
           gkcc_type->ident->ident.symbol_table_entry->effective_line_number);
+      }
       printf("%s", flbuf);
       gkcc_symbol_table_print(gkcc_type->symbol_table_set->general_namespace,
                               depth + 1);

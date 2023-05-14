@@ -581,9 +581,8 @@ struct_or_union_specifier: struct_or_union identifier {
                            }
                          | struct_or_union {
                              current_symbol_table = gkcc_symbol_table_set_get_symbol_table_set_of_struct_or_union_node($struct_or_union);
-                         } '{' struct_declaration_list '}' {
+                           } '{' struct_declaration_list '}' {
                              EXIT_SCOPE();
-                             current_symbol_table = gkcc_symbol_table_set_get_parent_symbol_table_set(current_symbol_table);
                              $$ = ast_node_update_struct_or_union_specifier_node($struct_or_union, NULL, $struct_declaration_list, current_symbol_table, YY_FILENAME, yylineno);
                            }
                          | struct_or_union identifier {
