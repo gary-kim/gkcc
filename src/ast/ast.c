@@ -240,13 +240,13 @@ void ast_gkcc_type_string(struct gkcc_type *gkcc_type, int depth,
         break;
       }
       if (gkcc_type->ident == NULL) {
-          sprintf(writeloc, "unamed struct with members {\n");
+        sprintf(writeloc, "unamed struct with members {\n");
       } else {
         sprintf(
-          writeloc, "'%s' defined at %s:%d with members {\n",
-          gkcc_type->ident->ident.name,
-          gkcc_type->ident->ident.symbol_table_entry->filename,
-          gkcc_type->ident->ident.symbol_table_entry->effective_line_number);
+            writeloc, "'%s' defined at %s:%d with members {\n",
+            gkcc_type->ident->ident.name,
+            gkcc_type->ident->ident.symbol_table_entry->filename,
+            gkcc_type->ident->ident.symbol_table_entry->effective_line_number);
       }
       printf("%s", flbuf);
       gkcc_symbol_table_print(gkcc_type->symbol_table_set->general_namespace,
@@ -306,6 +306,16 @@ char *ast_unary_string(struct ast_unary *node) {
 char *ast_ternary_string(struct ast_ternary *node) {
   sprintf(flbuf, "TERNARY:");
   return flbuf;
+}
+
+struct ast_node *ast_node_strip_single_list(struct ast_node *node) {
+  gkcc_assert(node->type == AST_NODE_LIST, GKCC_ERROR_INVALID_ARGUMENTS,
+              "ast_node_strip_single_list() given an node that is not of type "
+              "AST_NODE_LIST");
+  gkcc_assert(node->list.next == NULL, GKCC_ERROR_INVALID_ARGUMENTS,
+              "ast_node_strip_single_list() given a list node that has a next");
+
+  return node->list.node;
 }
 
 struct ast_node *ast_node_new_constant_int_node(int val) {

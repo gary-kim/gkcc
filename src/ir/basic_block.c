@@ -15,40 +15,194 @@
 
 #include "basic_block.h"
 
+#include <malloc.h>
+#include <memory.h>
+
 #include "misc/misc.h"
 #include "scope/scope.h"
+#include "translators.h"
 
-void gkcc_internal_build_basic_block_from_list
-
-void gkcc_internal_build_basic_block(struct ast_node *function_node) {
-  function_node->declaration.type->gkcc_type.gkcc_type->function_declaration
-      .statements;
-  for (struct ast_node *lnode = function_node->declaration.type->gkcc_type
-                                    .gkcc_type->function_declaration.statements;
-       lnode != NULL; lnode = lnode->list.next) {
-    struct ast_node *tnode = lnode->list.node;
-
-    if (tnode !=)
-  }
-}
-
-void gkcc_basic_block_build_basic_blocks(struct ast_node *node) {
-  gkcc_assert(node->type == AST_NODE_TOP_LEVEL, GKCC_ERROR_INVALID_ARGUMENTS,
-              "gkcc_basic_block_build_basic_blocks() got a node "
-              "that is not of type AST_NODE_TOP_LEVEL");
-
-  // Go through and process all function definitions
-  for (struct ast_node *lnode = node->top_level.list; lnode != NULL;
+void gkcc_internal_recurse_basic_blocks(
+    struct gkcc_ir_generation_state *gen_state, struct ast_node *nodes,
+    struct gkcc_basic_block_status *bb_status) {
+  for (struct ast_node *lnode = nodes; lnode != NULL;
        lnode = lnode->list.next) {
     struct ast_node *tnode = lnode->list.node;
+    struct gkcc_ir_translation_result translation_result;
 
-    // Skip anything that is not a function declaration
-    if (tnode->type != AST_NODE_DECLARATION ||
-        tnode->declaration.type->gkcc_type.gkcc_type->type !=
-            GKCC_TYPE_FUNCTION) {
-      continue;
+    switch (tnode->type) {
+      case AST_NODE_FOR_LOOP:
+      case AST_NODE_IF_STATEMENT:
+      case AST_NODE_GOTO_NODE:
+        break;
     }
 
-    gkcc_internal_build_basic_block(tnode);
+    if (tnode->type == AST_NODE_IF_STATEMENT) {
+      struct gkcc_basic_block_status *next_BB_status =
+          gkcc_basic_block_status_new(gen_state, bb_status->continueBB,
+                                      bb_status->breakBB, bb_status->trueBB,
+                                      bb_status->falseBB);
+      struct gkcc_basic_block_status *else_BB_status =
+          gkcc_basic_block_status_new(gen_state, bb_status->continueBB,
+                                      bb_status->breakBB, next_BB_status,
+                                      next_BB_status);
+      struct gkcc_basic_block_status *then_BB_status =
+          gkcc_basic_block_status_new(gen_state, bb_status->continueBB,
+                                      bb_status->breakBB, next_BB_status,
+                                      next_BB_status);
+      struct gkcc_basic_block_status *cond_BB_status =
+          gkcc_basic_block_status_new(gen_state, NULL, NULL, then_BB_status,
+                                      else_BB_status);
+
+      gkcc_internal_recurse_basic_blocks(gen_state, lnode->list.next,
+                                         next_BB_status);
+      gkcc_internal_recurse_basic_blocks(
+          gen_state, tnode->if_statement.then_statement, then_BB_status);
+      gkcc_internal_recurse_basic_blocks(
+          gen_state, tnode->if_statement.else_statement, else_BB_status);
+      gkcc_internal_recurse_basic_blocks(
+          gen_state, tnode->if_statement.condition, cond_BB_status);
+
+      bb_status->trueBB = cond_BB_status;
+      bb_status->falseBB = cond_BB_status;
+
+      goto CLEANUP_AND_RETURN;
+    }
+
+    if (tnode->type == AST_NODE_JUMP_BREAK) {
+      gkcc_assert(bb_status->breakBB != NULL, GKCC_ERROR_INVALID_CODE,
+                  "Attempted to use 'break' when there is nowhere to break to");
+      struct gkcc_ir_quad *jump_ir = gkcc_ir_quad_new_with_args(
+          GKCC_IR_QUAD_INSTRUCTION_BRANCH, NULL,
+          gkcc_ir_quad_register_new_basic_block(bb_status->breakBB->thisBB),
+          NULL);
+      translation_result.ir_quad_list = gkcc_ir_quad_list_append(NULL, jump_ir);
+      goto TRANSLATION_COMPLETE;
+    }
+
+    if (tnode->type == AST_NODE_JUMP_CONTINUE) {
+      gkcc_assert(bb_status->continueBB != NULL, GKCC_ERROR_INVALID_CODE,
+                  "Attempted to use 'break' when there is nowhere to break to");
+      struct gkcc_ir_quad *jump_ir = gkcc_ir_quad_new_with_args(
+          GKCC_IR_QUAD_INSTRUCTION_BRANCH, NULL,
+          gkcc_ir_quad_register_new_basic_block(bb_status->continueBB->thisBB),
+          NULL);
+      translation_result.ir_quad_list = gkcc_ir_quad_list_append(NULL, jump_ir);
+      bb_status->trueBB = bb_status->continueBB;
+      bb_status->falseBB = bb_status->continueBB;
+      goto TRANSLATION_COMPLETE;
+    }
+
+    // This could be skipped past with a goto if something else does the
+    // translation
+    translation_result = gkcc_ir_quad_generate_for_ast(gen_state, tnode);
+
+    bb_status->thisBB->quads_in_bb = gkcc_ir_quad_list_append_list(
+        bb_status->thisBB->quads_in_bb, translation_result.ir_quad_list);
+    continue;
+
+  TRANSLATION_COMPLETE:
+    bb_status->thisBB->quads_in_bb = gkcc_ir_quad_list_append_list(
+        bb_status->thisBB->quads_in_bb, translation_result.ir_quad_list);
+    break;
   }
+
+CLEANUP_AND_RETURN:
+  bb_status->thisBB->true_branch =
+      bb_status->trueBB == NULL ? NULL : bb_status->trueBB->thisBB;
+  bb_status->thisBB->false_branch =
+      bb_status->falseBB == NULL ? NULL : bb_status->falseBB->thisBB;
+
+  if (bb_status->thisBB->true_branch == NULL) {
+    return;
+  }
+
+  if (bb_status->thisBB->quads_in_bb == NULL) {
+    bb_status->thisBB = bb_status->trueBB->thisBB;
+    return;
+  }
+
+  if (bb_status->thisBB->true_branch == bb_status->thisBB->false_branch) {
+    struct gkcc_ir_quad *jump_ir = gkcc_ir_quad_new_with_args(
+        GKCC_IR_QUAD_INSTRUCTION_BRANCH, NULL,
+        gkcc_ir_quad_register_new_basic_block(bb_status->thisBB->true_branch),
+        NULL);
+    bb_status->thisBB->quads_in_bb =
+        gkcc_ir_quad_list_append(bb_status->thisBB->quads_in_bb, jump_ir);
+    return;
+  }
+
+  struct gkcc_ir_quad *true_jump_ir = gkcc_ir_quad_new_with_args(
+      GKCC_IR_QUAD_INSTRUCTION_BRANCH_IF_TRUE, NULL,
+      gkcc_ir_quad_register_new_basic_block(bb_status->thisBB->true_branch),
+      NULL);
+  bb_status->thisBB->quads_in_bb =
+      gkcc_ir_quad_list_append(bb_status->thisBB->quads_in_bb, true_jump_ir);
+
+  struct gkcc_ir_quad *false_jump_ir = gkcc_ir_quad_new_with_args(
+      GKCC_IR_QUAD_INSTRUCTION_BRANCH_IF_FALSE, NULL,
+      gkcc_ir_quad_register_new_basic_block(bb_status->thisBB->false_branch),
+      NULL);
+  bb_status->thisBB->quads_in_bb =
+      gkcc_ir_quad_list_append(bb_status->thisBB->quads_in_bb, false_jump_ir);
+
+  return;
+}
+
+struct gkcc_ir_function *gkcc_internal_build_basic_blocks_for_function(
+    struct gkcc_ir_generation_state *gen_state,
+    struct ast_node *function_node) {
+  struct gkcc_ir_function *ir_function =
+      gkcc_ir_function_new(function_node->declaration.identifier->ident.name);
+  gen_state->current_function = ir_function;
+  struct ast_node *lnode = function_node->declaration.type->gkcc_type.gkcc_type
+                               ->function_declaration.statements;
+  struct gkcc_basic_block_status *bb_status =
+      gkcc_basic_block_status_new(gen_state, NULL, NULL, NULL, NULL);
+
+  gkcc_internal_recurse_basic_blocks(gen_state, lnode, bb_status);
+
+  ir_function->entrance_basic_block = bb_status->thisBB;
+
+  return ir_function;
+}
+
+struct gkcc_basic_block *gkcc_basic_block_new(
+    struct gkcc_ir_generation_state *gen_state) {
+  struct gkcc_basic_block *bb = malloc(sizeof(struct gkcc_basic_block));
+  memset(bb, 0, sizeof(struct gkcc_basic_block));
+  char buf[(1 << 12) + 1];
+  size_t len = sprintf(buf, "BB.%d", gen_state->current_basic_block_number++);
+  bb->bb_name = malloc(len + 1);
+  strcpy(bb->bb_name, buf);
+  return bb;
+}
+
+struct gkcc_basic_block_status *gkcc_basic_block_status_new(
+    struct gkcc_ir_generation_state *gen_state,
+    struct gkcc_basic_block_status *continueBB,
+    struct gkcc_basic_block_status *breakBB,
+    struct gkcc_basic_block_status *trueBB,
+    struct gkcc_basic_block_status *falseBB) {
+  struct gkcc_basic_block_status *bb_status =
+      malloc(sizeof(struct gkcc_basic_block_status));
+  memset(bb_status, 0, sizeof(struct gkcc_basic_block_status));
+
+  bb_status->thisBB = gkcc_basic_block_new(gen_state);
+  bb_status->continueBB = continueBB;
+  bb_status->breakBB = breakBB;
+  bb_status->trueBB = trueBB;
+  bb_status->falseBB = falseBB;
+
+  return bb_status;
+}
+
+void gkcc_basic_block_print(struct gkcc_basic_block *bb) {
+  if (bb == NULL) return;
+
+  printf("%s:\n", bb->bb_name);
+  gkcc_ir_quad_print(bb->quads_in_bb);
+  gkcc_basic_block_print(bb->true_branch);
+  if (bb->true_branch != bb->false_branch)
+    gkcc_basic_block_print(bb->false_branch);
 }

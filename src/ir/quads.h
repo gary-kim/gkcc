@@ -16,6 +16,10 @@
 #ifndef GKCC_QUADS_H
 #define GKCC_QUADS_H
 
+#include <stdbool.h>
+
+#include "ast/ast.h"
+#include "ir/basic_block.h"
 #include "misc/misc.h"
 
 // =====================================
@@ -26,19 +30,39 @@ struct gkcc_ir_pseudoregister {
   int register_num;
 };
 
+// =============================
+// === struct gkcc_ir_symbol ===
+// =============================
+
+struct gkcc_ir_symbol {
+  bool is_global;
+  struct gkcc_symbol *symbol;
+};
+
+// ==================================
+// === struct gkcc_ir_symbol_list ===
+// ==================================
+
+struct gkcc_ir_symbol_list {
+  struct gkcc_ir_symbol *symbol;
+  struct gkcc_ir_symbol_list *next;
+};
+
 // ====================================
 // === struct gkcc_ir_quad_register ===
 // ====================================
 
 #define ENUM_GKCC_IR_QUAD_REGISTER_TYPE(GEN) \
   GEN(GKCC_IR_QUAD_REGISTER_PSEUDOREGISTER)  \
-  GEN(GKCC_IR_QUAD_REGISTER_SYMBOL)
+  GEN(GKCC_IR_QUAD_REGISTER_SYMBOL)          \
+  GEN(GKCC_IR_QUAD_REGISTER_CONSTANT)        \
+  GEN(GKCC_IR_QUAD_REGISTER_BASIC_BLOCK)
 
 enum gkcc_ir_quad_register_type {
   ENUM_GKCC_IR_QUAD_REGISTER_TYPE(ENUM_VALUES)
 };
 
-static const char* const GKCC_IR_QUAD_REGISTER_TYPE_STRING[] = {
+static const char *const GKCC_IR_QUAD_REGISTER_TYPE_STRING[] = {
     ENUM_GKCC_IR_QUAD_REGISTER_TYPE(ENUM_STRINGS)};
 
 #undef ENUM_IR_QUAD_REGISTER_TYPE
@@ -46,8 +70,10 @@ static const char* const GKCC_IR_QUAD_REGISTER_TYPE_STRING[] = {
 struct gkcc_ir_quad_register {
   enum gkcc_ir_quad_register_type register_type;
   union {
-    struct gkcc_symbol* symbol;
+    struct gkcc_ir_symbol symbol;
+    struct ast_constant *constant;
     struct gkcc_ir_pseudoregister pseudoregister;
+    struct gkcc_basic_block *basic_block;
   };
 };
 
@@ -55,20 +81,33 @@ struct gkcc_ir_quad_register {
 // === struct gkcc_ir_quad ===
 // ===========================
 
-#define ENUM_GKCC_IR_QUAD_INSTRUCTION(GEN) GEN(GKCC_IR_QUAD_INSTRUCTION_LEA)
+#define ENUM_GKCC_IR_QUAD_INSTRUCTION(GEN)      \
+  GEN(GKCC_IR_QUAD_INSTRUCTION_LEA)             \
+  GEN(GKCC_IR_QUAD_INSTRUCTION_LOAD)            \
+  GEN(GKCC_IR_QUAD_INSTRUCTION_STR)             \
+  GEN(GKCC_IR_QUAD_INSTRUCTION_ADD)             \
+  GEN(GKCC_IR_QUAD_INSTRUCTION_SUBTRACT)        \
+  GEN(GKCC_IR_QUAD_INSTRUCTION_DIVIDE)          \
+  GEN(GKCC_IR_QUAD_INSTRUCTION_MULTIPLY)        \
+  GEN(GKCC_IR_QUAD_INSTRUCTION_MOD)             \
+  GEN(GKCC_IR_QUAD_INSTRUCTION_BRANCH)          \
+  GEN(GKCC_IR_QUAD_INSTRUCTION_EQUALS)          \
+  GEN(GKCC_IR_QUAD_INSTRUCTION_BRANCH_IF_TRUE)  \
+  GEN(GKCC_IR_QUAD_INSTRUCTION_BRANCH_IF_FALSE) \
+  GEN(GKCC_IR_QUAD_INSTRUCTION_MOVE)
 
 enum gkcc_ir_quad_instruction { ENUM_GKCC_IR_QUAD_INSTRUCTION(ENUM_VALUES) };
 
-static const char* const GKCC_IR_QUAD_INSTRUCTION_STRING[] = {
+static const char *const GKCC_IR_QUAD_INSTRUCTION_STRING[] = {
     ENUM_GKCC_IR_QUAD_INSTRUCTION(ENUM_STRINGS)};
 
 #undef ENUM_GKCC_IR_QUAD_INSTRUCTION
 
 struct gkcc_ir_quad {
   enum gkcc_ir_quad_instruction instruction;
-  struct gkcc_ir_quad_register dest;
-  struct gkcc_ir_quad_register source1;
-  struct gkcc_ir_quad_register source2;
+  struct gkcc_ir_quad_register *dest;
+  struct gkcc_ir_quad_register *source1;
+  struct gkcc_ir_quad_register *source2;
 };
 
 // ================================
@@ -79,5 +118,62 @@ struct gkcc_ir_quad_list {
   struct gkcc_ir_quad *quad;
   struct gkcc_ir_quad_list *next;
 };
+
+// ===============================
+// === struct gkcc_ir_function ===
+// ===============================
+
+struct gkcc_ir_function {
+  char *function_name;
+  struct gkcc_basic_block *entrance_basic_block;
+  int required_space;
+};
+
+// =======================================
+// === struct gkcc_ir_generation_state ===
+// =======================================
+
+struct gkcc_ir_generation_state {
+  int current_pseudoregister_number;
+  int current_basic_block_number;
+  struct gkcc_ir_function *current_function;
+};
+
+// =============================
+// === FUNCTION DECLARATIONS ===
+// =============================
+
+struct gkcc_ir_quad_register *gkcc_ir_quad_register_new(
+    enum gkcc_ir_quad_register_type register_type);
+
+struct gkcc_ir_quad_register *gkcc_ir_quad_register_new_pseudoregister(
+    struct gkcc_ir_generation_state *gen_state);
+
+struct gkcc_ir_quad *gkcc_ir_quad_new(void);
+
+struct gkcc_ir_quad_list *gkcc_ir_quad_list_new(void);
+
+struct gkcc_ir_translation_result gkcc_ir_quad_generate_for_ast(
+    struct gkcc_ir_generation_state *gen_state, struct ast_node *lnode);
+
+struct gkcc_ir_quad_list *gkcc_ir_quad_list_append_list(
+    struct gkcc_ir_quad_list *ql1, struct gkcc_ir_quad_list *ql2);
+
+struct gkcc_ir_quad_list *gkcc_ir_quad_list_append(
+    struct gkcc_ir_quad_list *ql1, struct gkcc_ir_quad *ta);
+
+struct gkcc_ir_generation_state *gkcc_ir_generation_state_new(void);
+
+void gkcc_ir_quad_print(struct gkcc_ir_quad_list *ql);
+
+struct gkcc_ir_quad *gkcc_ir_quad_new_with_args(
+    enum gkcc_ir_quad_instruction instruction,
+    struct gkcc_ir_quad_register *dest, struct gkcc_ir_quad_register *source1,
+    struct gkcc_ir_quad_register *source2);
+
+struct gkcc_ir_quad_register *gkcc_ir_quad_register_new_basic_block(
+    struct gkcc_basic_block *bb);
+
+struct gkcc_ir_function *gkcc_ir_function_new(char *function_name);
 
 #endif  // GKCC_QUADS_H

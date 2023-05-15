@@ -220,7 +220,7 @@ primary_expression: identifier {
                      $$ = yylval2ast_node(&$STRING);
                    }
                  | '(' expression ')' {
-                     $$ = $expression;
+                     $$ = ast_node_strip_single_list($expression);
                    }
                  ;
 

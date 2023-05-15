@@ -398,4 +398,7 @@ struct ast_node* ast_node_identifier_set_symbol_if_exists(
 enum gkcc_error ast_node_identifier_verify_symbol_exists(struct ast_node* node,
                                                          char* filename,
                                                          int line_number);
+
+struct ast_node *ast_node_strip_single_list(struct ast_node *node);
+
 #endif

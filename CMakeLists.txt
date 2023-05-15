@@ -110,7 +110,7 @@ add_executable(gkcc
         ${CMAKE_SOURCE_DIR}/src/ir/quads.h
         ${CMAKE_SOURCE_DIR}/src/ir/basic_block.c
         ${CMAKE_SOURCE_DIR}/src/ir/basic_block.h
-        )
+        src/ir/translators.c src/ir/translators.h src/ir/ir_full.c src/ir/ir_full.h)
 
 target_include_directories(gkcc PRIVATE ${INCLUDE_DIRS})
 if(DEFINED GKCC_UNDEFINED_BEHAVIOR_SANITIZER)

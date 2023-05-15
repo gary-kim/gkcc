@@ -16,21 +16,50 @@
 #ifndef GKCC_BASIC_BLOCK_H
 #define GKCC_BASIC_BLOCK_H
 
-#include "scope/scope.h"
 #include "ir/quads.h"
-
-void gkcc_basic_block_build_basic_blocks(struct ast_node *node);
+#include "scope/scope.h"
 
 // ===============================
 // === struct gkcc_basic_block ===
 // ===============================
 
 struct gkcc_basic_block {
-  struct gkcc_ir_quad_list* quads_in_bb;
-  struct gkcc_ir_quad* comparison;
-  struct gkcc_basic_block* true_branch;
-  struct gkcc_basic_block* false_branch;
-  struct gkcc_basic_block* next_block;
+  char *bb_name;
+  struct gkcc_ir_quad_list *quads_in_bb;
+  struct gkcc_ir_quad *comparison;
+  struct gkcc_basic_block *true_branch;
+  struct gkcc_basic_block *false_branch;
 };
+
+// ======================================
+// === struct gkcc_basic_block_status ===
+// ======================================
+
+struct gkcc_basic_block_status {
+  struct gkcc_basic_block *thisBB;
+  struct gkcc_basic_block_status *trueBB;
+  struct gkcc_basic_block_status *falseBB;
+  struct gkcc_basic_block_status *continueBB;
+  struct gkcc_basic_block_status *breakBB;
+};
+
+struct gkcc_basic_block *gkcc_basic_block_new(
+    struct gkcc_ir_generation_state *gen_state);
+
+struct gkcc_basic_block_status *gkcc_basic_block_status_new(
+    struct gkcc_ir_generation_state *gen_state,
+    struct gkcc_basic_block_status *continueBB,
+    struct gkcc_basic_block_status *breakBB,
+    struct gkcc_basic_block_status *trueBB,
+    struct gkcc_basic_block_status *falseBB);
+
+void gkcc_internal_recurse_basic_blocks(
+    struct gkcc_ir_generation_state *gen_state, struct ast_node *nodes,
+    struct gkcc_basic_block_status *bb_status);
+
+struct gkcc_ir_function *gkcc_internal_build_basic_blocks_for_function(
+    struct gkcc_ir_generation_state *gen_state, struct ast_node *function_node);
+
+void gkcc_basic_block_print(struct gkcc_basic_block *bb);
 
 #endif  // GKCC_BASIC_BLOCK_H

@@ -1,46 +1,9 @@
-struct a {
-  int b;
-};
+int a;
 
-struct c {
-  struct a *d;
-};
-
-struct e {
-  struct f{
-    int a;
-  };
-
-  struct f f;
-
-  struct e *p;
-};
-
-struct e y;
-
-int fn();
-int printf(char *str);
-
-int main () {
-  fn();
-  int a = 1;
-HERE:
-  a = 1;
-  if (a) {
-    int b = 1;
-    b = 1;
-    goto HERE;
-  } else {
-    a = 2;
-    y->e;
+int main() {
+  1 + (1 + 2) * 5 / 23 % 5 + a;
+  if (1 == 1) {
+    2 + a;
   }
-
-  switch (a) {
-    case 1:
-      printf("");
-    case 2:
-      printf("");
-    default:
-      printf("");
-  }
+  1 + 1;
 }

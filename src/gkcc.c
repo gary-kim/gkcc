@@ -21,8 +21,9 @@
 
 #include "ast/ast.h"
 #include "c.tab.h"
-#include "misc/misc.h"
 #include "ir/basic_block.h"
+#include "misc/misc.h"
+#include "ir/ir_full.h"
 
 enum jobs {
   JOB_BUILD_NOTHING = 0,
@@ -36,18 +37,22 @@ int main(int argc, char** argv) {
   setup_segfault_stack_trace();
 
   bool should_print_ast = false;
+  bool should_print_ir = false;
   int nsecs = 0;
   int flags = 0;
   int tfnd = 0;
   int opt = 0;
 
-  while ((opt = getopt(argc, argv, "ad")) != -1) {
+  while ((opt = getopt(argc, argv, "adi")) != -1) {
     switch (opt) {
       case 'a':
         should_print_ast = true;
         break;
       case 'd':
         yydebug = 1;
+        break;
+      case 'i':
+        should_print_ir = true;
         break;
       default:
         fprintf(stderr, "Cannot parse flags\n");
@@ -78,6 +83,10 @@ int main(int argc, char** argv) {
   top_level->top_level.list = &ast_node;
 
   if (should_print_ast) {
+    printf(
+        "============================\n"
+        "=== Abstract Syntax Tree ===\n"
+        "============================\n\n");
     ast_print(top_level, 0, "");
   }
 
@@ -85,5 +94,13 @@ int main(int argc, char** argv) {
     return 0;
   }
 
-  gkcc_basic_block_build_basic_blocks(top_level);
+  struct gkcc_ir_full *ir_full = gkcc_ir_build_full(top_level);
+
+  if (should_print_ir) {
+    printf(
+        "=========================================\n"
+        "=== Intermediate Representation QUADS ===\n"
+        "=========================================\n\n");
+    gkcc_ir_full_print(ir_full);
+  }
 }
