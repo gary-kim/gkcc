@@ -51,8 +51,12 @@ char *gkcc_ir_quad_register_constant_string(char *buf,
       sprint_escaped_char(buf, qr->constant->ychar);
       return buf;
     case AST_CONSTANT_STRING:
-      sprint_escaped_string(buf, qr->constant->ystring.raw,
+      buf[0] = '"';
+      sprint_escaped_string(&buf[1], qr->constant->ystring.raw,
                             qr->constant->ystring.length);
+      int len = strlen(buf);
+      buf[len] = '"';
+      buf[len + 1] = '\0';
       return buf;
   }
   return NULL;
@@ -103,6 +107,17 @@ void gkcc_ir_quad_print(struct gkcc_ir_quad_list *ql) {
   }
 }
 
+struct gkcc_ir_translation_result gkcc_ir_quad_generate_declaration(
+    struct gkcc_ir_generation_state *gen_state, struct ast_node *node) {
+  struct gkcc_ir_translation_result translation_result = {};
+  int size = gkcc_type_sizeof(node->declaration.type->gkcc_type.gkcc_type);
+  node->declaration.identifier->ident.symbol_table_entry->offset =
+      gen_state->current_function->required_space;
+  gen_state->current_function->required_space += size;
+
+  return translation_result;
+}
+
 // Turns an AST into a list of quads
 struct gkcc_ir_translation_result gkcc_ir_quad_generate_for_ast(
     struct gkcc_ir_generation_state *gen_state, struct ast_node *lnode) {
@@ -119,40 +134,27 @@ struct gkcc_ir_translation_result gkcc_ir_quad_generate_for_ast(
     case AST_NODE_IDENT:
       return gkcc_ir_translate_ast_ident(gen_state, &lnode->ident);
     case AST_NODE_UNARY:
-      break;
+      return gkcc_ir_translate_ast_node_unary(gen_state, &lnode->unary);
     case AST_NODE_TERNARY:
       break;
     case AST_NODE_GKCC_TYPE:
       break;
     case AST_NODE_DECLARATION:
-      break;
+      return gkcc_ir_quad_generate_declaration(gen_state, lnode);
     case AST_NODE_LIST:
       break;
-    case AST_NODE_TOP_LEVEL:
-      break;
     case AST_NODE_FUNCTION_CALL:
-      break;
+      return gkcc_ir_translate_ast_function_call(gen_state,
+                                                 &lnode->function_call);
     case AST_NODE_ENUM_DEFINITION:
       break;
-    case AST_NODE_STRUCT_OR_UNION_SPECIFIER:
-      break;
-    case AST_NODE_FOR_LOOP:
-      break;
-    case AST_NODE_IF_STATEMENT:
-      break;
-    case AST_NODE_MEMBER_ACCESS:
-      break;
-    case AST_NODE_GOTO_NODE:
-      break;
     case AST_NODE_FUNCTION_RETURN:
-      break;
-    case AST_NODE_JUMP_CONTINUE:
-      break;
-    case AST_NODE_JUMP_BREAK:
-      break;
+      return gkcc_ir_translate_ast_return(gen_state, &lnode->function_return);
     case AST_NODE_SWITCH_CASE_CASE:
       break;
     case AST_NODE_SWITCH_CASE_SWITCH:
+      break;
+    default:
       break;
   }
   gkcc_error_fatal(GKCC_ERROR_NOT_YET_IMPLEMENTED,
@@ -172,7 +174,8 @@ struct gkcc_ir_quad_register *gkcc_ir_quad_register_new_pseudoregister(
 
 struct gkcc_ir_quad_register *gkcc_ir_quad_register_new_basic_block(
     struct gkcc_basic_block *bb) {
-  struct gkcc_ir_quad_register *qr = gkcc_ir_quad_register_new(GKCC_IR_QUAD_REGISTER_BASIC_BLOCK);
+  struct gkcc_ir_quad_register *qr =
+      gkcc_ir_quad_register_new(GKCC_IR_QUAD_REGISTER_BASIC_BLOCK);
   qr->basic_block = bb;
 
   return qr;
@@ -185,7 +188,16 @@ struct gkcc_ir_quad_register *gkcc_ir_quad_register_new(
   memset(gkcc_register, 0, sizeof(struct gkcc_ir_quad_register));
 
   gkcc_register->register_type = register_type;
+  gkcc_register->type = gkcc_type_new_signed_int_type();
   return gkcc_register;
+}
+
+struct gkcc_ir_quad_register *gkcc_ir_quad_register_new_int_constant(
+    int constant) {
+  struct gkcc_ir_quad_register *qr =
+      gkcc_ir_quad_register_new(GKCC_IR_QUAD_REGISTER_CONSTANT);
+  qr->constant = &ast_node_new_constant_int_node(constant)->constant;
+  return qr;
 }
 
 struct gkcc_ir_quad *gkcc_ir_quad_new_with_args(
@@ -258,8 +270,9 @@ struct gkcc_ir_generation_state *gkcc_ir_generation_state_new(void) {
   return gen_state;
 }
 
-struct gkcc_ir_function *gkcc_ir_function_new(char* function_name) {
-  struct gkcc_ir_function *ir_function = malloc(sizeof(struct gkcc_ir_function));
+struct gkcc_ir_function *gkcc_ir_function_new(char *function_name) {
+  struct gkcc_ir_function *ir_function =
+      malloc(sizeof(struct gkcc_ir_function));
   memset(ir_function, 0, sizeof(struct gkcc_ir_function));
 
   ir_function->function_name = malloc(strlen(function_name) + 1);

@@ -55,7 +55,6 @@
   GEN(AST_BINOP_BITWISE_OR)         \
   GEN(AST_BINOP_LOGICAL_AND)        \
   GEN(AST_BINOP_LOGICAL_OR)         \
-  GEN(AST_BINOP_MEMBER_ACCESS)      \
   GEN(AST_BINOP_CAST)
 
 enum ast_binop_type { ENUM_AST_BINOP_TYPE(ENUM_VALUES) };
@@ -89,7 +88,6 @@ struct ast_ternary {
   GEN(AST_UNARY_SIZEOF)          \
   GEN(AST_UNARY_ADDRESSOF)       \
   GEN(AST_UNARY_DEREFERENCE)     \
-  GEN(AST_UNARY_NOT)             \
   GEN(AST_UNARY_NEGATIVE)        \
   GEN(AST_UNARY_BITWISE_NOT)     \
   GEN(AST_UNARY_LOGICAL_NOT)     \

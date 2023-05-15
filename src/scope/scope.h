@@ -132,6 +132,11 @@ struct gkcc_symbol {
 
   struct gkcc_symbol *next;
   struct gkcc_symbol_table_set *symbol_table_set;
+
+  // base_pointer_offset stores the offset from the base pointer to access this
+  // symbol if this symbol is a local variable. This will be set during the
+  // ir generation stage
+  int offset;
 };
 
 struct gkcc_symbol_table_set *gkcc_symbol_table_set_new(

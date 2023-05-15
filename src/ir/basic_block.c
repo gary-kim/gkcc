@@ -32,7 +32,6 @@ void gkcc_internal_recurse_basic_blocks(
 
     switch (tnode->type) {
       case AST_NODE_FOR_LOOP:
-      case AST_NODE_IF_STATEMENT:
       case AST_NODE_GOTO_NODE:
         break;
     }

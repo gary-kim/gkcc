@@ -365,7 +365,7 @@ equality_expression: relational_expression
                      }
                    | equality_expression NOTEQ relational_expression {
                        struct ast_node *eq_node = ast_node_new_binop_node(AST_BINOP_EQUALS, $1, $3);
-                       $$ = ast_node_new_unary_node(AST_UNARY_NOT, eq_node);
+                       $$ = ast_node_new_unary_node(AST_UNARY_LOGICAL_NOT, eq_node);
                      }
                    ;
 
@@ -991,7 +991,7 @@ jump_statement: GOTO IDENT ';' {
                   $$ = ast_node_new_function_return(NULL);
                 }
               | RETURN expression ';' {
-                  $$ = ast_node_new_function_return($expression);
+                  $$ = ast_node_new_function_return(ast_node_strip_single_list($expression));
                 }
               ;
 

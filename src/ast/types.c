@@ -52,9 +52,51 @@ bool gkcc_is_gkcc_type_scalar(struct gkcc_type* gkcc_type) {
     case GKCC_TYPE_SCALAR_CHAR:
     case GKCC_TYPE_SCALAR_VOID:
     case GKCC_TYPE_SCALAR_SHORT:
+    case GKCC_TYPE_ENUM:
+    case GKCC_TYPE_SIGNED:
+    case GKCC_TYPE_UNSIGNED:
       return true;
     default:
       return false;
   }
   return false;
+}
+
+struct gkcc_type* gkcc_type_new_signed_int_type(void) {
+  struct gkcc_type* integer_type = gkcc_type_new(GKCC_TYPE_SCALAR_INT);
+  struct gkcc_type* signed_type = gkcc_type_new(GKCC_TYPE_SIGNED);
+  signed_type->of = integer_type;
+  return signed_type;
+}
+
+int gkcc_type_sizeof(struct gkcc_type* type) {
+  // TODO: Make everything not an integer
+  // For now, EVERYTHING IS AN INT
+  if (type == NULL) {
+    return sizeof(int);
+  }
+  if (gkcc_is_gkcc_type_scalar(type)) {
+    return sizeof(int);
+  }
+  switch (type->type) {
+    case GKCC_TYPE_ARRAY:
+      gkcc_assert(type->array.size->type == AST_NODE_CONSTANT,
+                  GKCC_ERROR_NOT_YET_IMPLEMENTED,
+                  "Non immediate constant array sizes are not yet supported");
+      gkcc_assert(type->array.size->constant.type == AST_CONSTANT_INT,
+                  GKCC_ERROR_NOT_YET_IMPLEMENTED,
+                  "Non integer array sizes are not yet supported");
+      return type->array.size->constant.yint * gkcc_type_sizeof(type->of);
+    case GKCC_TYPE_STRUCT:
+      gkcc_error_fatal(GKCC_ERROR_NOT_YET_IMPLEMENTED,
+                       "sizeof(struct) support is not yet implemented");
+      break;
+    case GKCC_TYPE_UNION:
+      gkcc_error_fatal(GKCC_ERROR_NOT_YET_IMPLEMENTED,
+                       "sizeof(union) support is not yet implemented");
+      break;
+    default:
+      break;
+  }
+  return sizeof(int);
 }

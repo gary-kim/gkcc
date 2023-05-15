@@ -34,10 +34,12 @@ struct gkcc_ir_full *gkcc_ir_build_full(struct ast_node *node) {
        lnode = lnode->list.next) {
     struct ast_node *tnode = lnode->list.node;
 
-    // Skip anything that is not a function declaration
+    // Skip anything that is not a function declaration/definition
     if (tnode->type != AST_NODE_DECLARATION ||
         tnode->declaration.type->gkcc_type.gkcc_type->type !=
-            GKCC_TYPE_FUNCTION) {
+            GKCC_TYPE_FUNCTION ||
+        tnode->declaration.type->gkcc_type.gkcc_type->function_declaration
+                .statements == NULL) {
       continue;
     }
 

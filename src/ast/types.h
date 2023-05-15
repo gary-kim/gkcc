@@ -174,11 +174,18 @@ struct gkcc_type {
 };
 
 // =============================
-// === Function Declarations ===
+// === FUNCTION DECLARATIONS ===
 // =============================
 
 struct gkcc_type* gkcc_type_new(enum gkcc_type_type type);
+
 struct gkcc_type* gkcc_type_append(struct gkcc_type* parent,
                                    struct gkcc_type* child);
+
 bool gkcc_is_gkcc_type_scalar(struct gkcc_type* gkcc_type);
+
+struct gkcc_type *gkcc_type_new_signed_int_type(void);
+
+int gkcc_type_sizeof(struct gkcc_type* type);
+
 #endif  // GKCC_TYPES_H

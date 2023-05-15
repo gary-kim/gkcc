@@ -69,6 +69,7 @@ static const char *const GKCC_IR_QUAD_REGISTER_TYPE_STRING[] = {
 
 struct gkcc_ir_quad_register {
   enum gkcc_ir_quad_register_type register_type;
+  struct gkcc_type *type;
   union {
     struct gkcc_ir_symbol symbol;
     struct ast_constant *constant;
@@ -81,20 +82,32 @@ struct gkcc_ir_quad_register {
 // === struct gkcc_ir_quad ===
 // ===========================
 
-#define ENUM_GKCC_IR_QUAD_INSTRUCTION(GEN)      \
-  GEN(GKCC_IR_QUAD_INSTRUCTION_LEA)             \
-  GEN(GKCC_IR_QUAD_INSTRUCTION_LOAD)            \
-  GEN(GKCC_IR_QUAD_INSTRUCTION_STR)             \
-  GEN(GKCC_IR_QUAD_INSTRUCTION_ADD)             \
-  GEN(GKCC_IR_QUAD_INSTRUCTION_SUBTRACT)        \
-  GEN(GKCC_IR_QUAD_INSTRUCTION_DIVIDE)          \
-  GEN(GKCC_IR_QUAD_INSTRUCTION_MULTIPLY)        \
-  GEN(GKCC_IR_QUAD_INSTRUCTION_MOD)             \
-  GEN(GKCC_IR_QUAD_INSTRUCTION_BRANCH)          \
-  GEN(GKCC_IR_QUAD_INSTRUCTION_EQUALS)          \
-  GEN(GKCC_IR_QUAD_INSTRUCTION_BRANCH_IF_TRUE)  \
-  GEN(GKCC_IR_QUAD_INSTRUCTION_BRANCH_IF_FALSE) \
-  GEN(GKCC_IR_QUAD_INSTRUCTION_MOVE)
+#define ENUM_GKCC_IR_QUAD_INSTRUCTION(GEN)               \
+  GEN(GKCC_IR_QUAD_INSTRUCTION_LEA)                      \
+  GEN(GKCC_IR_QUAD_INSTRUCTION_LOAD)                     \
+  GEN(GKCC_IR_QUAD_INSTRUCTION_STR)                      \
+  GEN(GKCC_IR_QUAD_INSTRUCTION_ADD)                      \
+  GEN(GKCC_IR_QUAD_INSTRUCTION_SUBTRACT)                 \
+  GEN(GKCC_IR_QUAD_INSTRUCTION_DIVIDE)                   \
+  GEN(GKCC_IR_QUAD_INSTRUCTION_MULTIPLY)                 \
+  GEN(GKCC_IR_QUAD_INSTRUCTION_MOD)                      \
+  GEN(GKCC_IR_QUAD_INSTRUCTION_BRANCH)                   \
+  GEN(GKCC_IR_QUAD_INSTRUCTION_EQUALS)                   \
+  GEN(GKCC_IR_QUAD_INSTRUCTION_BRANCH_IF_TRUE)           \
+  GEN(GKCC_IR_QUAD_INSTRUCTION_BRANCH_IF_FALSE)          \
+  GEN(GKCC_IR_QUAD_INSTRUCTION_MOVE)                     \
+  GEN(GKCC_IR_QUAD_INSTRUCTION_GREATER_THAN)             \
+  GEN(GKCC_IR_QUAD_INSTRUCTION_LESS_THAN)                \
+  GEN(GKCC_IR_QUAD_INSTRUCTION_GREATER_THAN_OR_EQUAL_TO) \
+  GEN(GKCC_IR_QUAD_INSTRUCTION_LESS_THAN_OR_EQUAL_TO)    \
+  GEN(GKCC_IR_QUAD_INSTRUCTION_FUNCTION_CALL)            \
+  GEN(GKCC_IR_QUAD_INSTRUCTION_FUNCION_ARG)              \
+  GEN(GKCC_IR_QUAD_INSTRUCTION_LOGICAL_NOT)              \
+  GEN(GKCC_IR_QUAD_INSTRUCTION_NEGATE_VALUE)             \
+  GEN(GKCC_IR_QUAD_INSTRUCTION_POSTINC)                  \
+  GEN(GKCC_IR_QUAD_INSTRUCTION_POSTDEC)                  \
+  GEN(GKCC_IR_QUAD_INSTRUCTION_BITWISE_NOT)              \
+  GEN(GKCC_IR_QUAD_INSTRUCTION_RETURN)
 
 enum gkcc_ir_quad_instruction { ENUM_GKCC_IR_QUAD_INSTRUCTION(ENUM_VALUES) };
 
@@ -175,5 +188,11 @@ struct gkcc_ir_quad_register *gkcc_ir_quad_register_new_basic_block(
     struct gkcc_basic_block *bb);
 
 struct gkcc_ir_function *gkcc_ir_function_new(char *function_name);
+
+struct gkcc_ir_quad_register *gkcc_ir_quad_register_new_int_constant(
+    int constant);
+
+struct gkcc_ir_translation_result gkcc_ir_quad_generate_declaration(
+    struct gkcc_ir_generation_state *gen_state, struct ast_node *node);
 
 #endif  // GKCC_QUADS_H
