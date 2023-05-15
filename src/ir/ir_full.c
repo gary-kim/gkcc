@@ -28,25 +28,39 @@ struct gkcc_ir_full *gkcc_ir_build_full(struct ast_node *node) {
 
   struct gkcc_ir_generation_state *gen_state = gkcc_ir_generation_state_new();
   struct gkcc_ir_full *ir_full = gkcc_ir_full_new();
+  ir_full->gen_state = gen_state;
 
   // Go through and process all function definitions
   for (struct ast_node *lnode = node->top_level.list; lnode != NULL;
        lnode = lnode->list.next) {
     struct ast_node *tnode = lnode->list.node;
 
-    // Skip anything that is not a function declaration/definition
-    if (tnode->type != AST_NODE_DECLARATION ||
-        tnode->declaration.type->gkcc_type.gkcc_type->type !=
-            GKCC_TYPE_FUNCTION ||
-        tnode->declaration.type->gkcc_type.gkcc_type->function_declaration
-                .statements == NULL) {
+    // Skip anything that is not a declaration
+    if (tnode->type != AST_NODE_DECLARATION) {
       continue;
     }
 
-    struct gkcc_ir_function *fn =
-        gkcc_internal_build_basic_blocks_for_function(gen_state, tnode);
-    ir_full->function_list =
-        gkcc_ir_function_list_append(ir_full->function_list, fn);
+    // Handles functions
+    if (tnode->declaration.type->gkcc_type.gkcc_type->type ==
+        GKCC_TYPE_FUNCTION) {
+      // Skip functions without a definition
+      if (tnode->declaration.type->gkcc_type.gkcc_type->function_declaration
+              .statements == NULL) {
+        continue;
+      }
+      struct gkcc_ir_function *fn =
+          gkcc_internal_build_basic_blocks_for_function(gen_state, tnode);
+      ir_full->function_list =
+          gkcc_ir_function_list_append(ir_full->function_list, fn);
+      continue;
+    }
+
+    // Handle variable declarations
+
+    ir_full->global_symbols = gkcc_ir_symbol_list_append(
+        ir_full->global_symbols,
+        gkcc_ir_symbol_new(
+            tnode->declaration.identifier->ident.symbol_table_entry, false));
   }
 
   return ir_full;
@@ -65,12 +79,13 @@ struct gkcc_ir_function_list *gkcc_ir_function_list_append(
   }
 
   struct gkcc_ir_function_list *end;
-  for (end = fn_list; fn_list != NULL; fn_list = fn_list->next)
+  for (end = fn_list; end->next != NULL; end = end->next)
     ;
   end->next = gkcc_ir_function_list_new(fn);
 
   return fn_list;
 }
+
 struct gkcc_ir_function_list *gkcc_ir_function_list_new(
     struct gkcc_ir_function *fn) {
   struct gkcc_ir_function_list *fn_list =
@@ -82,7 +97,56 @@ struct gkcc_ir_function_list *gkcc_ir_function_list_new(
   return fn_list;
 }
 
+struct gkcc_ir_symbol_list *gkcc_ir_symbol_list_append(
+    struct gkcc_ir_symbol_list *list, struct gkcc_ir_symbol *symbol) {
+  if (list == NULL) {
+    return gkcc_ir_symbol_list_new(symbol);
+  }
+
+  struct gkcc_ir_symbol_list *end;
+  for (end = list; end->next != NULL; end = end->next)
+    ;
+
+  end->next = gkcc_ir_symbol_list_new(symbol);
+
+  return list;
+}
+
+struct gkcc_ir_symbol_list *gkcc_ir_symbol_list_new(
+    struct gkcc_ir_symbol *symbol) {
+  struct gkcc_ir_symbol_list *list = malloc(sizeof(struct gkcc_ir_symbol_list));
+  memset(list, 0, sizeof(struct gkcc_ir_symbol_list));
+
+  list->symbol = symbol;
+
+  return list;
+}
+
+struct gkcc_ir_symbol *gkcc_ir_symbol_new(struct gkcc_symbol *gs,
+                                          bool is_global) {
+  struct gkcc_ir_symbol *is = malloc(sizeof(struct gkcc_ir_symbol));
+  memset(is, 0, sizeof(struct gkcc_ir_symbol));
+
+  is->symbol = gs;
+  is->is_global = is_global;
+
+  return is;
+}
+
 void gkcc_ir_full_print(struct gkcc_ir_full *ir_full) {
+  // List of printed basic blocks
+  bool printed_bbs[ir_full->gen_state->current_basic_block_number];
+  memset(printed_bbs, 0, sizeof(printed_bbs));
+
+  // Print all global declarations
+  for (struct gkcc_ir_symbol_list *slist = ir_full->global_symbols;
+       slist != NULL; slist = slist->next) {
+    printf(".comm global:%s, %d, 4\n", slist->symbol->symbol->symbol_name,
+           gkcc_type_sizeof(slist->symbol->symbol->symbol_type));
+  }
+
+  printf("\n");
+
   // Print all functions
   for (struct gkcc_ir_function_list *fn_list = ir_full->function_list;
        fn_list != NULL; fn_list = fn_list->next) {
@@ -90,6 +154,6 @@ void gkcc_ir_full_print(struct gkcc_ir_full *ir_full) {
     printf("FN_%s:\n", fn->function_name);
 
     // Print all BBs
-    gkcc_basic_block_print(fn->entrance_basic_block);
+    gkcc_basic_block_print(printed_bbs, fn->entrance_basic_block);
   }
 }

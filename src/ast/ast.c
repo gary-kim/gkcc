@@ -215,8 +215,10 @@ void ast_gkcc_type_string(struct gkcc_type *gkcc_type, int depth,
       printf("%s\n", flbuf);
       ast_gkcc_type_string(gkcc_type->function_declaration.return_type,
                            depth + 1, "returns: ");
-      ast_print(gkcc_type->function_declaration.statements, depth + 1,
-                "statements:");
+      if (depth < 5) {
+        ast_print(gkcc_type->function_declaration.statements, depth + 1,
+                  "statements:");
+      }
       break;
     case GKCC_TYPE_ARRAY:
       printf("%s\n", flbuf);

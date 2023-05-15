@@ -139,7 +139,8 @@ struct gkcc_ir_quad_list {
 struct gkcc_ir_function {
   char *function_name;
   struct gkcc_basic_block *entrance_basic_block;
-  int required_space;
+  int required_space_for_locals;
+  int required_space_for_tmps;
 };
 
 // =======================================

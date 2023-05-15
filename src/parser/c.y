@@ -234,7 +234,7 @@ constant: NUMBER {
 
 postfix_expression: primary_expression
                   | postfix_expression '[' expression ']' {
-                      struct ast_node *new_pos = ast_node_new_binop_node(AST_BINOP_ADD, $1, $expression);
+                      struct ast_node *new_pos = ast_node_new_binop_node(AST_BINOP_ADD, $1, ast_node_strip_single_list($expression));
                       $$ = ast_node_new_unary_node(AST_UNARY_DEREFERENCE, new_pos);
                     }
                   | postfix_expression '(' ')' {

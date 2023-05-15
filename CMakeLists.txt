@@ -114,6 +114,9 @@ add_executable(gkcc
         ${CMAKE_SOURCE_DIR}/src/ir/translators.h
         ${CMAKE_SOURCE_DIR}/src/ir/ir_full.c
         ${CMAKE_SOURCE_DIR}/src/ir/ir_full.h
+        ${CMAKE_SOURCE_DIR}/src/target_code/x86.c
+        ${CMAKE_SOURCE_DIR}/src/target_code/x86.c
+        ${CMAKE_SOURCE_DIR}/src/target_code/x86.h
         )
 
 target_include_directories(gkcc PRIVATE ${INCLUDE_DIRS})

@@ -34,6 +34,7 @@ struct gkcc_ir_function_list {
 struct gkcc_ir_full {
   struct gkcc_ir_function_list *function_list;
   struct gkcc_ir_symbol_list *global_symbols;
+  struct gkcc_ir_generation_state *gen_state;
 };
 
 // =============================
@@ -52,4 +53,12 @@ struct gkcc_ir_function_list *gkcc_ir_function_list_new(
 
 void gkcc_ir_full_print(struct gkcc_ir_full *ir_full);
 
+struct gkcc_ir_symbol_list *gkcc_ir_symbol_list_new(
+    struct gkcc_ir_symbol *symbol);
+
+struct gkcc_ir_symbol_list *gkcc_ir_symbol_list_append(
+    struct gkcc_ir_symbol_list *list, struct gkcc_ir_symbol *symbol);
+
+struct gkcc_ir_symbol *gkcc_ir_symbol_new(struct gkcc_symbol *gs,
+                                          bool is_global);
 #endif  // GKCC_IR_FULL_H

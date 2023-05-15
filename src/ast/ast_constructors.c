@@ -58,9 +58,9 @@ struct ast_node *ast_node_new_for_loop(struct ast_node *expr1,
                                        struct ast_node *statements) {
   struct ast_node *node = ast_node_new(AST_NODE_FOR_LOOP);
   node->for_loop.is_do_while = false;
-  node->for_loop.expr1 = expr1;
-  node->for_loop.expr2 = expr2;
-  node->for_loop.expr3 = expr3;
+  node->for_loop.expr1 = expr1 == NULL ? ast_node_new_list_node(ast_node_new_constant_int_node(1)) : expr1;
+  node->for_loop.expr2 = expr2 == NULL ? ast_node_new_list_node(ast_node_new_constant_int_node(1)) : expr2;
+  node->for_loop.expr3 = expr3 == NULL ? ast_node_new_list_node(ast_node_new_constant_int_node(1)) : expr3;
   node->for_loop.statements = statements;
   return node;
 }

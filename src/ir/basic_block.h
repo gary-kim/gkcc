@@ -25,6 +25,7 @@
 
 struct gkcc_basic_block {
   char *bb_name;
+  int bb_number;
   struct gkcc_ir_quad_list *quads_in_bb;
   struct gkcc_ir_quad *comparison;
   struct gkcc_basic_block *true_branch;
@@ -60,6 +61,6 @@ void gkcc_internal_recurse_basic_blocks(
 struct gkcc_ir_function *gkcc_internal_build_basic_blocks_for_function(
     struct gkcc_ir_generation_state *gen_state, struct ast_node *function_node);
 
-void gkcc_basic_block_print(struct gkcc_basic_block *bb);
+void gkcc_basic_block_print(bool *printed, struct gkcc_basic_block *bb);
 
 #endif  // GKCC_BASIC_BLOCK_H

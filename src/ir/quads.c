@@ -112,8 +112,8 @@ struct gkcc_ir_translation_result gkcc_ir_quad_generate_declaration(
   struct gkcc_ir_translation_result translation_result = {};
   int size = gkcc_type_sizeof(node->declaration.type->gkcc_type.gkcc_type);
   node->declaration.identifier->ident.symbol_table_entry->offset =
-      gen_state->current_function->required_space;
-  gen_state->current_function->required_space += size;
+      gen_state->current_function->required_space_for_locals;
+  gen_state->current_function->required_space_for_locals += size;
 
   return translation_result;
 }

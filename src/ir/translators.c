@@ -76,7 +76,7 @@ struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_binop_add(
     ADD_INST(gkcc_ir_quad_new_with_args(
         GKCC_IR_QUAD_INSTRUCTION_MULTIPLY, intermediate.result,
         translation_result_right.result, size_register));
-    tr.result->type = translation_result_left.result->type->of;
+    tr.result->type = translation_result_left.result->type;
   }
   if (!gkcc_is_gkcc_type_scalar(translation_result_right.result->type)) {
     struct gkcc_ir_translation_result intermediate = {
@@ -91,6 +91,7 @@ struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_binop_add(
     ADD_INST(gkcc_ir_quad_new_with_args(
         GKCC_IR_QUAD_INSTRUCTION_MULTIPLY, intermediate.result,
         translation_result_left.result, size_register));
+    tr.result->type = translation_result_right.result->type;
   }
   ADD_INST(gkcc_ir_quad_new_with_args(GKCC_IR_QUAD_INSTRUCTION_ADD, tr.result,
                                       lresult, rresult));
@@ -121,7 +122,7 @@ struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_binop_subtract(
     ADD_INST(gkcc_ir_quad_new_with_args(
         GKCC_IR_QUAD_INSTRUCTION_MULTIPLY, intermediate.result,
         translation_result_right.result, size_register));
-    tr.result->type = translation_result_left.result->type->of;
+    tr.result->type = translation_result_left.result->type;
   } else if (!gkcc_is_gkcc_type_scalar(translation_result_right.result->type)) {
     struct gkcc_ir_translation_result intermediate = {
         .result = gkcc_ir_quad_register_new_pseudoregister(gen_state),
@@ -135,7 +136,7 @@ struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_binop_subtract(
     ADD_INST(gkcc_ir_quad_new_with_args(
         GKCC_IR_QUAD_INSTRUCTION_MULTIPLY, intermediate.result,
         translation_result_left.result, size_register));
-    tr.result->type = translation_result_right.result->type->of;
+    tr.result->type = translation_result_right.result->type;
   }
   ADD_INST(gkcc_ir_quad_new_with_args(GKCC_IR_QUAD_INSTRUCTION_SUBTRACT,
                                       tr.result, lresult, rresult));
@@ -149,6 +150,7 @@ struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_binop_subtract(
             gkcc_type_sizeof(translation_result_left.result->type->of));
     ADD_INST(gkcc_ir_quad_new_with_args(GKCC_IR_QUAD_INSTRUCTION_DIVIDE,
                                         tr.result, old_result, size_register));
+    tr.result->type = translation_result_left.result->type;
   }
   return tr;
 }
@@ -453,6 +455,8 @@ struct gkcc_ir_translation_result gkcc_ir_translate_ast_unary_addressof(
     struct gkcc_ir_translation_result tr, struct ast_unary* unary) {
   ADD_INST(gkcc_ir_quad_new_with_args(GKCC_IR_QUAD_INSTRUCTION_LEA, tr.result,
                                       prev_result.result, NULL));
+  tr.result->type = gkcc_type_new(GKCC_TYPE_PTR);
+  tr.result->type->of = prev_result.result->type->of;
   return tr;
 }
 
@@ -460,8 +464,16 @@ struct gkcc_ir_translation_result gkcc_ir_translate_ast_unary_dereference(
     struct gkcc_ir_generation_state* gen_state,
     struct gkcc_ir_translation_result prev_result,
     struct gkcc_ir_translation_result tr, struct ast_unary* unary) {
-  ADD_INST(gkcc_ir_quad_new_with_args(GKCC_IR_QUAD_INSTRUCTION_LOAD, tr.result,
-                                      prev_result.result, NULL));
+  // Special handling for multidimensional arrays
+  if (prev_result.result->type->type == GKCC_TYPE_ARRAY &&
+      prev_result.result->type->of->type == GKCC_TYPE_ARRAY) {
+    ADD_INST(gkcc_ir_quad_new_with_args(GKCC_IR_QUAD_INSTRUCTION_MOVE,
+                                        tr.result, prev_result.result, NULL));
+  } else {
+    ADD_INST(gkcc_ir_quad_new_with_args(GKCC_IR_QUAD_INSTRUCTION_LOAD,
+                                        tr.result, prev_result.result, NULL));
+  }
+  tr.result->type = prev_result.result->type->of;
   return tr;
 }
 
@@ -516,8 +528,10 @@ struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_unary(
       gkcc_ir_quad_generate_for_ast(gen_state, unary->of);
   struct gkcc_ir_translation_result new_result = {
       .result = gkcc_ir_quad_register_new_pseudoregister(gen_state),
-      .ir_quad_list = NULL,
+      .ir_quad_list =
+          gkcc_ir_quad_list_append_list(NULL, prev_result.ir_quad_list),
   };
+  new_result.result->type = prev_result.result->type;
   switch (unary->type) {
     case AST_UNARY_SIZEOF:
       return gkcc_ir_translate_ast_unary_sizeof(gen_state, prev_result,
