@@ -82,10 +82,6 @@ add_executable(parsetester
         ${CMAKE_SOURCE_DIR}/src/ast/ast_constructors.h
         ${CMAKE_SOURCE_DIR}/src/scope/scope_helpers.c
         ${CMAKE_SOURCE_DIR}/src/scope/scope_helpers.h
-        ${CMAKE_SOURCE_DIR}/src/ir/quads.c
-        ${CMAKE_SOURCE_DIR}/src/ir/quads.h
-        ${CMAKE_SOURCE_DIR}/src/ir/basic_block.c
-        ${CMAKE_SOURCE_DIR}/src/ir/basic_block.h
         )
 
 target_include_directories(parsetester PRIVATE ${INCLUDE_DIRS})
@@ -93,8 +89,8 @@ if(DEFINED GKCC_UNDEFINED_BEHAVIOR_SANITIZER)
         target_compile_definitions(parsetester PRIVATE GKCC_UNDEFINED_BEHAVIOR_SANITIZER=1)
 endif()
 
-add_executable(gkcc
-        ${CMAKE_SOURCE_DIR}/src/gkcc.c
+add_executable(gkcc_int
+        ${CMAKE_SOURCE_DIR}/src/gkcc_int.c
         ${GENERATED_DIR}/lex.yy.c
         ${GENERATED_DIR}/c.tab.c
         ${CMAKE_SOURCE_DIR}/src/ast/ast.c
@@ -117,10 +113,14 @@ add_executable(gkcc
         ${CMAKE_SOURCE_DIR}/src/target_code/x86.c
         ${CMAKE_SOURCE_DIR}/src/target_code/x86.c
         ${CMAKE_SOURCE_DIR}/src/target_code/x86.h
+        ${CMAKE_SOURCE_DIR}/src/target_code/x86_inst.c
+        ${CMAKE_SOURCE_DIR}/src/target_code/x86_inst.h
         )
 
-target_include_directories(gkcc PRIVATE ${INCLUDE_DIRS})
+target_include_directories(gkcc_int PRIVATE ${INCLUDE_DIRS})
 if(DEFINED GKCC_UNDEFINED_BEHAVIOR_SANITIZER)
-    target_compile_definitions(gkcc PRIVATE GKCC_UNDEFINED_BEHAVIOR_SANITIZER=1)
+    target_compile_definitions(gkcc_int PRIVATE GKCC_UNDEFINED_BEHAVIOR_SANITIZER=1)
 endif()
+
+configure_file(${CMAKE_SOURCE_DIR}/src/gkcc gkcc COPYONLY)
 

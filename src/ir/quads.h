@@ -21,6 +21,7 @@
 #include "ast/ast.h"
 #include "ir/basic_block.h"
 #include "misc/misc.h"
+#include "ir/ir_full.h"
 
 // =====================================
 // === struct gkcc_ir_pseudoregister ===
@@ -28,6 +29,7 @@
 
 struct gkcc_ir_pseudoregister {
   int register_num;
+  int offset;
 };
 
 // =============================
@@ -36,6 +38,7 @@ struct gkcc_ir_pseudoregister {
 
 struct gkcc_ir_symbol {
   bool is_global;
+  struct ystring *ystring;
   struct gkcc_symbol *symbol;
 };
 
@@ -140,7 +143,6 @@ struct gkcc_ir_function {
   char *function_name;
   struct gkcc_basic_block *entrance_basic_block;
   int required_space_for_locals;
-  int required_space_for_tmps;
 };
 
 // =======================================
@@ -150,7 +152,9 @@ struct gkcc_ir_function {
 struct gkcc_ir_generation_state {
   int current_pseudoregister_number;
   int current_basic_block_number;
+  int current_string_constant_number;
   struct gkcc_ir_function *current_function;
+  struct gkcc_ir_full *ir_full;
 };
 
 // =============================
@@ -195,5 +199,8 @@ struct gkcc_ir_quad_register *gkcc_ir_quad_register_new_int_constant(
 
 struct gkcc_ir_translation_result gkcc_ir_quad_generate_declaration(
     struct gkcc_ir_generation_state *gen_state, struct ast_node *node);
+
+char *gkcc_ir_quad_register_constant_string(char *buf,
+                                            struct gkcc_ir_quad_register *qr);
 
 #endif  // GKCC_QUADS_H

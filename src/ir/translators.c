@@ -15,6 +15,8 @@
 
 #include "ir/translators.h"
 
+#include <stdio.h>
+
 #include "ast/ast.h"
 
 #define ADD_INST(ARG) \
@@ -38,6 +40,31 @@ struct gkcc_ir_translation_result gkcc_ir_translate_ast_ident(
 
 struct gkcc_ir_translation_result gkcc_ir_translate_ast_constant(
     struct gkcc_ir_generation_state* gen_state, struct ast_constant* constant) {
+  // Strings go separately
+  if (constant->type == AST_CONSTANT_STRING) {
+    char buf[(1 << 12) + 1];
+    sprintf(buf, ".STR%d", gen_state->current_string_constant_number++);
+    struct gkcc_ir_quad_register* ir_register =
+        gkcc_ir_quad_register_new(GKCC_IR_QUAD_REGISTER_SYMBOL);
+    ir_register->symbol.is_global = true;
+    ir_register->symbol.symbol =
+        gkcc_symbol_new(buf, GKCC_STORAGE_CLASS_INVALID, NULL, 0, "");
+
+    struct gkcc_ir_symbol* is =
+        gkcc_ir_symbol_new(ir_register->symbol.symbol, true);
+    is->ystring = &constant->ystring;
+    ir_register->symbol.ystring = &constant->ystring;
+
+    gen_state->ir_full->global_symbols =
+        gkcc_ir_symbol_list_append(gen_state->ir_full->global_symbols, is);
+
+    struct gkcc_ir_translation_result translation_result = {
+        .result = ir_register,
+        .ir_quad_list = NULL,
+    };
+
+    return translation_result;
+  }
   struct gkcc_ir_quad_register* ir_register =
       gkcc_ir_quad_register_new(GKCC_IR_QUAD_REGISTER_CONSTANT);
   ir_register->constant = constant;
@@ -365,7 +392,10 @@ struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_binop(
 struct gkcc_ir_translation_result gkcc_ir_translate_ast_return(
     struct gkcc_ir_generation_state* gen_state,
     struct ast_function_return* fn_return) {
-  struct gkcc_ir_translation_result return_value = {};
+  struct gkcc_ir_translation_result return_value = {
+      .result = NULL,
+      .ir_quad_list = NULL,
+  };
   if (fn_return->to_return != NULL) {
     return_value =
         gkcc_ir_quad_generate_for_ast(gen_state, fn_return->to_return);
@@ -373,7 +403,7 @@ struct gkcc_ir_translation_result gkcc_ir_translate_ast_return(
 
   struct gkcc_ir_translation_result tr = {
       .result = NULL,
-      .ir_quad_list = NULL,
+      .ir_quad_list = return_value.ir_quad_list,
   };
 
   ADD_INST(gkcc_ir_quad_new_with_args(GKCC_IR_QUAD_INSTRUCTION_RETURN, NULL,

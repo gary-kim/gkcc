@@ -168,6 +168,9 @@ struct gkcc_ir_quad_register *gkcc_ir_quad_register_new_pseudoregister(
       gkcc_ir_quad_register_new(GKCC_IR_QUAD_REGISTER_PSEUDOREGISTER);
   gkcc_ir_quad_register->pseudoregister.register_num =
       gen_state->current_pseudoregister_number++;
+  gkcc_ir_quad_register->pseudoregister.offset =
+      gen_state->current_function->required_space_for_locals;
+  gen_state->current_function->required_space_for_locals += 4;
 
   return gkcc_ir_quad_register;
 }
@@ -277,6 +280,8 @@ struct gkcc_ir_function *gkcc_ir_function_new(char *function_name) {
 
   ir_function->function_name = malloc(strlen(function_name) + 1);
   strcpy(ir_function->function_name, function_name);
+
+  ir_function->required_space_for_locals = 4;
 
   return ir_function;
 }

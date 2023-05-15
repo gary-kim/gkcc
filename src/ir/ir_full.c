@@ -29,6 +29,7 @@ struct gkcc_ir_full *gkcc_ir_build_full(struct ast_node *node) {
   struct gkcc_ir_generation_state *gen_state = gkcc_ir_generation_state_new();
   struct gkcc_ir_full *ir_full = gkcc_ir_full_new();
   ir_full->gen_state = gen_state;
+  gen_state->ir_full = ir_full;
 
   // Go through and process all function definitions
   for (struct ast_node *lnode = node->top_level.list; lnode != NULL;
@@ -141,6 +142,15 @@ void gkcc_ir_full_print(struct gkcc_ir_full *ir_full) {
   // Print all global declarations
   for (struct gkcc_ir_symbol_list *slist = ir_full->global_symbols;
        slist != NULL; slist = slist->next) {
+    if (slist->symbol->ystring != NULL) {
+      // This is a string
+      char buf[(1 << 12) + 1];
+      sprint_escaped_string(buf, slist->symbol->ystring->raw,
+                            slist->symbol->ystring->length);
+      printf("%s:\n", slist->symbol->symbol->symbol_name);
+      printf("\t.string \"%s\"\n", buf);
+      continue;
+    }
     printf(".comm global:%s, %d, 4\n", slist->symbol->symbol->symbol_name,
            gkcc_type_sizeof(slist->symbol->symbol->symbol_type));
   }

@@ -16,6 +16,21 @@
 #ifndef GKCC_X86_H
 #define GKCC_X86_H
 
+#include <stdio.h>
 
+#include "ir/quads.h"
+
+// =============================
+// === FUNCTION DECLARATIONS ===
+// =============================
+
+char *gkcc_tx86_translate_ir_quad_register(char *buf,
+                                           struct gkcc_ir_quad_register *qr);
+
+void gkcc_tx86_translate_ir_quad(FILE *out_file, struct gkcc_ir_quad *quad);
+
+void gkcc_tx86_print_bb(FILE *out_file, bool *printed, struct gkcc_basic_block *bb);
+
+void gkcc_tx86_generate_ir_full(FILE *out_file, struct gkcc_ir_full *ir_full);
 
 #endif  // GKCC_X86_H

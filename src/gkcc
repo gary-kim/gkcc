@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+for i in $@; do
+  gcc -E "$i" | ./gkcc_int -o "$i.s" assembly
+done
+
+new_names=( "${@/%/.s}" )
+
+gcc -m32 "${new_names[@]}"

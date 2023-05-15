@@ -18,9 +18,9 @@
 #include <malloc.h>
 #include <memory.h>
 
+#include "ir/translators.h"
 #include "misc/misc.h"
 #include "scope/scope.h"
-#include "ir/translators.h"
 
 void gkcc_internal_recurse_basic_blocks(
     struct gkcc_ir_generation_state *gen_state, struct ast_node *nodes,
@@ -44,8 +44,7 @@ void gkcc_internal_recurse_basic_blocks(
       struct gkcc_basic_block_status *body_BB_status =
           gkcc_basic_block_status_new(gen_state, NULL, NULL, NULL, NULL);
       struct gkcc_basic_block_status *cond_BB_status =
-          gkcc_basic_block_status_new(gen_state, bb_status->continueBB,
-                                      bb_status->breakBB, body_BB_status,
+          gkcc_basic_block_status_new(gen_state, NULL, NULL, body_BB_status,
                                       next_BB_status);
       struct gkcc_basic_block_status *iter_BB_status =
           gkcc_basic_block_status_new(gen_state, NULL, NULL, cond_BB_status,
@@ -54,6 +53,8 @@ void gkcc_internal_recurse_basic_blocks(
           gkcc_basic_block_status_new(gen_state, NULL, NULL, cond_BB_status,
                                       cond_BB_status);
 
+      body_BB_status->continueBB = iter_BB_status;
+      body_BB_status->breakBB = next_BB_status;
       body_BB_status->trueBB = iter_BB_status;
       body_BB_status->falseBB = iter_BB_status;
 
@@ -157,11 +158,11 @@ CLEANUP_AND_RETURN:
   }
 
   // This optimization is creating some issues so commenting out for now
-//  if (bb_status->thisBB->quads_in_bb == NULL) {
-//    bb_status->trueBB = bb_status->trueBB->trueBB;
-//    bb_status->falseBB = bb_status->falseBB->falseBB;
-//    return;
-//  }
+  //  if (bb_status->thisBB->quads_in_bb == NULL) {
+  //    bb_status->trueBB = bb_status->trueBB->trueBB;
+  //    bb_status->falseBB = bb_status->falseBB->falseBB;
+  //    return;
+  //  }
 
   if (bb_status->thisBB->true_branch == bb_status->thisBB->false_branch) {
     struct gkcc_ir_quad *jump_ir = gkcc_ir_quad_new_with_args(
@@ -214,7 +215,7 @@ struct gkcc_basic_block *gkcc_basic_block_new(
   memset(bb, 0, sizeof(struct gkcc_basic_block));
   bb->bb_number = gen_state->current_basic_block_number++;
   char buf[(1 << 12) + 1];
-  size_t len = sprintf(buf, "BB.%d", bb->bb_number);
+  size_t len = sprintf(buf, ".BB.%d", bb->bb_number);
   bb->bb_name = malloc(len + 1);
   strcpy(bb->bb_name, buf);
   return bb;

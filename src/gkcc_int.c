@@ -24,12 +24,14 @@
 #include "ir/basic_block.h"
 #include "misc/misc.h"
 #include "ir/ir_full.h"
+#include "target_code/x86.h"
 
 enum jobs {
   JOB_BUILD_NOTHING = 0,
   JOB_BUILD_AST,
   JOB_BUILD_BB,
   JOB_BUILD_IR,
+  JOB_BUILD_ASSEMBLY,
   JOB_MAX,
 };
 
@@ -38,12 +40,13 @@ int main(int argc, char** argv) {
 
   bool should_print_ast = false;
   bool should_print_ir = false;
+  FILE *out_file = stdout;
   int nsecs = 0;
   int flags = 0;
   int tfnd = 0;
   int opt = 0;
 
-  while ((opt = getopt(argc, argv, "adi")) != -1) {
+  while ((opt = getopt(argc, argv, "adio:")) != -1) {
     switch (opt) {
       case 'a':
         should_print_ast = true;
@@ -53,6 +56,13 @@ int main(int argc, char** argv) {
         break;
       case 'i':
         should_print_ir = true;
+        break;
+      case 'o':
+        if ((strcmp("-", optarg) == 0) || (strcmp("stdout", optarg) == 0)) {
+          out_file = stdout;
+          break;
+        }
+        out_file = fopen(optarg, "w");
         break;
       default:
         fprintf(stderr, "Cannot parse flags\n");
@@ -67,6 +77,8 @@ int main(int argc, char** argv) {
     jobs = JOB_BUILD_AST;
   } else if (strcmp("ir", argv[optind]) == 0) {
     jobs = JOB_BUILD_IR;
+  } else if (strcmp("assembly", argv[optind]) == 0) {
+    jobs = JOB_BUILD_ASSEMBLY;
   }
 
   if (jobs < JOB_BUILD_AST) {
@@ -103,4 +115,10 @@ int main(int argc, char** argv) {
         "=========================================\n\n");
     gkcc_ir_full_print(ir_full);
   }
+
+  if (jobs < JOB_BUILD_ASSEMBLY) {
+    return 0;
+  }
+
+  gkcc_tx86_generate_ir_full(out_file, ir_full);
 }
