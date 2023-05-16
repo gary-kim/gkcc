@@ -40,9 +40,8 @@ void gkcc_tx86_translate_ir_quad_save_register(FILE *out_file,
 void gkcc_tx86_translate_ir_quad_instruction_load(FILE *out_file,
                                                   struct gkcc_ir_quad *quad) {
   gkcc_tx86_translate_ir_quad_load_into_registers(out_file, quad);
-  fprintf(out_file, "\taddl %%eax, %%edx\n");
-  fprintf(out_file, "\tmovl %%eax, %s\n",
-          gkcc_tx86_translate_ir_quad_register(buf1, quad->dest));
+  fprintf(out_file, "\tmovl (%%eax), %%eax\n");
+  gkcc_tx86_translate_ir_quad_save_register(out_file, quad, "%eax");
 }
 void gkcc_tx86_translate_ir_quad_instruction_return(FILE *out_file,
                                                     struct gkcc_ir_quad *quad) {
@@ -109,7 +108,7 @@ void gkcc_tx86_translate_ir_quad_instruction_function_call(
 
 void gkcc_tx86_translate_ir_quad_instruction_branch_if_true(
     FILE *out_file, struct gkcc_ir_quad *quad) {
-  //  gkcc_tx86_translate_ir_quad_load_into_registers(out_file, quad);
+  gkcc_tx86_translate_ir_quad_load_into_registers(out_file, quad);
   fprintf(out_file, "\tmovl %s, %%eax\n",
           gkcc_tx86_translate_ir_quad_register(buf1, quad->source2));
   fprintf(out_file, "\tcmpl $0, %%eax\n");
@@ -135,6 +134,8 @@ void gkcc_tx86_translate_ir_quad_instruction_branch(FILE *out_file,
 void gkcc_tx86_translate_ir_quad_instruction_equals(FILE *out_file,
                                                     struct gkcc_ir_quad *quad) {
   gkcc_tx86_translate_ir_quad_load_into_registers(out_file, quad);
+  fprintf(out_file, "\tmovl $0, %s\n",
+          gkcc_tx86_translate_ir_quad_register(buf1, quad->dest));
   fprintf(out_file, "\tcmpl %%eax, %%edx\n");
   fprintf(out_file, "\tsete %s\n",
           gkcc_tx86_translate_ir_quad_register(buf1, quad->dest));
@@ -151,6 +152,8 @@ void gkcc_tx86_translate_ir_quad_instruction_move(FILE *out_file,
 void gkcc_tx86_translate_ir_quad_instruction_logical_not(
     FILE *out_file, struct gkcc_ir_quad *quad) {
   gkcc_tx86_translate_ir_quad_load_into_registers(out_file, quad);
+  fprintf(out_file, "\tmovl $0, %s\n",
+          gkcc_tx86_translate_ir_quad_register(buf1, quad->dest));
   fprintf(out_file, "\tcmpl $0, %%eax\n");
   fprintf(out_file, "\tsete %s\n",
           gkcc_tx86_translate_ir_quad_register(buf1, quad->dest));
@@ -159,6 +162,8 @@ void gkcc_tx86_translate_ir_quad_instruction_logical_not(
 void gkcc_tx86_translate_ir_quad_instruction_greater_than(
     FILE *out_file, struct gkcc_ir_quad *quad) {
   gkcc_tx86_translate_ir_quad_load_into_registers(out_file, quad);
+  fprintf(out_file, "\tmovl $0, %s\n",
+          gkcc_tx86_translate_ir_quad_register(buf1, quad->dest));
   fprintf(out_file, "\tcmpl %%edx, %%eax\n");
   fprintf(out_file, "\tsetg %s\n",
           gkcc_tx86_translate_ir_quad_register(buf1, quad->dest));
@@ -167,6 +172,8 @@ void gkcc_tx86_translate_ir_quad_instruction_greater_than(
 void gkcc_tx86_translate_ir_quad_instruction_less_than(
     FILE *out_file, struct gkcc_ir_quad *quad) {
   gkcc_tx86_translate_ir_quad_load_into_registers(out_file, quad);
+  fprintf(out_file, "\tmovl $0, %s\n",
+          gkcc_tx86_translate_ir_quad_register(buf1, quad->dest));
   fprintf(out_file, "\tcmpl %%edx, %%eax\n");
   fprintf(out_file, "\tsetl %s\n",
           gkcc_tx86_translate_ir_quad_register(buf1, quad->dest));
@@ -174,6 +181,8 @@ void gkcc_tx86_translate_ir_quad_instruction_less_than(
 void gkcc_tx86_translate_ir_quad_instruction_greater_than_or_equal_to(
     FILE *out_file, struct gkcc_ir_quad *quad) {
   gkcc_tx86_translate_ir_quad_load_into_registers(out_file, quad);
+  fprintf(out_file, "\tmovl $0, %s\n",
+          gkcc_tx86_translate_ir_quad_register(buf1, quad->dest));
   fprintf(out_file, "\tcmpl %%edx, %%eax\n");
   fprintf(out_file, "\tsetge %s\n",
           gkcc_tx86_translate_ir_quad_register(buf1, quad->dest));
@@ -181,7 +190,16 @@ void gkcc_tx86_translate_ir_quad_instruction_greater_than_or_equal_to(
 void gkcc_tx86_translate_ir_quad_instruction_less_than_or_equal_to(
     FILE *out_file, struct gkcc_ir_quad *quad) {
   gkcc_tx86_translate_ir_quad_load_into_registers(out_file, quad);
+  fprintf(out_file, "\tmovl $0, %s\n",
+          gkcc_tx86_translate_ir_quad_register(buf1, quad->dest));
   fprintf(out_file, "\tcmpl %%edx, %%eax\n");
   fprintf(out_file, "\tsetle %s\n",
           gkcc_tx86_translate_ir_quad_register(buf1, quad->dest));
+}
+
+void gkcc_tx86_translate_ir_quad_instruction_lea(FILE *out_file,
+                                                 struct gkcc_ir_quad *quad) {
+  fprintf(out_file, "\tleal %s, %%eax\n",
+          gkcc_tx86_translate_ir_quad_register(buf1, quad->source1));
+  gkcc_tx86_translate_ir_quad_save_register(out_file, quad, "%eax");
 }

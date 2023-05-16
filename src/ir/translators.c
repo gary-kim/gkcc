@@ -35,6 +35,17 @@ struct gkcc_ir_translation_result gkcc_ir_translate_ast_ident(
       .ir_quad_list = NULL,
   };
 
+  if (ident->symbol_table_entry->symbol_type->type == GKCC_TYPE_ARRAY) {
+    translation_result.result =
+        gkcc_ir_quad_register_new_pseudoregister(gen_state);
+    translation_result.result->type = ir_register->type;
+    translation_result.ir_quad_list = gkcc_ir_quad_list_append(
+        translation_result.ir_quad_list,
+        gkcc_ir_quad_new_with_args(GKCC_IR_QUAD_INSTRUCTION_LEA,
+                                   translation_result.result, ir_register,
+                                   NULL));
+  }
+
   return translation_result;
 }
 
@@ -283,9 +294,73 @@ struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_binop_assign(
     struct gkcc_ir_translation_result tr,
     struct gkcc_ir_translation_result translation_result_left,
     struct gkcc_ir_translation_result translation_result_right) {
+  tr.result = translation_result_left.result;
   ADD_INST(gkcc_ir_quad_new_with_args(GKCC_IR_QUAD_INSTRUCTION_MOVE,
                                       translation_result_left.result,
                                       translation_result_right.result, NULL));
+  return tr;
+}
+
+struct gkcc_ir_translation_result
+gkcc_ir_translate_ast_node_binop_assign_multiply(
+    struct gkcc_ir_generation_state* gen_state, struct ast_binop* binop,
+    struct gkcc_ir_translation_result tr,
+    struct gkcc_ir_translation_result translation_result_left,
+    struct gkcc_ir_translation_result translation_result_right) {
+  tr.result = translation_result_left.result;
+  ADD_INST(gkcc_ir_quad_new_with_args(
+      GKCC_IR_QUAD_INSTRUCTION_MULTIPLY, translation_result_left.result,
+      translation_result_left.result, translation_result_right.result));
+  return tr;
+}
+
+struct gkcc_ir_translation_result
+gkcc_ir_translate_ast_node_binop_assign_divide(
+    struct gkcc_ir_generation_state* gen_state, struct ast_binop* binop,
+    struct gkcc_ir_translation_result tr,
+    struct gkcc_ir_translation_result translation_result_left,
+    struct gkcc_ir_translation_result translation_result_right) {
+  tr.result = translation_result_left.result;
+  ADD_INST(gkcc_ir_quad_new_with_args(
+      GKCC_IR_QUAD_INSTRUCTION_DIVIDE, translation_result_left.result,
+      translation_result_left.result, translation_result_right.result));
+  return tr;
+}
+
+struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_binop_assign_mod(
+    struct gkcc_ir_generation_state* gen_state, struct ast_binop* binop,
+    struct gkcc_ir_translation_result tr,
+    struct gkcc_ir_translation_result translation_result_left,
+    struct gkcc_ir_translation_result translation_result_right) {
+  tr.result = translation_result_left.result;
+  ADD_INST(gkcc_ir_quad_new_with_args(
+      GKCC_IR_QUAD_INSTRUCTION_MOD, translation_result_left.result,
+      translation_result_left.result, translation_result_right.result));
+  return tr;
+}
+
+struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_binop_assign_add(
+    struct gkcc_ir_generation_state* gen_state, struct ast_binop* binop,
+    struct gkcc_ir_translation_result tr,
+    struct gkcc_ir_translation_result translation_result_left,
+    struct gkcc_ir_translation_result translation_result_right) {
+  tr.result = translation_result_left.result;
+  ADD_INST(gkcc_ir_quad_new_with_args(
+      GKCC_IR_QUAD_INSTRUCTION_ADD, translation_result_left.result,
+      translation_result_left.result, translation_result_right.result));
+  return tr;
+}
+
+struct gkcc_ir_translation_result
+gkcc_ir_translate_ast_node_binop_assign_subtract(
+    struct gkcc_ir_generation_state* gen_state, struct ast_binop* binop,
+    struct gkcc_ir_translation_result tr,
+    struct gkcc_ir_translation_result translation_result_left,
+    struct gkcc_ir_translation_result translation_result_right) {
+  tr.result = translation_result_left.result;
+  ADD_INST(gkcc_ir_quad_new_with_args(
+      GKCC_IR_QUAD_INSTRUCTION_SUBTRACT, translation_result_left.result,
+      translation_result_left.result, translation_result_right.result));
   return tr;
 }
 
@@ -327,15 +402,25 @@ struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_binop(
           gen_state, &node->binop, final_result, translation_result_left,
           translation_result_right);
     case AST_BINOP_ASSIGN_MULTIPLY:
-      break;
+      return gkcc_ir_translate_ast_node_binop_assign_multiply(
+          gen_state, &node->binop, final_result, translation_result_left,
+          translation_result_right);
     case AST_BINOP_ASSIGN_DIVIDE:
-      break;
+      return gkcc_ir_translate_ast_node_binop_assign_divide(
+          gen_state, &node->binop, final_result, translation_result_left,
+          translation_result_right);
     case AST_BINOP_ASSIGN_MOD:
-      break;
+      return gkcc_ir_translate_ast_node_binop_assign_mod(
+          gen_state, &node->binop, final_result, translation_result_left,
+          translation_result_right);
     case AST_BINOP_ASSIGN_ADD:
-      break;
+      return gkcc_ir_translate_ast_node_binop_assign_add(
+          gen_state, &node->binop, final_result, translation_result_left,
+          translation_result_right);
     case AST_BINOP_ASSIGN_SUBTRACT:
-      break;
+      return gkcc_ir_translate_ast_node_binop_assign_subtract(
+          gen_state, &node->binop, final_result, translation_result_left,
+          translation_result_right);
     case AST_BINOP_ASSIGN_BITWISE_SHL:
       break;
     case AST_BINOP_ASSIGN_BITWISE_SHR:
@@ -584,7 +669,6 @@ struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_unary(
     case AST_UNARY_POSTINC:
       return gkcc_ir_translate_ast_unary_postinc(gen_state, prev_result,
                                                  new_result, unary);
-      break;
     case AST_UNARY_POSTDEC:
       return gkcc_ir_translate_ast_unary_postdec(gen_state, prev_result,
                                                  new_result, unary);

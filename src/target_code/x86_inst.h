@@ -69,8 +69,8 @@ void gkcc_tx86_translate_ir_quad_instruction_equals(FILE *out_file,
 void gkcc_tx86_translate_ir_quad_instruction_move(FILE *out_file,
                                                   struct gkcc_ir_quad *quad);
 
-void gkcc_tx86_translate_ir_quad_instruction_logical_not(FILE *out_file,
-                                                  struct gkcc_ir_quad *quad);
+void gkcc_tx86_translate_ir_quad_instruction_logical_not(
+    FILE *out_file, struct gkcc_ir_quad *quad);
 
 void gkcc_tx86_translate_ir_quad_instruction_greater_than(
     FILE *out_file, struct gkcc_ir_quad *quad);
@@ -83,4 +83,8 @@ void gkcc_tx86_translate_ir_quad_instruction_greater_than_or_equal_to(
 
 void gkcc_tx86_translate_ir_quad_instruction_less_than_or_equal_to(
     FILE *out_file, struct gkcc_ir_quad *quad);
+
+void gkcc_tx86_translate_ir_quad_instruction_lea(FILE *out_file,
+                                                 struct gkcc_ir_quad *quad);
+
 #endif  // GKCC_X86_INST_H

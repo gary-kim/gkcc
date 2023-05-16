@@ -135,8 +135,6 @@ struct gkcc_ir_translation_result gkcc_ir_quad_generate_for_ast(
       return gkcc_ir_translate_ast_ident(gen_state, &lnode->ident);
     case AST_NODE_UNARY:
       return gkcc_ir_translate_ast_node_unary(gen_state, &lnode->unary);
-    case AST_NODE_TERNARY:
-      break;
     case AST_NODE_GKCC_TYPE:
       break;
     case AST_NODE_DECLARATION:
@@ -146,14 +144,8 @@ struct gkcc_ir_translation_result gkcc_ir_quad_generate_for_ast(
     case AST_NODE_FUNCTION_CALL:
       return gkcc_ir_translate_ast_function_call(gen_state,
                                                  &lnode->function_call);
-    case AST_NODE_ENUM_DEFINITION:
-      break;
     case AST_NODE_FUNCTION_RETURN:
       return gkcc_ir_translate_ast_return(gen_state, &lnode->function_return);
-    case AST_NODE_SWITCH_CASE_CASE:
-      break;
-    case AST_NODE_SWITCH_CASE_SWITCH:
-      break;
     default:
       break;
   }

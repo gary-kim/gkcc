@@ -31,11 +31,6 @@ void gkcc_internal_recurse_basic_blocks(
     struct ast_node *tnode = lnode->list.node;
     struct gkcc_ir_translation_result translation_result;
 
-    switch (tnode->type) {
-      case AST_NODE_GOTO_NODE:
-        break;
-    }
-
     if (tnode->type == AST_NODE_FOR_LOOP) {
       struct gkcc_basic_block_status *next_BB_status =
           gkcc_basic_block_status_new(gen_state, bb_status->continueBB,
@@ -58,16 +53,16 @@ void gkcc_internal_recurse_basic_blocks(
       body_BB_status->trueBB = iter_BB_status;
       body_BB_status->falseBB = iter_BB_status;
 
-      gkcc_internal_recurse_basic_blocks(gen_state, lnode->list.next,
-                                         next_BB_status);
-      gkcc_internal_recurse_basic_blocks(gen_state, tnode->for_loop.statements,
-                                         body_BB_status);
       gkcc_internal_recurse_basic_blocks(gen_state, tnode->for_loop.expr3,
                                          iter_BB_status);
       gkcc_internal_recurse_basic_blocks(gen_state, tnode->for_loop.expr2,
                                          cond_BB_status);
       gkcc_internal_recurse_basic_blocks(gen_state, tnode->for_loop.expr1,
                                          init_BB_status);
+      gkcc_internal_recurse_basic_blocks(gen_state, tnode->for_loop.statements,
+                                         body_BB_status);
+      gkcc_internal_recurse_basic_blocks(gen_state, lnode->list.next,
+                                         next_BB_status);
 
       bb_status->trueBB = init_BB_status;
       bb_status->falseBB = init_BB_status;
@@ -92,14 +87,14 @@ void gkcc_internal_recurse_basic_blocks(
           gkcc_basic_block_status_new(gen_state, NULL, NULL, then_BB_status,
                                       else_BB_status);
 
-      gkcc_internal_recurse_basic_blocks(gen_state, lnode->list.next,
-                                         next_BB_status);
       gkcc_internal_recurse_basic_blocks(
           gen_state, tnode->if_statement.then_statement, then_BB_status);
       gkcc_internal_recurse_basic_blocks(
           gen_state, tnode->if_statement.else_statement, else_BB_status);
       gkcc_internal_recurse_basic_blocks(
           gen_state, tnode->if_statement.condition, cond_BB_status);
+      gkcc_internal_recurse_basic_blocks(gen_state, lnode->list.next,
+                                         next_BB_status);
 
       bb_status->trueBB = cond_BB_status;
       bb_status->falseBB = cond_BB_status;
@@ -110,25 +105,18 @@ void gkcc_internal_recurse_basic_blocks(
     if (tnode->type == AST_NODE_JUMP_BREAK) {
       gkcc_assert(bb_status->breakBB != NULL, GKCC_ERROR_INVALID_CODE,
                   "Attempted to use 'break' when there is nowhere to break to");
-      struct gkcc_ir_quad *jump_ir = gkcc_ir_quad_new_with_args(
-          GKCC_IR_QUAD_INSTRUCTION_BRANCH, NULL,
-          gkcc_ir_quad_register_new_basic_block(bb_status->breakBB->thisBB),
-          NULL);
-      translation_result.ir_quad_list = gkcc_ir_quad_list_append(NULL, jump_ir);
-      goto TRANSLATION_COMPLETE;
+      bb_status->trueBB = bb_status->breakBB;
+      bb_status->falseBB = bb_status->breakBB;
+      goto CLEANUP_AND_RETURN;
     }
 
     if (tnode->type == AST_NODE_JUMP_CONTINUE) {
-      gkcc_assert(bb_status->continueBB != NULL, GKCC_ERROR_INVALID_CODE,
-                  "Attempted to use 'break' when there is nowhere to break to");
-      struct gkcc_ir_quad *jump_ir = gkcc_ir_quad_new_with_args(
-          GKCC_IR_QUAD_INSTRUCTION_BRANCH, NULL,
-          gkcc_ir_quad_register_new_basic_block(bb_status->continueBB->thisBB),
-          NULL);
-      translation_result.ir_quad_list = gkcc_ir_quad_list_append(NULL, jump_ir);
+      gkcc_assert(
+          bb_status->continueBB != NULL, GKCC_ERROR_INVALID_CODE,
+          "Attempted to use 'continue' when there is nowhere to continue to");
       bb_status->trueBB = bb_status->continueBB;
       bb_status->falseBB = bb_status->continueBB;
-      goto TRANSLATION_COMPLETE;
+      goto CLEANUP_AND_RETURN;
     }
 
     // This could be skipped past with a goto if something else does the
@@ -138,13 +126,6 @@ void gkcc_internal_recurse_basic_blocks(
     bb_status->thisBB->quads_in_bb = gkcc_ir_quad_list_append_list(
         bb_status->thisBB->quads_in_bb, translation_result.ir_quad_list);
     last_result = translation_result;
-    continue;
-
-  TRANSLATION_COMPLETE:
-    bb_status->thisBB->quads_in_bb = gkcc_ir_quad_list_append_list(
-        bb_status->thisBB->quads_in_bb, translation_result.ir_quad_list);
-    last_result = translation_result;
-    break;
   }
 
 CLEANUP_AND_RETURN:

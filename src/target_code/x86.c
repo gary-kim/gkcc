@@ -52,12 +52,11 @@ char *gkcc_tx86_translate_ir_quad_register(char *buf,
 void gkcc_tx86_translate_ir_quad(FILE *out_file, struct gkcc_ir_quad *quad) {
   char buf1[(1 << 12) + 1];
   char buf2[(1 << 12) + 1];
+  static int current_function_push_val = 0;
   switch (quad->instruction) {
     case GKCC_IR_QUAD_INSTRUCTION_LEA:
       // TODO: Cannot be doing an address to address move
-      fprintf(out_file, "\tmovl %s %s",
-              gkcc_tx86_translate_ir_quad_register(buf1, quad->source1),
-              gkcc_tx86_translate_ir_quad_register(buf2, quad->source2));
+      gkcc_tx86_translate_ir_quad_instruction_lea(out_file, quad);
       break;
     case GKCC_IR_QUAD_INSTRUCTION_LOAD:
       gkcc_tx86_translate_ir_quad_instruction_load(out_file, quad);
@@ -110,9 +109,12 @@ void gkcc_tx86_translate_ir_quad(FILE *out_file, struct gkcc_ir_quad *quad) {
       break;
     case GKCC_IR_QUAD_INSTRUCTION_FUNCTION_CALL:
       gkcc_tx86_translate_ir_quad_instruction_function_call(out_file, quad);
+      fprintf(out_file, "\taddl $%lu, %%esp\n", current_function_push_val * sizeof(int));
+      current_function_push_val = 0;
       break;
     case GKCC_IR_QUAD_INSTRUCTION_FUNCION_ARG:
       gkcc_tx86_translate_ir_quad_instruction_function_arg(out_file, quad);
+      current_function_push_val++;
       break;
     case GKCC_IR_QUAD_INSTRUCTION_LOGICAL_NOT:
       gkcc_tx86_translate_ir_quad_instruction_logical_not(out_file, quad);

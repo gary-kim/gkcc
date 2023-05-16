@@ -151,4 +151,36 @@ struct gkcc_ir_translation_result gkcc_ir_translate_ast_return(
     struct gkcc_ir_generation_state* gen_state,
     struct ast_function_return* fn_return);
 
+struct gkcc_ir_translation_result
+gkcc_ir_translate_ast_node_binop_assign_multiply(
+    struct gkcc_ir_generation_state* gen_state, struct ast_binop* binop,
+    struct gkcc_ir_translation_result tr,
+    struct gkcc_ir_translation_result translation_result_left,
+    struct gkcc_ir_translation_result translation_result_right);
+
+struct gkcc_ir_translation_result
+gkcc_ir_translate_ast_node_binop_assign_divide(
+    struct gkcc_ir_generation_state* gen_state, struct ast_binop* binop,
+    struct gkcc_ir_translation_result tr,
+    struct gkcc_ir_translation_result translation_result_left,
+    struct gkcc_ir_translation_result translation_result_right);
+
+struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_binop_assign_mod(
+    struct gkcc_ir_generation_state* gen_state, struct ast_binop* binop,
+    struct gkcc_ir_translation_result tr,
+    struct gkcc_ir_translation_result translation_result_left,
+    struct gkcc_ir_translation_result translation_result_right);
+
+struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_binop_assign_add(
+    struct gkcc_ir_generation_state* gen_state, struct ast_binop* binop,
+    struct gkcc_ir_translation_result tr,
+    struct gkcc_ir_translation_result translation_result_left,
+    struct gkcc_ir_translation_result translation_result_right);
+
+struct gkcc_ir_translation_result
+gkcc_ir_translate_ast_node_binop_assign_subtract(
+    struct gkcc_ir_generation_state* gen_state, struct ast_binop* binop,
+    struct gkcc_ir_translation_result tr,
+    struct gkcc_ir_translation_result translation_result_left,
+    struct gkcc_ir_translation_result translation_result_right);
 #endif  // GKCC_TRANSLATORS_H
