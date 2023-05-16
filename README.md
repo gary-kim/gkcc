@@ -9,7 +9,7 @@ writing good commit messages. Do as I say and not as I do
 This is the C compiler that I am writing for the ECE-466: Compilers
 course at The Cooper Union.
 
-The [course page](https://faculty.cooper.edu/hak/ece466) lists the
+The [course page](http://faculty.cooper.edu/hak/ece466) lists the
 assignments and general instructions for the compiler.
 
 ### License
