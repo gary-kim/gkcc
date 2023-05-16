@@ -135,12 +135,8 @@ struct gkcc_ir_translation_result gkcc_ir_quad_generate_for_ast(
       return gkcc_ir_translate_ast_ident(gen_state, &lnode->ident);
     case AST_NODE_UNARY:
       return gkcc_ir_translate_ast_node_unary(gen_state, &lnode->unary);
-    case AST_NODE_GKCC_TYPE:
-      break;
     case AST_NODE_DECLARATION:
       return gkcc_ir_quad_generate_declaration(gen_state, lnode);
-    case AST_NODE_LIST:
-      break;
     case AST_NODE_FUNCTION_CALL:
       return gkcc_ir_translate_ast_function_call(gen_state,
                                                  &lnode->function_call);

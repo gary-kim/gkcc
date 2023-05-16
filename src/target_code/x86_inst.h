@@ -90,4 +90,16 @@ void gkcc_tx86_translate_ir_quad_instruction_lea(FILE *out_file,
 void gkcc_tx86_translate_ir_quad_instruction_str(FILE *out_file,
                                                  struct gkcc_ir_quad *quad);
 
+void gkcc_tx86_translate_ir_quad_instruction_negate_value(
+    FILE *out_file, struct gkcc_ir_quad *quad);
+
+void gkcc_tx86_translate_ir_quad_instruction_postinc(FILE *out_file,
+                                                     struct gkcc_ir_quad *quad);
+
+void gkcc_tx86_translate_ir_quad_instruction_postdec(FILE *out_file,
+                                                     struct gkcc_ir_quad *quad);
+
+void gkcc_tx86_translate_ir_quad_instruction_bitwise_not(
+    FILE *out_file, struct gkcc_ir_quad *quad);
+
 #endif  // GKCC_X86_INST_H

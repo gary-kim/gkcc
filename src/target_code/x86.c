@@ -122,12 +122,16 @@ void gkcc_tx86_translate_ir_quad(FILE *out_file, struct gkcc_ir_quad *quad) {
       gkcc_tx86_translate_ir_quad_instruction_logical_not(out_file, quad);
       break;
     case GKCC_IR_QUAD_INSTRUCTION_NEGATE_VALUE:
+      gkcc_tx86_translate_ir_quad_instruction_negate_value(out_file, quad);
       break;
     case GKCC_IR_QUAD_INSTRUCTION_POSTINC:
+      gkcc_tx86_translate_ir_quad_instruction_postinc(out_file, quad);
       break;
     case GKCC_IR_QUAD_INSTRUCTION_POSTDEC:
+      gkcc_tx86_translate_ir_quad_instruction_postdec(out_file, quad);
       break;
     case GKCC_IR_QUAD_INSTRUCTION_BITWISE_NOT:
+      gkcc_tx86_translate_ir_quad_instruction_bitwise_not(out_file, quad);
       break;
     case GKCC_IR_QUAD_INSTRUCTION_RETURN:
       gkcc_tx86_translate_ir_quad_instruction_return(out_file, quad);

@@ -211,3 +211,31 @@ void gkcc_tx86_translate_ir_quad_instruction_str(FILE *out_file,
           gkcc_tx86_translate_ir_quad_register(buf1, quad->dest));
   fprintf(out_file, "\tmovl %%eax, (%%edx)\n");
 }
+
+void gkcc_tx86_translate_ir_quad_instruction_negate_value(
+    FILE *out_file, struct gkcc_ir_quad *quad) {
+  gkcc_tx86_translate_ir_quad_load_into_registers(out_file, quad);
+  fprintf(out_file, "\tnegl %%eax\n");
+  gkcc_tx86_translate_ir_quad_save_register(out_file, quad, "%eax");
+}
+
+void gkcc_tx86_translate_ir_quad_instruction_postinc(
+    FILE *out_file, struct gkcc_ir_quad *quad) {
+  gkcc_tx86_translate_ir_quad_load_into_registers(out_file, quad);
+  gkcc_tx86_translate_ir_quad_save_register(out_file, quad, "%eax");
+  fprintf(out_file, "\taddl $1, %%eax\n");
+}
+
+void gkcc_tx86_translate_ir_quad_instruction_postdec(
+    FILE *out_file, struct gkcc_ir_quad *quad) {
+  gkcc_tx86_translate_ir_quad_load_into_registers(out_file, quad);
+  gkcc_tx86_translate_ir_quad_save_register(out_file, quad, "%eax");
+  fprintf(out_file, "\tsubl $1, %%eax\n");
+}
+
+void gkcc_tx86_translate_ir_quad_instruction_bitwise_not(
+    FILE *out_file, struct gkcc_ir_quad *quad) {
+  gkcc_tx86_translate_ir_quad_load_into_registers(out_file, quad);
+  fprintf(out_file, "\tnotl %%eax\n");
+  gkcc_tx86_translate_ir_quad_save_register(out_file, quad, "%eax");
+}
