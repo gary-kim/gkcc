@@ -203,3 +203,11 @@ void gkcc_tx86_translate_ir_quad_instruction_lea(FILE *out_file,
           gkcc_tx86_translate_ir_quad_register(buf1, quad->source1));
   gkcc_tx86_translate_ir_quad_save_register(out_file, quad, "%eax");
 }
+
+void gkcc_tx86_translate_ir_quad_instruction_str(FILE *out_file,
+                                                 struct gkcc_ir_quad *quad) {
+  gkcc_tx86_translate_ir_quad_load_into_registers(out_file, quad);
+  fprintf(out_file, "\tmovl %s, %%edx\n",
+          gkcc_tx86_translate_ir_quad_register(buf1, quad->dest));
+  fprintf(out_file, "\tmovl %%eax, (%%edx)\n");
+}

@@ -62,6 +62,7 @@ void gkcc_tx86_translate_ir_quad(FILE *out_file, struct gkcc_ir_quad *quad) {
       gkcc_tx86_translate_ir_quad_instruction_load(out_file, quad);
       break;
     case GKCC_IR_QUAD_INSTRUCTION_STR:
+      gkcc_tx86_translate_ir_quad_instruction_str(out_file, quad);
       break;
     case GKCC_IR_QUAD_INSTRUCTION_ADD:
       gkcc_tx86_translate_ir_quad_instruction_add(out_file, quad);
@@ -109,7 +110,8 @@ void gkcc_tx86_translate_ir_quad(FILE *out_file, struct gkcc_ir_quad *quad) {
       break;
     case GKCC_IR_QUAD_INSTRUCTION_FUNCTION_CALL:
       gkcc_tx86_translate_ir_quad_instruction_function_call(out_file, quad);
-      fprintf(out_file, "\taddl $%lu, %%esp\n", current_function_push_val * sizeof(int));
+      fprintf(out_file, "\taddl $%lu, %%esp\n",
+              current_function_push_val * sizeof(int));
       current_function_push_val = 0;
       break;
     case GKCC_IR_QUAD_INSTRUCTION_FUNCION_ARG:
@@ -142,6 +144,19 @@ void gkcc_tx86_function_preamble(FILE *out_file, struct gkcc_ir_function *fn) {
   return;
 }
 
+bool gkcc_internal_tx86_is_load_lea_str(struct gkcc_ir_quad_list *ql) {
+  if (ql == NULL || ql->next == NULL || ql->next->next == NULL) return false;
+  if (ql->quad->instruction == GKCC_IR_QUAD_INSTRUCTION_LOAD &&
+      ql->next->quad->instruction == GKCC_IR_QUAD_INSTRUCTION_LEA &&
+      ql->next->next->quad->instruction == GKCC_IR_QUAD_INSTRUCTION_STR) {
+    // It is a shorten-able instruction
+    ql->next->next->quad->dest = ql->quad->source1;
+
+    return true;
+  }
+  return false;
+}
+
 void gkcc_tx86_print_bb(FILE *out_file, bool *printed,
                         struct gkcc_basic_block *bb) {
   if (bb == NULL) return;
@@ -151,6 +166,11 @@ void gkcc_tx86_print_bb(FILE *out_file, bool *printed,
   fprintf(out_file, "%s:\n", bb->bb_name);
   for (struct gkcc_ir_quad_list *ql = bb->quads_in_bb; ql != NULL;
        ql = ql->next) {
+    // If there is a (load, lea, str), collapse it into a single store
+    if (gkcc_internal_tx86_is_load_lea_str(ql)) {
+      ql = ql->next;
+      continue;
+    }
     gkcc_tx86_translate_ir_quad(out_file, ql->quad);
   }
 

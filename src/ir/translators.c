@@ -294,9 +294,12 @@ struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_binop_assign(
     struct gkcc_ir_translation_result tr,
     struct gkcc_ir_translation_result translation_result_left,
     struct gkcc_ir_translation_result translation_result_right) {
+  struct gkcc_ir_quad_register* address_of =
+      gkcc_ir_quad_register_new_pseudoregister(gen_state);
+  ADD_INST(gkcc_ir_quad_new_with_args(GKCC_IR_QUAD_INSTRUCTION_LEA, address_of,
+                                      translation_result_left.result, NULL));
   tr.result = translation_result_left.result;
-  ADD_INST(gkcc_ir_quad_new_with_args(GKCC_IR_QUAD_INSTRUCTION_MOVE,
-                                      translation_result_left.result,
+  ADD_INST(gkcc_ir_quad_new_with_args(GKCC_IR_QUAD_INSTRUCTION_STR, address_of,
                                       translation_result_right.result, NULL));
   return tr;
 }
@@ -371,11 +374,11 @@ struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_binop(
   struct gkcc_ir_translation_result translation_result_right =
       gkcc_ir_quad_generate_for_ast(gen_state, node->binop.right);
   struct gkcc_ir_translation_result final_result = {
-      .ir_quad_list = translation_result_left.ir_quad_list,
+      .ir_quad_list = translation_result_right.ir_quad_list,
       .result = NULL,
   };
   final_result.ir_quad_list = gkcc_ir_quad_list_append_list(
-      final_result.ir_quad_list, translation_result_right.ir_quad_list);
+      final_result.ir_quad_list, translation_result_left.ir_quad_list);
   switch (node->binop.type) {
     case AST_BINOP_ADD:
       return gkcc_ir_translate_ast_node_binop_add(

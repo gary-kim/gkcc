@@ -87,4 +87,7 @@ void gkcc_tx86_translate_ir_quad_instruction_less_than_or_equal_to(
 void gkcc_tx86_translate_ir_quad_instruction_lea(FILE *out_file,
                                                  struct gkcc_ir_quad *quad);
 
+void gkcc_tx86_translate_ir_quad_instruction_str(FILE *out_file,
+                                                 struct gkcc_ir_quad *quad);
+
 #endif  // GKCC_X86_INST_H

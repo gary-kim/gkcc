@@ -20,8 +20,8 @@
 
 #include "ast/ast.h"
 #include "ir/basic_block.h"
-#include "misc/misc.h"
 #include "ir/ir_full.h"
+#include "misc/misc.h"
 
 // =====================================
 // === struct gkcc_ir_pseudoregister ===
