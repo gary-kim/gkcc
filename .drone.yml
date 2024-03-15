@@ -1,0 +1,17 @@
+kind: pipeline
+name: build-and-deploy
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+  - name: build-and-test
+    image: fedora:39
+    commands:
+      - dnf install -y bison bison-devel bison-runtime flex cmake gcc g++ libasan libubsan libubsan-static libxslt
+      - mkdir tmp
+      - cd tmp
+      - cmake ..
+      - make -j $(nproc)
+
