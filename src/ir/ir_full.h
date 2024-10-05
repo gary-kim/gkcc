@@ -16,6 +16,7 @@
 #ifndef GKCC_IR_FULL_H
 #define GKCC_IR_FULL_H
 
+#include "ir/ir_base.h"
 #include "ir/quads.h"
 
 // ====================================

@@ -23,6 +23,7 @@ set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -pedantic -Werror-implicit-fu
 if(DEFINED GKCC_UNDEFINED_BEHAVIOR_SANITIZER)
        set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=undefined -fsanitize=address")
 endif()
+set (CMAKE_EXPORT_COMPILE_COMMANDS 1)
 set (GENERATED_DIR ${CMAKE_SOURCE_DIR}/generated)
 set (INCLUDE_DIRS
         ${GENERATED_DIR}

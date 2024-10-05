@@ -32,16 +32,6 @@ struct gkcc_ir_pseudoregister {
   int offset;
 };
 
-// =============================
-// === struct gkcc_ir_symbol ===
-// =============================
-
-struct gkcc_ir_symbol {
-  bool is_global;
-  struct ystring *ystring;
-  struct gkcc_symbol *symbol;
-};
-
 // ==================================
 // === struct gkcc_ir_symbol_list ===
 // ==================================
@@ -143,18 +133,6 @@ struct gkcc_ir_function {
   char *function_name;
   struct gkcc_basic_block *entrance_basic_block;
   int required_space_for_locals;
-};
-
-// =======================================
-// === struct gkcc_ir_generation_state ===
-// =======================================
-
-struct gkcc_ir_generation_state {
-  int current_pseudoregister_number;
-  int current_basic_block_number;
-  int current_string_constant_number;
-  struct gkcc_ir_function *current_function;
-  struct gkcc_ir_full *ir_full;
 };
 
 // =============================
