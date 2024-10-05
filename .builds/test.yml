@@ -1,0 +1,24 @@
+arch: x86_64
+image: fedora/latest
+packages:
+  - bison
+  - bison-devel
+  - bison-runtime
+  - flex
+  - cmake
+  - gcc
+  - g++
+  - libasan
+  - libubsan
+  - libubsan-static
+  - libxslt
+sources:
+  - "https://git.sr.ht/~gary-kim/gkcc"
+tasks:
+  - build: |
+      cd gkcc
+      mkdir tmp
+      cd tmp
+      cmake ..
+      make -j $(nproc)
+
