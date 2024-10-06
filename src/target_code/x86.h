@@ -29,7 +29,8 @@ char *gkcc_tx86_translate_ir_quad_register(char *buf,
 
 void gkcc_tx86_translate_ir_quad(FILE *out_file, struct gkcc_ir_quad *quad);
 
-void gkcc_tx86_print_bb(FILE *out_file, bool *printed, struct gkcc_basic_block *bb);
+void gkcc_tx86_print_bb(FILE *out_file, bool *printed,
+                        struct gkcc_basic_block *bb);
 
 void gkcc_tx86_generate_ir_full(FILE *out_file, struct gkcc_ir_full *ir_full);
 

@@ -22,8 +22,8 @@
 #include "ast/ast.h"
 #include "c.tab.h"
 #include "ir/basic_block.h"
-#include "misc/misc.h"
 #include "ir/ir_full.h"
+#include "misc/misc.h"
 #include "target_code/x86.h"
 
 enum jobs {
@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
 
   bool should_print_ast = false;
   bool should_print_ir = false;
-  FILE *out_file = stdout;
+  FILE* out_file = stdout;
   int nsecs = 0;
   int flags = 0;
   int tfnd = 0;
@@ -106,7 +106,7 @@ int main(int argc, char** argv) {
     return 0;
   }
 
-  struct gkcc_ir_full *ir_full = gkcc_ir_build_full(top_level);
+  struct gkcc_ir_full* ir_full = gkcc_ir_build_full(top_level);
 
   if (should_print_ir) {
     printf(

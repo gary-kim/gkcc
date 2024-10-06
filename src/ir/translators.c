@@ -87,7 +87,8 @@ struct gkcc_ir_translation_result gkcc_ir_translate_ast_constant(
 }
 
 struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_binop_add(
-    struct gkcc_ir_generation_state* gen_state, struct ast_binop* binop,
+    struct gkcc_ir_generation_state* gen_state,
+    struct ast_binop* binop __attribute__((unused)),
     struct gkcc_ir_translation_result tr,
     struct gkcc_ir_translation_result translation_result_left,
     struct gkcc_ir_translation_result translation_result_right) {
@@ -137,7 +138,8 @@ struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_binop_add(
 }
 
 struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_binop_subtract(
-    struct gkcc_ir_generation_state* gen_state, struct ast_binop* binop,
+    struct gkcc_ir_generation_state* gen_state,
+    struct ast_binop* binop __attribute__((unused)),
     struct gkcc_ir_translation_result tr,
     struct gkcc_ir_translation_result translation_result_left,
     struct gkcc_ir_translation_result translation_result_right) {
@@ -194,7 +196,8 @@ struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_binop_subtract(
 }
 
 struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_binop_multiply(
-    struct gkcc_ir_generation_state* gen_state, struct ast_binop* binop,
+    struct gkcc_ir_generation_state* gen_state,
+    struct ast_binop* binop __attribute__((unused)),
     struct gkcc_ir_translation_result tr,
     struct gkcc_ir_translation_result translation_result_left,
     struct gkcc_ir_translation_result translation_result_right) {
@@ -206,7 +209,8 @@ struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_binop_multiply(
 }
 
 struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_binop_divide(
-    struct gkcc_ir_generation_state* gen_state, struct ast_binop* binop,
+    struct gkcc_ir_generation_state* gen_state,
+    struct ast_binop* binop __attribute__((unused)),
     struct gkcc_ir_translation_result tr,
     struct gkcc_ir_translation_result translation_result_left,
     struct gkcc_ir_translation_result translation_result_right) {
@@ -218,7 +222,8 @@ struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_binop_divide(
 }
 
 struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_binop_mod(
-    struct gkcc_ir_generation_state* gen_state, struct ast_binop* binop,
+    struct gkcc_ir_generation_state* gen_state,
+    struct ast_binop* binop __attribute__((unused)),
     struct gkcc_ir_translation_result tr,
     struct gkcc_ir_translation_result translation_result_left,
     struct gkcc_ir_translation_result translation_result_right) {
@@ -230,7 +235,8 @@ struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_binop_mod(
 }
 
 struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_binop_gt(
-    struct gkcc_ir_generation_state* gen_state, struct ast_binop* binop,
+    struct gkcc_ir_generation_state* gen_state,
+    struct ast_binop* binop __attribute__((unused)),
     struct gkcc_ir_translation_result tr,
     struct gkcc_ir_translation_result translation_result_left,
     struct gkcc_ir_translation_result translation_result_right) {
@@ -242,7 +248,8 @@ struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_binop_gt(
 }
 
 struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_binop_lt(
-    struct gkcc_ir_generation_state* gen_state, struct ast_binop* binop,
+    struct gkcc_ir_generation_state* gen_state,
+    struct ast_binop* binop __attribute__((unused)),
     struct gkcc_ir_translation_result tr,
     struct gkcc_ir_translation_result translation_result_left,
     struct gkcc_ir_translation_result translation_result_right) {
@@ -254,7 +261,8 @@ struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_binop_lt(
 }
 
 struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_binop_gteq(
-    struct gkcc_ir_generation_state* gen_state, struct ast_binop* binop,
+    struct gkcc_ir_generation_state* gen_state,
+    struct ast_binop* binop __attribute__((unused)),
     struct gkcc_ir_translation_result tr,
     struct gkcc_ir_translation_result translation_result_left,
     struct gkcc_ir_translation_result translation_result_right) {
@@ -266,7 +274,8 @@ struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_binop_gteq(
 }
 
 struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_binop_lteq(
-    struct gkcc_ir_generation_state* gen_state, struct ast_binop* binop,
+    struct gkcc_ir_generation_state* gen_state,
+    struct ast_binop* binop __attribute__((unused)),
     struct gkcc_ir_translation_result tr,
     struct gkcc_ir_translation_result translation_result_left,
     struct gkcc_ir_translation_result translation_result_right) {
@@ -278,7 +287,8 @@ struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_binop_lteq(
 }
 
 struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_binop_equals(
-    struct gkcc_ir_generation_state* gen_state, struct ast_binop* binop,
+    struct gkcc_ir_generation_state* gen_state,
+    struct ast_binop* binop __attribute__((unused)),
     struct gkcc_ir_translation_result tr,
     struct gkcc_ir_translation_result translation_result_left,
     struct gkcc_ir_translation_result translation_result_right) {
@@ -290,7 +300,8 @@ struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_binop_equals(
 }
 
 struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_binop_assign(
-    struct gkcc_ir_generation_state* gen_state, struct ast_binop* binop,
+    struct gkcc_ir_generation_state* gen_state,
+    struct ast_binop* binop __attribute__((unused)),
     struct gkcc_ir_translation_result tr,
     struct gkcc_ir_translation_result translation_result_left,
     struct gkcc_ir_translation_result translation_result_right) {
@@ -306,7 +317,8 @@ struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_binop_assign(
 
 struct gkcc_ir_translation_result
 gkcc_ir_translate_ast_node_binop_assign_multiply(
-    struct gkcc_ir_generation_state* gen_state, struct ast_binop* binop,
+    struct gkcc_ir_generation_state* gen_state __attribute__((unused)),
+    struct ast_binop* binop __attribute__((unused)),
     struct gkcc_ir_translation_result tr,
     struct gkcc_ir_translation_result translation_result_left,
     struct gkcc_ir_translation_result translation_result_right) {
@@ -319,7 +331,8 @@ gkcc_ir_translate_ast_node_binop_assign_multiply(
 
 struct gkcc_ir_translation_result
 gkcc_ir_translate_ast_node_binop_assign_divide(
-    struct gkcc_ir_generation_state* gen_state, struct ast_binop* binop,
+    struct gkcc_ir_generation_state* gen_state __attribute__((unused)),
+    struct ast_binop* binop __attribute__((unused)),
     struct gkcc_ir_translation_result tr,
     struct gkcc_ir_translation_result translation_result_left,
     struct gkcc_ir_translation_result translation_result_right) {
@@ -331,7 +344,8 @@ gkcc_ir_translate_ast_node_binop_assign_divide(
 }
 
 struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_binop_assign_mod(
-    struct gkcc_ir_generation_state* gen_state, struct ast_binop* binop,
+    struct gkcc_ir_generation_state* gen_state __attribute__((unused)),
+    struct ast_binop* binop __attribute__((unused)),
     struct gkcc_ir_translation_result tr,
     struct gkcc_ir_translation_result translation_result_left,
     struct gkcc_ir_translation_result translation_result_right) {
@@ -343,7 +357,8 @@ struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_binop_assign_mod(
 }
 
 struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_binop_assign_add(
-    struct gkcc_ir_generation_state* gen_state, struct ast_binop* binop,
+    struct gkcc_ir_generation_state* gen_state __attribute__((unused)),
+    struct ast_binop* binop __attribute__((unused)),
     struct gkcc_ir_translation_result tr,
     struct gkcc_ir_translation_result translation_result_left,
     struct gkcc_ir_translation_result translation_result_right) {
@@ -356,7 +371,8 @@ struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_binop_assign_add(
 
 struct gkcc_ir_translation_result
 gkcc_ir_translate_ast_node_binop_assign_subtract(
-    struct gkcc_ir_generation_state* gen_state, struct ast_binop* binop,
+    struct gkcc_ir_generation_state* gen_state __attribute__((unused)),
+    struct ast_binop* binop __attribute__((unused)),
     struct gkcc_ir_translation_result tr,
     struct gkcc_ir_translation_result translation_result_left,
     struct gkcc_ir_translation_result translation_result_right) {
@@ -559,18 +575,20 @@ struct gkcc_ir_translation_result gkcc_ir_translate_ast_function_call(
 }
 
 struct gkcc_ir_translation_result gkcc_ir_translate_ast_unary_sizeof(
-    struct gkcc_ir_generation_state* gen_state,
+    struct gkcc_ir_generation_state* gen_state __attribute__((unused)),
     struct gkcc_ir_translation_result prev_result,
-    struct gkcc_ir_translation_result tr, struct ast_unary* unary) {
+    struct gkcc_ir_translation_result tr,
+    struct ast_unary* unary __attribute__((unused))) {
   tr.result = gkcc_ir_quad_register_new_int_constant(
       gkcc_type_sizeof(prev_result.result->type));
   return tr;
 }
 
 struct gkcc_ir_translation_result gkcc_ir_translate_ast_unary_addressof(
-    struct gkcc_ir_generation_state* gen_state,
+    struct gkcc_ir_generation_state* gen_state __attribute__((unused)),
     struct gkcc_ir_translation_result prev_result,
-    struct gkcc_ir_translation_result tr, struct ast_unary* unary) {
+    struct gkcc_ir_translation_result tr,
+    struct ast_unary* unary __attribute((unused))) {
   ADD_INST(gkcc_ir_quad_new_with_args(GKCC_IR_QUAD_INSTRUCTION_LEA, tr.result,
                                       prev_result.result, NULL));
   tr.result->type = gkcc_type_new(GKCC_TYPE_PTR);
@@ -579,9 +597,10 @@ struct gkcc_ir_translation_result gkcc_ir_translate_ast_unary_addressof(
 }
 
 struct gkcc_ir_translation_result gkcc_ir_translate_ast_unary_dereference(
-    struct gkcc_ir_generation_state* gen_state,
+    struct gkcc_ir_generation_state* gen_state __attribute__((unused)),
     struct gkcc_ir_translation_result prev_result,
-    struct gkcc_ir_translation_result tr, struct ast_unary* unary) {
+    struct gkcc_ir_translation_result tr,
+    struct ast_unary* unary __attribute((unused))) {
   // Special handling for multidimensional arrays
   if (prev_result.result->type->type == GKCC_TYPE_ARRAY &&
       prev_result.result->type->of->type == GKCC_TYPE_ARRAY) {
@@ -596,45 +615,50 @@ struct gkcc_ir_translation_result gkcc_ir_translate_ast_unary_dereference(
 }
 
 struct gkcc_ir_translation_result gkcc_ir_translate_ast_unary_not(
-    struct gkcc_ir_generation_state* gen_state,
+    struct gkcc_ir_generation_state* gen_state __attribute__((unused)),
     struct gkcc_ir_translation_result prev_result,
-    struct gkcc_ir_translation_result tr, struct ast_unary* unary) {
+    struct gkcc_ir_translation_result tr,
+    struct ast_unary* unary __attribute((unused))) {
   ADD_INST(gkcc_ir_quad_new_with_args(GKCC_IR_QUAD_INSTRUCTION_LOGICAL_NOT,
                                       tr.result, prev_result.result, NULL));
   return tr;
 }
 
 struct gkcc_ir_translation_result gkcc_ir_translate_ast_unary_negative(
-    struct gkcc_ir_generation_state* gen_state,
+    struct gkcc_ir_generation_state* gen_state __attribute__((unused)),
     struct gkcc_ir_translation_result prev_result,
-    struct gkcc_ir_translation_result tr, struct ast_unary* unary) {
+    struct gkcc_ir_translation_result tr,
+    struct ast_unary* unary __attribute__((unused))) {
   ADD_INST(gkcc_ir_quad_new_with_args(GKCC_IR_QUAD_INSTRUCTION_NEGATE_VALUE,
                                       tr.result, prev_result.result, NULL));
   return tr;
 }
 
 struct gkcc_ir_translation_result gkcc_ir_translate_ast_unary_postinc(
-    struct gkcc_ir_generation_state* gen_state,
+    struct gkcc_ir_generation_state* gen_state __attribute__((unused)),
     struct gkcc_ir_translation_result prev_result,
-    struct gkcc_ir_translation_result tr, struct ast_unary* unary) {
+    struct gkcc_ir_translation_result tr,
+    struct ast_unary* unary __attribute((unused))) {
   ADD_INST(gkcc_ir_quad_new_with_args(GKCC_IR_QUAD_INSTRUCTION_POSTINC,
                                       tr.result, prev_result.result, NULL));
   return tr;
 }
 
 struct gkcc_ir_translation_result gkcc_ir_translate_ast_unary_postdec(
-    struct gkcc_ir_generation_state* gen_state,
+    struct gkcc_ir_generation_state* gen_state __attribute__((unused)),
     struct gkcc_ir_translation_result prev_result,
-    struct gkcc_ir_translation_result tr, struct ast_unary* unary) {
+    struct gkcc_ir_translation_result tr,
+    struct ast_unary* unary __attribute((unused))) {
   ADD_INST(gkcc_ir_quad_new_with_args(GKCC_IR_QUAD_INSTRUCTION_POSTDEC,
                                       tr.result, prev_result.result, NULL));
   return tr;
 }
 
 struct gkcc_ir_translation_result gkcc_ir_translate_ast_unary_bitwise_not(
-    struct gkcc_ir_generation_state* gen_state,
+    struct gkcc_ir_generation_state* gen_state __attribute__((unused)),
     struct gkcc_ir_translation_result prev_result,
-    struct gkcc_ir_translation_result tr, struct ast_unary* unary) {
+    struct gkcc_ir_translation_result tr,
+    struct ast_unary* unary __attribute__((unused))) {
   ADD_INST(gkcc_ir_quad_new_with_args(GKCC_IR_QUAD_INSTRUCTION_BITWISE_NOT,
                                       tr.result, prev_result.result, NULL));
   return tr;
@@ -676,4 +700,6 @@ struct gkcc_ir_translation_result gkcc_ir_translate_ast_node_unary(
       return gkcc_ir_translate_ast_unary_postdec(gen_state, prev_result,
                                                  new_result, unary);
   }
+  gkcc_error_fatal(GKCC_ERROR_UNEXPECTED_VALUE, "invalid value for AST_UNARY");
+  __builtin_unreachable();
 }

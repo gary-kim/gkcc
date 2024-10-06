@@ -148,6 +148,7 @@ struct gkcc_ir_translation_result gkcc_ir_quad_generate_for_ast(
   gkcc_error_fatal(GKCC_ERROR_NOT_YET_IMPLEMENTED,
                    "gkcc_ir_quad_generate_for_ast() got to end of function "
                    "meaning the ast node was not yet implemented");
+  __builtin_unreachable();
 }
 
 struct gkcc_ir_quad_register *gkcc_ir_quad_register_new_pseudoregister(
@@ -221,8 +222,7 @@ struct gkcc_ir_quad_list *gkcc_ir_quad_list_append(
     ql->quad = ta;
     return ql;
   }
-  for (ql = ql1; ql->next != NULL; ql = ql->next)
-    ;
+  for (ql = ql1; ql->next != NULL; ql = ql->next);
   ql->next = gkcc_ir_quad_list_new();
   ql->next->quad = ta;
 
@@ -239,8 +239,7 @@ struct gkcc_ir_quad_list *gkcc_ir_quad_list_append_list(
   }
 
   struct gkcc_ir_quad_list *ql;
-  for (ql = ql1; ql->next != NULL; ql = ql->next)
-    ;
+  for (ql = ql1; ql->next != NULL; ql = ql->next);
   ql->next = ql2;
 
   return ql1;

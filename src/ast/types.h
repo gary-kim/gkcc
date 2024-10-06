@@ -17,7 +17,6 @@
 #define GKCC_TYPES_H
 
 #include "ast.h"
-#include "misc.h"
 #include "scope.h"
 
 // =============================
@@ -184,7 +183,7 @@ struct gkcc_type* gkcc_type_append(struct gkcc_type* parent,
 
 bool gkcc_is_gkcc_type_scalar(struct gkcc_type* gkcc_type);
 
-struct gkcc_type *gkcc_type_new_signed_int_type(void);
+struct gkcc_type* gkcc_type_new_signed_int_type(void);
 
 int gkcc_type_sizeof(struct gkcc_type* type);
 

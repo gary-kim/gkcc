@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https:#www.gnu.org/licenses/>.
 
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.21)
 project(gkcc)
 
 set(GKCC_UNDEFINED_BEHAVIOR_SANITIZER 1)
@@ -23,7 +23,18 @@ set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -pedantic -Werror-implicit-fu
 if(DEFINED GKCC_UNDEFINED_BEHAVIOR_SANITIZER)
        set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=undefined -fsanitize=address")
 endif()
+
+# Configuration for compile_commands.json
 set (CMAKE_EXPORT_COMPILE_COMMANDS 1)
+# Configure symlink for compile_commands.json
+if (PROJECT_IS_TOP_LEVEL)
+    execute_process(
+        COMMAND ${CMAKE_COMMAND} -E create_symlink
+            ${CMAKE_BINARY_DIR}/compile_commands.json
+            ${CMAKE_CURRENT_SOURCE_DIR}/compile_commands.json
+    )
+endif()
+
 set (GENERATED_DIR ${CMAKE_SOURCE_DIR}/generated)
 set (INCLUDE_DIRS
         ${GENERATED_DIR}
@@ -109,6 +120,7 @@ add_executable(gkcc_int
         ${CMAKE_SOURCE_DIR}/src/ir/basic_block.h
         ${CMAKE_SOURCE_DIR}/src/ir/translators.c
         ${CMAKE_SOURCE_DIR}/src/ir/translators.h
+        ${CMAKE_SOURCE_DIR}/src/ir/ir_base.h
         ${CMAKE_SOURCE_DIR}/src/ir/ir_full.c
         ${CMAKE_SOURCE_DIR}/src/ir/ir_full.h
         ${CMAKE_SOURCE_DIR}/src/target_code/x86.c
@@ -124,4 +136,5 @@ if(DEFINED GKCC_UNDEFINED_BEHAVIOR_SANITIZER)
 endif()
 
 configure_file(${CMAKE_SOURCE_DIR}/src/gkcc gkcc COPYONLY)
+
 

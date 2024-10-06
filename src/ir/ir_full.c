@@ -80,8 +80,7 @@ struct gkcc_ir_function_list *gkcc_ir_function_list_append(
   }
 
   struct gkcc_ir_function_list *end;
-  for (end = fn_list; end->next != NULL; end = end->next)
-    ;
+  for (end = fn_list; end->next != NULL; end = end->next);
   end->next = gkcc_ir_function_list_new(fn);
 
   return fn_list;
@@ -105,8 +104,7 @@ struct gkcc_ir_symbol_list *gkcc_ir_symbol_list_append(
   }
 
   struct gkcc_ir_symbol_list *end;
-  for (end = list; end->next != NULL; end = end->next)
-    ;
+  for (end = list; end->next != NULL; end = end->next);
 
   end->next = gkcc_ir_symbol_list_new(symbol);
 

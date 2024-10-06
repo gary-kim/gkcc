@@ -50,8 +50,6 @@ char *gkcc_tx86_translate_ir_quad_register(char *buf,
 }
 
 void gkcc_tx86_translate_ir_quad(FILE *out_file, struct gkcc_ir_quad *quad) {
-  char buf1[(1 << 12) + 1];
-  char buf2[(1 << 12) + 1];
   static int current_function_push_val = 0;
   switch (quad->instruction) {
     case GKCC_IR_QUAD_INSTRUCTION_LEA:

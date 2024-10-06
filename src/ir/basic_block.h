@@ -16,6 +16,7 @@
 #ifndef GKCC_BASIC_BLOCK_H
 #define GKCC_BASIC_BLOCK_H
 
+#include "ir/ir_base.h"
 #include "ir/quads.h"
 #include "scope/scope.h"
 
